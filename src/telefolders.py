@@ -1,3 +1,4 @@
+import rich
 from telethon import TelegramClient, events, sync
 import telethon
 from telethon.tl.functions.messages import GetDialogFiltersRequest
@@ -199,12 +200,38 @@ def get_all_chats():
     return ans
 
 
-def set_chat_pin(chat_id, pin):  # TODO: do
+def set_chat_pin(chat_id, pin: bool = True):
     return {
         "success": False,
         "error": "Not implemented yet",
         "error_code": "not_implemented",
     }
+    # dialogs = client.iter_dialogs()
+
+    # # dialogs = client.get_dialogs()
+
+    # dialog = None
+
+    # for dialog in dialogs:
+    #     if dialog.id == chat_id:
+    #         chat = dialog
+    #         break
+
+    # if chat is None:
+    #     return {
+    #         "success": False,
+    #         "error": "Chat not found",
+    #         "error_code": "chat_not_found",
+    #     }
+
+    # if chat.pinned == pin:
+    #     return {
+    #         "success": False,
+    #         "error": "Chat already pinned",
+    #         "error_code": "chat_already_pinned",
+    #     }
+
+    # dialog.pinned = pin
 
 
 def set_chat_archive(chat_id, archive):
@@ -218,7 +245,7 @@ def set_chat_folder_relation(chat_id, folder_id, relation=None):
     folders = client(GetDialogFiltersRequest())
 
     for folder_ in folders:
-        if folder_.id == folder_id:
+        if "id" in folder_.__dict__ and folder_.id == folder_id:
             folder = folder_
             break
 
