@@ -1,0 +1,154 @@
+@import './reset.scss';
+@import './fonts.scss';
+@import './components.scss';
+
+
+body {
+  position: relative;
+
+  .popup-container {
+    top: 0;
+    left: 0;
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    visibility: visible;
+    z-index: 100;
+    background-color: rgba(0, 0, 0, .5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .popup-content {
+      width: 50vw;
+      height: 50vh;
+      background-color: #fff;
+      padding: 1rem;
+      border-radius: 1rem;
+      display: flex;
+      flex-direction: column;
+
+      input {
+        margin-bottom: .3rem;
+      }
+
+      .buttons {
+        display: flex;
+        gap: .5rem;
+      }
+    }
+  }
+
+  .popup-hidden {
+    height: 0;
+    visibility: hidden;
+  }
+
+  .app {
+    z-index: 50;
+    padding-inline: 1rem;
+
+    header.header {
+      display: flex;
+      justify-content: space-between;
+      padding-block: .5rem;
+
+      .logo {
+        width: 50px;
+
+        img {
+          width: 100%;
+        }
+      }
+
+      .avatar {
+        position: relative;
+        width: 50px;
+
+        .user-menu {
+          position: absolute;
+          width: max-content;
+          background-color: #d2d2d2;
+          right: 0;
+          padding: 1rem;
+          border-radius: 1rem;
+        }
+
+        img {
+          border-radius: 50%;
+          width: 100%;
+        }
+      }
+    }
+
+    main.main {
+      padding-bottom: 1rem;
+
+      table.table {
+        background-color: #000;
+        margin: 0;
+
+        thead {
+          margin: 0;
+          height: 50px;
+
+          th {
+            width: 200px;
+            padding: .3rem;
+            font-weight: 400;
+            background-color: #fff;
+          }
+
+        }
+
+        tbody {
+          margin: 0;
+
+          tr {
+            td {
+              width: 200px;
+              padding: .3rem;
+              font-weight: 200;
+              background-color: #fff;
+
+              .buttons {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                
+              }
+
+              .button {
+                border: none;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #fff;
+                border-radius: 50%;
+                background-color: rgba(0,0,0,0);
+
+                svg {
+                  width: 100%;
+                  border-radius: 50%;
+                }
+              }
+
+              .green-button {
+                border: 2px solid green;
+              }
+            }
+          }
+
+        }
+      }
+    }
+  }
+
+  .hide {
+    visibility: hidden;
+    height: 0;
+  }
+}
