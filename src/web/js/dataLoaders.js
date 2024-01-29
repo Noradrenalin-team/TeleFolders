@@ -68,7 +68,7 @@ async function load() {
         "beforeend",
         /* html */ `
     <td data-id="${value.chat_id}">${value.title}</td>
-  `,
+  `
       );
     });
     return;
@@ -112,120 +112,127 @@ async function load() {
 
   function setFlugsButton(folder, folderFlag) {
     let result = ["exclude_muted", "exclude_read", "exclude_archived"].includes(
-      folderFlag,
+      folderFlag
     )
       ? /* html */ `
       <button class='button'>
-        ${folder.flags[folderFlag]
-        ? /* html */ `
+        ${
+          folder.flags[folderFlag]
+            ? /* html */ `
               <!-- minus white -->
               <img src="../img/svg/minus-white.svg" />
           `
-        : /* html */ `
+            : /* html */ `
               <!-- minus black -->
               <img src="../img/svg/minus-black.svg" />
           `
-      }
+        }
       </button>`
       : /* html */ `
       <button class='button'>
-        ${folder.flags[folderFlag]
-        ? /* html */ `
+        ${
+          folder.flags[folderFlag]
+            ? /* html */ `
               <!-- plus white -->
               <img src="../img/svg/plus-white.svg" />
           `
-        : /* html */ `
+            : /* html */ `
             <!-- plus black -->
             <img src="../img/svg/plus-black.svg" />
           `
-      }
+        }
       </button>`;
     return result;
   }
 
-  function setChatsButtons() {
-    
-    let result = /* html */ `
-    <button
-      class='button'
-      data-button-type='pinned'
-      onclick="window.setChatRelation(event=this, relation='pinned')"
-    >
-      <!-- pin black -->
-      <img src="../img/svg/pin-black.svg" />
-    </button>
-    <button
-      class='button'
-      data-button-type='include'
-      onclick="window.setChatRelation(event=this, relation='include')"
-    >
-      <!-- plus black -->
-      <img src="../img/svg/plus-black.svg" />
-    </button>
-    <button
-      class='button'
-      data-button-type='exclude'
-      onclick="window.setChatRelation(event=this, relation='exclude')"
-    >
-      <!-- minus black -->
-      <img src="../img/svg/minus-black.svg" />
-    </button>`;
+  function setChatsButtons(folderId, userInfo) {
+    let minusPath = '../img/svg/minus-black.svg'
+    let plusPath = '../img/svg/plus-black.svg'
+    let pinPath = '../img/svg/pin-black.svg'
 
-    window.setChatRelation = async function(event, relation) {
+    if (userInfo.folders['include'].includes(folderId)) {
+      plusPath = '../img/svg/plus-white.svg'
+    } else if (userInfo.folders['exclude'].includes(folderId)) {
+      minusPath = '../img/svg/minus-white.svg'
+    } else if (userInfo.folders['pinned'].includes(folderId)) {
+      pinPath = '../img/svg/pin-white.svg'
+    }
+
+    let result = /* html */ `
+      <button
+        class='button'
+        data-button-type='pinned'
+        onclick="window.setChatRelation(event=this, relation='pinned')"
+      >
+        <img src='${pinPath}' />
+      </button>
+      <button
+        class='button'
+        data-button-type='include'
+        onclick="window.setChatRelation(event=this, relation='include')"
+      >
+        <img src='${plusPath}' />
+      </button>
+      <button
+        class='button'
+        data-button-type='exclude'
+        onclick="window.setChatRelation(event=this, relation='exclude')"
+      >
+        <img src='${minusPath}' />
+      </button>
+    `;
+
+    window.setChatRelation = async function (event, relation) {
       let tdElement = event.parentElement.parentElement;
       let buttonsElement = event.parentElement;
-      
+
       let folderId = tdElement.getAttribute("data-folder-id");
       let chatId = tdElement.getAttribute("data-chat-id");
 
       const a = await eel.set_chat_folder_relation(
         Number(chatId),
         Number(folderId),
-        relation,
+        relation
       )();
 
-        console.log(relation)
-
       if (a.success) {
-        let buttons = buttonsElement.querySelectorAll('button')
+        let buttons = buttonsElement.querySelectorAll("button");
 
-        buttons.forEach(item => {
-          let buttonType = item.getAttribute('data-button-type')
+        buttons.forEach((item) => {
+          let buttonType = item.getAttribute("data-button-type");
 
           if (relation === buttonType) {
-            if (buttonType === 'pinned') {
+            if (buttonType === "pinned") {
               item.innerHTML = /* html */ `
                 <img src="../img/svg/pin-white.svg" />
-              `
-            } else if (buttonType === 'include') {
+              `;
+            } else if (buttonType === "include") {
               item.innerHTML = /* html */ `
                 <img src="../img/svg/plus-white.svg" />
-              `
-            } else if (buttonType === 'exclude') {
+              `;
+            } else if (buttonType === "exclude") {
               item.innerHTML = /* html */ `
                 <img src="../img/svg/minus-white.svg" />
-              `
+              `;
             }
           }
 
           if (relation !== buttonType) {
-            if (buttonType === 'pinned') {
+            if (buttonType === "pinned") {
               item.innerHTML = /* html */ `
                 <img src="../img/svg/pin-black.svg" />
-              `
-            } else if (buttonType === 'include') {
+              `;
+            } else if (buttonType === "include") {
               item.innerHTML = /* html */ `
                 <img src="../img/svg/plus-black.svg" />
-              `
-            } else if (buttonType === 'exclude') {
+              `;
+            } else if (buttonType === "exclude") {
               item.innerHTML = /* html */ `
                 <img src="../img/svg/minus-black.svg" />
-              `
+              `;
             }
           }
-
-          
-        })
+        });
       }
     };
 
@@ -239,8 +246,8 @@ async function load() {
         <tr>
           <th>${setName(value)}</th>
           ${folders
-        .map((folder) => {
-          return /* html */ `
+            .map((folder) => {
+              return /* html */ `
                 <td
                   data-flag="${value}"
                   data-flag-state="${folders[0].flags[value]}"
@@ -250,13 +257,13 @@ async function load() {
                   <div class='buttons'>${setFlugsButton(folder, value)}</div>
                 </td>
               `;
-        })
-        .join("")}
+            })
+            .join("")}
         </tr>
-  `,
+  `
     );
 
-    window.flagsOnClick = async function(event) {
+    window.flagsOnClick = async function (event) {
       let folderId = event.getAttribute("data-folder-id");
       let flag = event.getAttribute("data-flag");
       let value =
@@ -333,21 +340,21 @@ async function load() {
             </div>
           </th>
           ${folders
-        .map((folder) => {
-          return /* html */ `
+            .map((folder) => {
+              return /* html */ `
               <td
                 data-chat-id="${value.chat_id}"
                 data-folder-id="${folder.folder_id}"
               >
                 <div class="buttons">
-                  ${setChatsButtons()}
+                  ${setChatsButtons(folder.folder_id, value)}
                 </div>
               </td>
             `;
-        })
-        .join("")}
+            })
+            .join("")}
         </tr>
-      `,
+      `
     );
   });
 }
