@@ -1,34 +1,33 @@
-async function loadFolders() {
-  const response = await eel.get_folders()();
-  const tableElement = document.querySelector(".table thead tr");
-  tableElement.textContent = ''
+async function load() {
   const tbodyElement = document.querySelector(".table tbody");
+  const theadElement = document.querySelector(".table thead tr");
   tbodyElement.textContent = "";
+  theadElement.textContent = "";
 
-  tableElement.insertAdjacentHTML(
-    "beforeend",
-    /* html */ `
-      <th>Все чаты</th>
-    `
-  );
+  const chats = await eel.get_all_chats()();
+  console.log(chats);
+  const folders = await eel.get_folders()();
+  console.log(folders);
 
-  response.map((value) => {
-    tableElement.insertAdjacentHTML(
-      "beforeend",
-      /* html */ `
-        <th>${value.folder_title}</th>
-      `
-    );
+  let tableHead = "";
+
+  tableHead += /* html */ `
+    <th>Все чаты</th>
+  `;
+
+  folders.map((value) => {
+    tableHead += /* html */ `
+      <th>${value.folder_title}</th>
+    `;
   });
 
-  tableElement.insertAdjacentHTML(
-    "beforeend",
-    /* html */ `
-    <th id='add-folder'>+</th>
-  `
-  );
+  tableHead += /* html */ `
+    <th id='add-folder' onclick='window.popup.show()'>+</th>
+  `;
 
-  document.getElementById("add-folder").addEventListener("click", () => {
+  theadElement.insertAdjacentHTML("beforeend", tableHead);
+
+  window.popup.show = () => {
     let popup = document.getElementById("popup");
     popup.classList.remove("popup-hidden");
     popup.textContent = "";
@@ -61,18 +60,7 @@ async function loadFolders() {
       .getElementById("addFolder")
       .addEventListener("click", addFolderHandler);
     document.getElementById("cancle").addEventListener("click", cancleHandler);
-  });
-
-  loadChats();
-}
-
-async function loadChats() {
-  const chats = await eel.get_all_chats()();
-  console.log(chats);
-  const folders = await eel.get_folders()();
-  console.log(folders);
-  const tbodyElement = document.querySelector(".table tbody");
-  tbodyElement.textContent = "";
+  };
 
   if (folders.length === 0) {
     chats.map((value) => {
@@ -80,7 +68,7 @@ async function loadChats() {
         "beforeend",
         /* html */ `
     <td data-id="${value.chat_id}">${value.title}</td>
-  `
+  `,
       );
     });
     return;
@@ -123,89 +111,245 @@ async function loadChats() {
   }
 
   function setFlugsButton(folder, folderFlag) {
-    let result = [
-      "exclude_muted",
-      "exclude_read",
-      "exclude_archived",
-    ].includes(folderFlag)
-    ? /* html */`<button class='button ${folder.flags[folderFlag] ? 'green-button' : ''}'>
-    <svg viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>minus-circle</title> <desc>Created with Sketch Beta.</desc> <defs> </defs> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage"> <g id="Icon-Set-Filled" sketch:type="MSLayerGroup" transform="translate(-518.000000, -1089.000000)" fill="#000000"> <path d="M540,1106 L528,1106 C527.447,1106 527,1105.55 527,1105 C527,1104.45 527.447,1104 528,1104 L540,1104 C540.553,1104 541,1104.45 541,1105 C541,1105.55 540.553,1106 540,1106 L540,1106 Z M534,1089 C525.163,1089 518,1096.16 518,1105 C518,1113.84 525.163,1121 534,1121 C542.837,1121 550,1113.84 550,1105 C550,1096.16 542.837,1089 534,1089 L534,1089 Z" id="minus-circle" sketch:type="MSShapeGroup"> </path> </g> </g> </g></svg>
-    </button>`
-    : /* html */`<button class='button ${folder.flags[folderFlag] ? 'green-button' : ''}'>
-  <svg viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>plus-circle</title> <desc>Created with Sketch Beta.</desc> <defs> </defs> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage"> <g id="Icon-Set-Filled" sketch:type="MSLayerGroup" transform="translate(-466.000000, -1089.000000)" fill="#000000"> <path d="M488,1106 L483,1106 L483,1111 C483,1111.55 482.553,1112 482,1112 C481.447,1112 481,1111.55 481,1111 L481,1106 L476,1106 C475.447,1106 475,1105.55 475,1105 C475,1104.45 475.447,1104 476,1104 L481,1104 L481,1099 C481,1098.45 481.447,1098 482,1098 C482.553,1098 483,1098.45 483,1099 L483,1104 L488,1104 C488.553,1104 489,1104.45 489,1105 C489,1105.55 488.553,1106 488,1106 L488,1106 Z M482,1089 C473.163,1089 466,1096.16 466,1105 C466,1113.84 473.163,1121 482,1121 C490.837,1121 498,1113.84 498,1105 C498,1096.16 490.837,1089 482,1089 L482,1089 Z" id="plus-circle" sketch:type="MSShapeGroup"> </path> </g> </g> </g></svg>
-</button>`;
+    let result = ["exclude_muted", "exclude_read", "exclude_archived"].includes(
+      folderFlag,
+    )
+      ? /* html */ `
+      <button class='button'>
+        ${folder.flags[folderFlag]
+        ? /* html */ `
+              <!-- minus white -->
+              <img src="../img/svg/minus-white.svg" />
+          `
+        : /* html */ `
+              <!-- minus black -->
+              <img src="../img/svg/minus-black.svg" />
+          `
+      }
+      </button>`
+      : /* html */ `
+      <button class='button'>
+        ${folder.flags[folderFlag]
+        ? /* html */ `
+              <!-- plus white -->
+              <img src="../img/svg/plus-white.svg" />
+          `
+        : /* html */ `
+            <!-- plus black -->
+            <img src="../img/svg/plus-black.svg" />
+          `
+      }
+      </button>`;
     return result;
   }
 
   function setChatsButtons() {
-    let result = /* html */`
-    <button class='button'>
-      <svg viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>plus-circle</title> <desc>Created with Sketch Beta.</desc> <defs> </defs> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage"> <g id="Icon-Set-Filled" sketch:type="MSLayerGroup" transform="translate(-466.000000, -1089.000000)" fill="#000000"> <path d="M488,1106 L483,1106 L483,1111 C483,1111.55 482.553,1112 482,1112 C481.447,1112 481,1111.55 481,1111 L481,1106 L476,1106 C475.447,1106 475,1105.55 475,1105 C475,1104.45 475.447,1104 476,1104 L481,1104 L481,1099 C481,1098.45 481.447,1098 482,1098 C482.553,1098 483,1098.45 483,1099 L483,1104 L488,1104 C488.553,1104 489,1104.45 489,1105 C489,1105.55 488.553,1106 488,1106 L488,1106 Z M482,1089 C473.163,1089 466,1096.16 466,1105 C466,1113.84 473.163,1121 482,1121 C490.837,1121 498,1113.84 498,1105 C498,1096.16 490.837,1089 482,1089 L482,1089 Z" id="plus-circle" sketch:type="MSShapeGroup"> </path> </g> </g> </g></svg>
+    
+    let result = /* html */ `
+    <button
+      class='button'
+      data-button-type='pinned'
+      onclick="window.setChatRelation(event=this, relation='pinned')"
+    >
+      <!-- pin black -->
+      <img src="../img/svg/pin-black.svg" />
     </button>
-    <button class='button'>
-      <svg viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>minus-circle</title> <desc>Created with Sketch Beta.</desc> <defs> </defs> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage"> <g id="Icon-Set-Filled" sketch:type="MSLayerGroup" transform="translate(-518.000000, -1089.000000)" fill="#000000"> <path d="M540,1106 L528,1106 C527.447,1106 527,1105.55 527,1105 C527,1104.45 527.447,1104 528,1104 L540,1104 C540.553,1104 541,1104.45 541,1105 C541,1105.55 540.553,1106 540,1106 L540,1106 Z M534,1089 C525.163,1089 518,1096.16 518,1105 C518,1113.84 525.163,1121 534,1121 C542.837,1121 550,1113.84 550,1105 C550,1096.16 542.837,1089 534,1089 L534,1089 Z" id="minus-circle" sketch:type="MSShapeGroup"> </path> </g> </g> </g></svg>
+    <button
+      class='button'
+      data-button-type='include'
+      onclick="window.setChatRelation(event=this, relation='include')"
+    >
+      <!-- plus black -->
+      <img src="../img/svg/plus-black.svg" />
+    </button>
+    <button
+      class='button'
+      data-button-type='exclude'
+      onclick="window.setChatRelation(event=this, relation='exclude')"
+    >
+      <!-- minus black -->
+      <img src="../img/svg/minus-black.svg" />
     </button>`;
+
+    window.setChatRelation = async function(event, relation) {
+      let tdElement = event.parentElement.parentElement;
+      let buttonsElement = event.parentElement;
+      
+      let folderId = tdElement.getAttribute("data-folder-id");
+      let chatId = tdElement.getAttribute("data-chat-id");
+
+      const a = await eel.set_chat_folder_relation(
+        Number(chatId),
+        Number(folderId),
+        relation,
+      )();
+
+        console.log(relation)
+
+      if (a.success) {
+        let buttons = buttonsElement.querySelectorAll('button')
+
+        buttons.forEach(item => {
+          let buttonType = item.getAttribute('data-button-type')
+
+          if (relation === buttonType) {
+            if (buttonType === 'pinned') {
+              item.innerHTML = /* html */ `
+                <img src="../img/svg/pin-white.svg" />
+              `
+            } else if (buttonType === 'include') {
+              item.innerHTML = /* html */ `
+                <img src="../img/svg/plus-white.svg" />
+              `
+            } else if (buttonType === 'exclude') {
+              item.innerHTML = /* html */ `
+                <img src="../img/svg/minus-white.svg" />
+              `
+            }
+          }
+
+          if (relation !== buttonType) {
+            if (buttonType === 'pinned') {
+              item.innerHTML = /* html */ `
+                <img src="../img/svg/pin-black.svg" />
+              `
+            } else if (buttonType === 'include') {
+              item.innerHTML = /* html */ `
+                <img src="../img/svg/plus-black.svg" />
+              `
+            } else if (buttonType === 'exclude') {
+              item.innerHTML = /* html */ `
+                <img src="../img/svg/minus-black.svg" />
+              `
+            }
+          }
+
+          
+        })
+      }
+    };
+
     return result;
   }
 
-  Object.keys(folders[0].flags).map((value) => {    
+  Object.keys(folders[0].flags).map((value) => {
     tbodyElement.insertAdjacentHTML(
       "beforeend",
       /* html */ `
-      <tr>
-        <td>${setName(value)}</td>
-        ${folders.map((folder) => {
-          console.log(folder.folder_id)
+        <tr>
+          <th>${setName(value)}</th>
+          ${folders
+        .map((folder) => {
           return /* html */ `
-        <td
-          data-flag="${value}"
-          data-flag-state="${folders[0].flags[value]}"
-          data-folder-id="${folder.folder_id}"
-          onclick="window.flagsOnClick(this)"
-        ><div class='buttons'>${setFlugsButton(folder, value)}</div></td>
-      `;
-        }).join('')}
-      </tr>
-  `
+                <td
+                  data-flag="${value}"
+                  data-flag-state="${folders[0].flags[value]}"
+                  data-folder-id="${folder.folder_id}"
+                  onclick="window.flagsOnClick(this)"
+                >
+                  <div class='buttons'>${setFlugsButton(folder, value)}</div>
+                </td>
+              `;
+        })
+        .join("")}
+        </tr>
+  `,
     );
 
     window.flagsOnClick = async function(event) {
-      let folderId = event.getAttribute('data-folder-id');
-      let flag = event.getAttribute('data-flag');
-      let value = event.getAttribute('data-flag-state') === 'true' ? true : false;
-
-      let a = await eel.set_folder_flag(Number(folderId), flag, !value)()
+      let folderId = event.getAttribute("data-folder-id");
+      let flag = event.getAttribute("data-flag");
+      let value =
+        event.getAttribute("data-flag-state") === "true" ? true : false;
+      console.log(folderId + " request");
+      let a = await eel.set_folder_flag(Number(folderId), flag, !value)();
+      console.log(folderId, a);
 
       if (a.success === true) {
-        event.setAttribute('data-flag-state', !value);
+        event.setAttribute("data-flag-state", !value);
+        let result = [
+          "exclude_muted",
+          "exclude_read",
+          "exclude_archived",
+        ].includes(flag);
+
         if (value) {
-          event.querySelector('.button').classList.remove('green-button')
+          if (result) {
+            event.innerHTML = /* html */ `
+            <div class='buttons'>
+              <button class='button'>
+                <!-- minus black -->
+                <img src="../img/svg/minus-black.svg" />
+              </button>
+            </div>
+          `;
+          } else {
+            event.innerHTML = /* html */ `
+            <div class='buttons'>
+              <button class='button'>
+              <!-- plus black -->
+              <img src="../img/svg/plus-black.svg" />
+              </button>
+            </div>
+            `;
+          }
         } else {
-          event.querySelector('.button').classList.add('green-button')
+          if (result) {
+            event.innerHTML = /* html */ `
+            <div class='buttons'>
+              <button class='button'>
+                <!-- minus white -->
+                <img src="../img/svg/minus-white.svg" />
+              </button>
+            </div>
+          `;
+          } else {
+            event.innerHTML = /* html */ `
+            <div class='buttons'>
+              <button class='button'>
+                <!-- plus white -->
+                <img src="../img/svg/plus-white.svg" />
+              </button>
+            </div>
+          `;
+          }
         }
       }
-    }
+    };
   });
 
   chats.map((value) => {
     tbodyElement.insertAdjacentHTML(
       "beforeend",
       /* html */ `
-      <tr>
-        <td data-chat-id="${value.chat_id}">${value.title}</td>
-        ${folders.map((folder) => {
+        <tr>
+          <th data-chat-id="${value.chat_id}">
+            <div class='wrapper'>
+              <p>${value.title}</p>
+              <!-- <button> -->
+                <!-- pin white -->
+                <!-- <img src="../img/svg/pin-white.svg" /> -->
+              <!-- </button> -->
+            </div>
+          </th>
+          ${folders
+        .map((folder) => {
           return /* html */ `
-            <td
-              class="tdButtons"
-              data-chat-id="${value.chat_id}"
-              data-folder-id="${folder.folder_id}"
-            ><div class="buttons">${setChatsButtons()}</div></td>
-          `;
-        }).join('')}
-      </tr>
-  `
+              <td
+                data-chat-id="${value.chat_id}"
+                data-folder-id="${folder.folder_id}"
+              >
+                <div class="buttons">
+                  ${setChatsButtons()}
+                </div>
+              </td>
+            `;
+        })
+        .join("")}
+        </tr>
+      `,
     );
   });
 }
 
-export { loadFolders, loadChats };
+export { load };

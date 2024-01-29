@@ -3,6 +3,9 @@
 @import './components.scss';
 
 
+.popup-content {
+  z-index: 10000000000;
+}
 body {
   position: relative;
 
@@ -13,11 +16,11 @@ body {
     width: 100vw;
     height: 100vh;
     visibility: visible;
-    z-index: 100;
     background-color: rgba(0, 0, 0, .5);
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 10000000;
 
     .popup-content {
       width: 50vw;
@@ -45,6 +48,7 @@ body {
   }
 
   .app {
+    width: 100%;
     z-index: 50;
     padding-inline: 1rem;
 
@@ -84,64 +88,122 @@ body {
     main.main {
       padding-bottom: 1rem;
 
-      table.table {
-        background-color: #000;
-        margin: 0;
+      .table-container {
+        width: 100%;
+        height: calc(100dvh - 6rem);
+        overflow-x: auto;
+        border-left: 1px black solid;
+        border-top: 1px black solid;
 
-        thead {
-          margin: 0;
-          height: 50px;
+        table {
+          position: relative;
+          border-collapse: collapse;
+          height: 400px;
 
+          td,
           th {
-            width: 200px;
-            padding: .3rem;
-            font-weight: 400;
-            background-color: #fff;
+            padding: 0.25em;
+            height: 50px;
+            z-index: 1;
+            background: #FFF;
           }
 
-        }
+          .buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
-        tbody {
-          margin: 0;
+            button {
+              border: none;
+              width: 40px;
+              height: 40px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: #fff;
+              border-radius: 50%;
+              background-color: rgba(0, 0, 0, 0);
 
-          tr {
-            td {
-              width: 200px;
-              padding: .3rem;
-              font-weight: 200;
-              background-color: #fff;
-
-              .buttons {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-
-                
+              svg {
+                width: 100%;
+                height: 100%;
               }
+            }
 
-              .button {
-                border: none;
-                width: 40px;
-                height: 40px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #fff;
-                border-radius: 50%;
-                background-color: rgba(0,0,0,0);
+          }
 
-                svg {
-                  width: 100%;
-                  border-radius: 50%;
-                }
-              }
+          .wrapper {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            overflow: hidden;
 
-              .green-button {
-                border: 2px solid green;
+            p {
+              width: 90%;
+              text-overflow: ellipsis;
+              overflow: hidden;
+            }
+
+            button {
+              width: 50;
+              height: 100%;
+              border: none;
+              background-color: transparent;
+
+              svg {
+                width: 100%;
+                height: 100%;
               }
             }
           }
 
+          thead th:not(:last-child),
+          tbody td{
+            border-right: 1px solid black;
+          }
+
+          thead tr {
+            border-bottom: 1px black solid;
+          }
+
+          thead tr:not(:last-child),
+          tbody tr:not(:last-child) {
+            border-bottom: 1px black solid;
+          }
+
+          thead th {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            background-color: rgb(208, 208, 208);
+          }
+
+          tbody th:first-child,
+          thead th:first-child {
+            left: 0;
+            z-index: 100;
+            border: none;
+            border-right: 1px black solid;
+            background-color: rgb(208, 208, 208);
+          }
+
+          tbody th:first-child {
+            z-index: 90;
+          }
+
+
+          tbody th {
+            position: -webkit-sticky;
+            position: sticky;
+            left: 0;
+            background: #FFF;
+          }
+
+          button {
+            background-color: #fff;
+            border: none;
+          }
         }
       }
     }

@@ -1,5 +1,5 @@
 import { loginPhone } from "./login.js";
-import { loadFolders } from './dataLoaders.js'
+import { load } from './dataLoaders.js'
 
 export default async function start() {
   let response = await eel.get_user()();
@@ -13,13 +13,13 @@ export default async function start() {
   }
 
   document.querySelector(".login").classList.add("hide");
-  document.querySelector(".table").classList.remove("hide");
+  document.querySelector(".table-container").classList.remove("hide");
   document.querySelector(".header .avatar img").src = response.picture
     ? response.picture
     : "../img/folders_type_contacts@3x.png";
 
   handleAvatarClick(response);
-  loadFolders()
+  load()
 }
 
 async function handleAvatarClick(userData) {
@@ -30,7 +30,7 @@ async function handleAvatarClick(userData) {
     const userMenuElement = document.querySelector(".user-menu");
     const reloadChatsList = document.getElementById('reloadChatsList')
 
-    reloadChatsList.addEventListener('click', loadFolders)
+    reloadChatsList.addEventListener('click', load)
 
     userMenuElement.classList.toggle("hide");
     userMenuElement.querySelector(".username").textContent =
