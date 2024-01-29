@@ -136,7 +136,7 @@ def get_all_chats():
                         "exclude": [],
                         "pinned": [],
                     }
-                chats_with_folders[chat_id]["include"].append(folder.title)
+                chats_with_folders[chat_id]["include"].append(folder.id)
 
             for chat in exclude_chats:
                 if "channel_id" in chat.__dict__:
@@ -154,7 +154,7 @@ def get_all_chats():
                         "exclude": [],
                         "pinned": [],
                     }
-                chats_with_folders[chat_id]["exclude"].append(folder.title)
+                chats_with_folders[chat_id]["exclude"].append(folder.id)
 
             for chat in pinned_chats:
                 if "channel_id" in chat.__dict__:
@@ -172,7 +172,7 @@ def get_all_chats():
                         "exclude": [],
                         "pinned": [],
                     }
-                chats_with_folders[chat_id]["pinned"].append(folder.title)
+                chats_with_folders[chat_id]["pinned"].append(folder.id)
 
     # return chats_with_folders
 
