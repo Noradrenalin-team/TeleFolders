@@ -126,7 +126,7 @@ async function loginPassword() {
       document.querySelector(".table-container").classList.remove("hide");
       document.querySelector(".header .avatar img").src = response.picture
         ? response.picture
-        : "../img/folders_type_contacts@3x.png";
+        : "/img/folders_type_contacts@3x.png";
       start();
     } else {
       inputElement.value = "";

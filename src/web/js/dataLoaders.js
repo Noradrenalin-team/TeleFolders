@@ -1,3 +1,5 @@
+import { Popup } from "./components/PopupWidget/index.js";
+
 async function load() {
   const tbodyElement = document.querySelector(".table tbody");
   const theadElement = document.querySelector(".table thead tr");
@@ -22,15 +24,13 @@ async function load() {
   });
 
   tableHead += /* html */ `
-    <th id='add-folder' onclick='window.popup.show()'>+</th>
+    <th id='add-folder'>+</th>
   `;
 
   theadElement.insertAdjacentHTML("beforeend", tableHead);
 
-  window.popup.show = () => {
-    let popup = document.getElementById("popup");
-    popup.classList.remove("popup-hidden");
-    popup.textContent = "";
+  function handleAddFolder() {
+    const popupComponet = new Popup();
 
     let popupContent = /* html */ `
       <div class='popup-content'>
@@ -38,29 +38,32 @@ async function load() {
         <label for='folder-name'>Введите название папки</label>
         <input id='folder-name' type='text' />
         <div class='buttons'>
-          <button id='addFolder'>Добавить</button>
-          <button id='cancle'>Отменить</button>
+          <button id='popup-done'>Добавить</button>
+          <button id='popup-cancle'>Отменить</button>
         </div>
       </div>
     `;
 
-    popup.insertAdjacentHTML("beforeend", popupContent);
+    popupComponet.show(popupContent);
 
     function addFolderHandler() {
-      popup.textContent = "";
-      popup.classList.add("popup-hidden");
+      // add
+      popupComponet.close();
     }
 
     function cancleHandler() {
-      popup.textContent = "";
-      popup.classList.add("popup-hidden");
+      popupComponet.close();
     }
 
     document
-      .getElementById("addFolder")
+      .getElementById("popup-done")
       .addEventListener("click", addFolderHandler);
-    document.getElementById("cancle").addEventListener("click", cancleHandler);
-  };
+    document
+      .getElementById("popup-cancle")
+      .addEventListener("click", cancleHandler);
+  }
+
+  document.getElementById('add-folder').addEventListener('click', handleAddFolder)
 
   if (folders.length === 0) {
     chats.map((value) => {
@@ -120,11 +123,11 @@ async function load() {
           folder.flags[folderFlag]
             ? /* html */ `
               <!-- minus white -->
-              <img src="../img/svg/minus-white.svg" />
+              <img src="/img/svg/minus-white.svg" />
           `
             : /* html */ `
               <!-- minus black -->
-              <img src="../img/svg/minus-black.svg" />
+              <img src="/img/svg/minus-black.svg" />
           `
         }
       </button>`
@@ -134,11 +137,11 @@ async function load() {
           folder.flags[folderFlag]
             ? /* html */ `
               <!-- plus white -->
-              <img src="../img/svg/plus-white.svg" />
+              <img src="/img/svg/plus-white.svg" />
           `
             : /* html */ `
             <!-- plus black -->
-            <img src="../img/svg/plus-black.svg" />
+            <img src="/img/svg/plus-black.svg" />
           `
         }
       </button>`;
@@ -146,16 +149,16 @@ async function load() {
   }
 
   function setChatsButtons(folderId, userInfo) {
-    let minusPath = '../img/svg/minus-black.svg'
-    let plusPath = '../img/svg/plus-black.svg'
-    let pinPath = '../img/svg/pin-black.svg'
+    let minusPath = "/img/svg/minus-black.svg";
+    let plusPath = "/img/svg/plus-black.svg";
+    let pinPath = "/img/svg/pin-black.svg";
 
-    if (userInfo.folders['include'].includes(folderId)) {
-      plusPath = '../img/svg/plus-white.svg'
-    } else if (userInfo.folders['exclude'].includes(folderId)) {
-      minusPath = '../img/svg/minus-white.svg'
-    } else if (userInfo.folders['pinned'].includes(folderId)) {
-      pinPath = '../img/svg/pin-white.svg'
+    if (userInfo.folders["include"].includes(folderId)) {
+      plusPath = "/img/svg/plus-white.svg";
+    } else if (userInfo.folders["exclude"].includes(folderId)) {
+      minusPath = "/img/svg/minus-white.svg";
+    } else if (userInfo.folders["pinned"].includes(folderId)) {
+      pinPath = "/img/svg/pin-white.svg";
     }
 
     let result = /* html */ `
@@ -204,15 +207,15 @@ async function load() {
           if (relation === buttonType) {
             if (buttonType === "pinned") {
               item.innerHTML = /* html */ `
-                <img src="../img/svg/pin-white.svg" />
+                <img src="/img/svg/pin-white.svg" />
               `;
             } else if (buttonType === "include") {
               item.innerHTML = /* html */ `
-                <img src="../img/svg/plus-white.svg" />
+                <img src="/img/svg/plus-white.svg" />
               `;
             } else if (buttonType === "exclude") {
               item.innerHTML = /* html */ `
-                <img src="../img/svg/minus-white.svg" />
+                <img src="/img/svg/minus-white.svg" />
               `;
             }
           }
@@ -220,15 +223,15 @@ async function load() {
           if (relation !== buttonType) {
             if (buttonType === "pinned") {
               item.innerHTML = /* html */ `
-                <img src="../img/svg/pin-black.svg" />
+                <img src="/img/svg/pin-black.svg" />
               `;
             } else if (buttonType === "include") {
               item.innerHTML = /* html */ `
-                <img src="../img/svg/plus-black.svg" />
+                <img src="/img/svg/plus-black.svg" />
               `;
             } else if (buttonType === "exclude") {
               item.innerHTML = /* html */ `
-                <img src="../img/svg/minus-black.svg" />
+                <img src="/img/svg/minus-black.svg" />
               `;
             }
           }
@@ -286,7 +289,7 @@ async function load() {
             <div class='buttons'>
               <button class='button'>
                 <!-- minus black -->
-                <img src="../img/svg/minus-black.svg" />
+                <img src="/img/svg/minus-black.svg" />
               </button>
             </div>
           `;
@@ -295,7 +298,7 @@ async function load() {
             <div class='buttons'>
               <button class='button'>
               <!-- plus black -->
-              <img src="../img/svg/plus-black.svg" />
+              <img src="/img/svg/plus-black.svg" />
               </button>
             </div>
             `;
@@ -306,7 +309,7 @@ async function load() {
             <div class='buttons'>
               <button class='button'>
                 <!-- minus white -->
-                <img src="../img/svg/minus-white.svg" />
+                <img src="/img/svg/minus-white.svg" />
               </button>
             </div>
           `;
@@ -315,7 +318,7 @@ async function load() {
             <div class='buttons'>
               <button class='button'>
                 <!-- plus white -->
-                <img src="../img/svg/plus-white.svg" />
+                <img src="/img/svg/plus-white.svg" />
               </button>
             </div>
           `;
@@ -335,7 +338,7 @@ async function load() {
               <p>${value.title}</p>
               <!-- <button> -->
                 <!-- pin white -->
-                <!-- <img src="../img/svg/pin-white.svg" /> -->
+                <!-- <img src="/img/svg/pin-white.svg" /> -->
               <!-- </button> -->
             </div>
           </th>

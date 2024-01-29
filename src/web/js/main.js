@@ -1,5 +1,8 @@
 import { loginPhone } from "./login.js";
 import { load } from './dataLoaders.js'
+import { Popup } from "./components/PopupWidget/index.js";
+
+new Popup().init()
 
 export default async function start() {
   let response = await eel.get_user()();
@@ -16,7 +19,7 @@ export default async function start() {
   document.querySelector(".table-container").classList.remove("hide");
   document.querySelector(".header .avatar img").src = response.picture
     ? response.picture
-    : "../img/folders_type_contacts@3x.png";
+    : "/img/folders_type_contacts@3x.png";
 
   handleAvatarClick(response);
   load()
