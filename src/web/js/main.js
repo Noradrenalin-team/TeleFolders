@@ -1,20 +1,22 @@
 import { loginPhone } from "./login.js";
-import { load } from './dataLoaders.js'
 import { Popup } from "./components/PopupWidget/index.js";
+import { Table } from "./components/TableWidget/index.js";
 
-new Popup().init()
 
 export default async function start() {
   let response = await eel.get_user()();
-
+  
   if (response === null) {
     document.querySelector(".login").classList.remove("hide");
     document
-      .querySelector(".login-button")
-      .addEventListener("click", loginPhone);
+    .querySelector(".login-button")
+    .addEventListener("click", loginPhone);
     return;
   }
-
+  
+  new Popup().init()
+  new Table().init()
+  
   document.querySelector(".login").classList.add("hide");
   document.querySelector(".table-container").classList.remove("hide");
   document.querySelector(".header .avatar img").src = response.picture
@@ -22,7 +24,7 @@ export default async function start() {
     : "/img/folders_type_contacts@3x.png";
 
   handleAvatarClick(response);
-  load()
+  // load()
 }
 
 async function handleAvatarClick(userData) {
@@ -33,7 +35,7 @@ async function handleAvatarClick(userData) {
     const userMenuElement = document.querySelector(".user-menu");
     const reloadChatsList = document.getElementById('reloadChatsList')
 
-    reloadChatsList.addEventListener('click', load)
+    reloadChatsList.addEventListener('click', new Table().updateChats())
 
     userMenuElement.classList.toggle("hide");
     userMenuElement.querySelector(".username").textContent =

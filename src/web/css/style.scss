@@ -70,9 +70,10 @@ body {
         width: 50px;
 
         .user-menu {
+          z-index: 500000000;
           position: absolute;
           width: max-content;
-          background-color: #d2d2d2;
+          background-color: #b0b0b0;
           right: 0;
           padding: 1rem;
           border-radius: 1rem;
