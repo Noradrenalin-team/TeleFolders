@@ -146,11 +146,11 @@ export class Table {
             folder.flags[folderFlag]
               ? /* html */ `
                 <!-- minus white -->
-                <img src="/img/svg/minus-white.svg" />
+                <img src="/img/svg/minus-black.svg" />
             `
               : /* html */ `
                 <!-- minus black -->
-                <img src="/img/svg/minus-black.svg" />
+                <img src="/img/svg/minus-white.svg" />
             `
           }
         </button>`
@@ -160,11 +160,11 @@ export class Table {
             folder.flags[folderFlag]
               ? /* html */ `
                 <!-- plus white -->
-                <img src="/img/svg/plus-white.svg" />
+                <img src="/img/svg/plus-black.svg" />
             `
               : /* html */ `
               <!-- plus black -->
-              <img src="/img/svg/plus-black.svg" />
+              <img src="/img/svg/plus-white.svg" />
             `
           }
         </button>`;
@@ -172,16 +172,16 @@ export class Table {
     }
 
     function setChatsButtons(folderId, userInfo) {
-      let minusPath = "/img/svg/minus-black.svg";
-      let plusPath = "/img/svg/plus-black.svg";
-      let pinPath = "/img/svg/pin-black.svg";
+      let minusPath = "/img/svg/minus-white.svg";
+      let plusPath = "/img/svg/plus-white.svg";
+      let pinPath = "/img/svg/pin-white.svg";
 
       if (userInfo.folders["include"].includes(folderId)) {
-        plusPath = "/img/svg/plus-white.svg";
+        plusPath = "/img/svg/plus-black.svg";
       } else if (userInfo.folders["exclude"].includes(folderId)) {
-        minusPath = "/img/svg/minus-white.svg";
+        minusPath = "/img/svg/minus-black.svg";
       } else if (userInfo.folders["pinned"].includes(folderId)) {
-        pinPath = "/img/svg/pin-white.svg";
+        pinPath = "/img/svg/pin-black.svg";
       }
 
       let result = /* html */ `
@@ -230,22 +230,6 @@ export class Table {
             if (relation === buttonType) {
               if (buttonType === "pinned") {
                 item.innerHTML = /* html */ `
-                  <img src="/img/svg/pin-white.svg" />
-                `;
-              } else if (buttonType === "include") {
-                item.innerHTML = /* html */ `
-                  <img src="/img/svg/plus-white.svg" />
-                `;
-              } else if (buttonType === "exclude") {
-                item.innerHTML = /* html */ `
-                  <img src="/img/svg/minus-white.svg" />
-                `;
-              }
-            }
-
-            if (relation !== buttonType) {
-              if (buttonType === "pinned") {
-                item.innerHTML = /* html */ `
                   <img src="/img/svg/pin-black.svg" />
                 `;
               } else if (buttonType === "include") {
@@ -255,6 +239,22 @@ export class Table {
               } else if (buttonType === "exclude") {
                 item.innerHTML = /* html */ `
                   <img src="/img/svg/minus-black.svg" />
+                `;
+              }
+            }
+
+            if (relation !== buttonType) {
+              if (buttonType === "pinned") {
+                item.innerHTML = /* html */ `
+                  <img src="/img/svg/pin-white.svg" />
+                `;
+              } else if (buttonType === "include") {
+                item.innerHTML = /* html */ `
+                  <img src="/img/svg/plus-white.svg" />
+                `;
+              } else if (buttonType === "exclude") {
+                item.innerHTML = /* html */ `
+                  <img src="/img/svg/minus-white.svg" />
                 `;
               }
             }
@@ -312,7 +312,7 @@ export class Table {
               <div class='buttons'>
                 <button class='button'>
                   <!-- minus black -->
-                  <img src="/img/svg/minus-black.svg" />
+                  <img src="/img/svg/minus-white.svg" />
                 </button>
               </div>
             `;
@@ -321,7 +321,7 @@ export class Table {
               <div class='buttons'>
                 <button class='button'>
                 <!-- plus black -->
-                <img src="/img/svg/plus-black.svg" />
+                <img src="/img/svg/plus-white.svg" />
                 </button>
               </div>
               `;
@@ -332,7 +332,7 @@ export class Table {
               <div class='buttons'>
                 <button class='button'>
                   <!-- minus white -->
-                  <img src="/img/svg/minus-white.svg" />
+                  <img src="/img/svg/minus-black.svg" />
                 </button>
               </div>
             `;
@@ -341,7 +341,7 @@ export class Table {
               <div class='buttons'>
                 <button class='button'>
                   <!-- plus white -->
-                  <img src="/img/svg/plus-white.svg" />
+                  <img src="/img/svg/plus-black.svg" />
                 </button>
               </div>
             `;
@@ -361,7 +361,7 @@ export class Table {
                 <p>${value.title}</p>
                 <!-- <button> -->
                   <!-- pin white -->
-                  <!-- <img src="/img/svg/pin-white.svg" /> -->
+                  <!-- <img src="/img/svg/pin-black.svg" /> -->
                 <!-- </button> -->
               </div>
             </th>
