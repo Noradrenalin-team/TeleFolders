@@ -2,8 +2,8 @@ import { Popup } from "../PopupWidget/index.js";
 
 export class Table {
   constructor() {
-    this.getData();
-    this.offset = 0;
+    this.getData()
+    this.offset = 0
   }
 
   getData = async () => {
@@ -12,24 +12,24 @@ export class Table {
 
     this.drawHeader();
     this.drawChats();
-  };
+  }
 
   getChats = () => {
     return (async () => {
       return await eel.get_all_chats()();
     })();
-  };
+  }
 
   getFolders = () => {
     return (async () => {
       return await eel.get_folders()();
     })();
-  };
+  }
 
   async drawHeader() {
     const theadElement = document.querySelector(".table thead tr");
     theadElement.textContent = "";
-    const folders = this.folders;
+    const folders = this.folders
 
     let tableHead = "";
 
@@ -86,8 +86,8 @@ export class Table {
   }
 
   async drawChats() {
-    const chats = this.chats;
-    const folders = this.folders;
+    const chats = this.chats
+    const folders = this.folders
     const tbodyElement = document.querySelector(".table tbody");
     tbodyElement.textContent = "";
 
@@ -105,16 +105,17 @@ export class Table {
     }
 
     function setName(value) {
+      
       const flags = {
         contacts: "Контакты",
-        non_contacts: "Не контакты",
+        non_contacts: 'Не контакты',
         groups: "Группы",
         broadcasts: "Каналы",
         bots: "Боты",
         exclude_muted: "Без уведомлений",
         exclude_read: "Прочитанные",
-        exclude_archived: "Архивированные",
-      };
+        exclude_archived: "Архивированные"
+      }
 
       return flags[value];
     }
@@ -378,10 +379,10 @@ export class Table {
             <th data-chat-id="${value.chat_id}">
               <div class='wrapper'>
                 <p>${value.title}</p>
-                <button>
-                  pin white
-                  <img src="/img/svg/pin-black.svg" />
-                </button>
+                <!-- <button> -->
+                  <!-- pin white -->
+                  <!-- <img src="/img/svg/pin-white.svg" /> -->
+                <!-- </button> -->
               </div>
             </th>
             ${folders
@@ -409,8 +410,8 @@ export class Table {
   // addFolder() {}
 
   async updateChats() {
-    this.chats = await this.getChats();
-    this.folders = await this.getFolders();
+    this.chats = await this.getChats()
+    this.folders = await  this.getFolders()
 
     await this.drawHeader();
     await this.drawChats();
