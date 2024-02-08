@@ -1,20 +1,21 @@
 export class Popup {
-  show(content) {
-    let popup = document.getElementById("popup");
-    popup.classList.remove("popup-hidden");
-    popup.textContent = "";
-
-    popup.insertAdjacentHTML("beforeend", content);
-  }
-
-  close() {
-    let popup = document.getElementById("popup");
-    popup.classList.add("popup-hidden");
-    popup.textContent = "";
-  }
-
-  init() {
+  constructor(content) {
     let container = /* html */ `<div id="popup" class="popup-container popup-hidden"></div>`
     document.querySelector('body').insertAdjacentHTML('afterbegin', container)
+
+    this.content = content
+    this.popup = document.getElementById("popup");
+  }
+
+  show = () => {
+    this.popup.classList.remove("popup-hidden");
+    this.popup.textContent = "";
+
+    this.popup.insertAdjacentHTML("beforeend", this.content);
+  }
+
+  close = () => {
+    this.popup.classList.add("popup-hidden");
+    this.popup.textContent = "";
   }
 }

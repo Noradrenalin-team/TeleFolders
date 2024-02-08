@@ -1,5 +1,4 @@
 import { loginPhone } from "./login.js";
-import { Popup } from "./components/PopupWidget/index.js";
 import { Table } from "./components/TableWidget/index.js";
 
 
@@ -14,8 +13,7 @@ export default async function start() {
     return;
   }
   
-  new Popup().init()
-  new Table().init()
+  new Table()
   
   document.querySelector(".login").classList.add("hide");
   document.querySelector(".table-container").classList.remove("hide");
@@ -24,7 +22,6 @@ export default async function start() {
     : "/img/folders_type_contacts@3x.png";
 
   handleAvatarClick(response);
-  // load()
 }
 
 async function handleAvatarClick(userData) {
@@ -35,13 +32,20 @@ async function handleAvatarClick(userData) {
     const userMenuElement = document.querySelector(".user-menu");
     const reloadChatsList = document.getElementById('reloadChatsList')
 
-    reloadChatsList.addEventListener('click', new Table().updateChats())
+    userMenuElement.addEventListener('click', (event) => {event.stopPropagation()})
+
+    reloadChatsList.addEventListener('click', event => {
+      event.stopPropagation()
+      new Table().updateChats()
+      userMenuElement.classList.add("hide");
+    })
 
     userMenuElement.classList.toggle("hide");
     userMenuElement.querySelector(".username").textContent =
       "@" + userData.username;
 
     document.addEventListener('click', (event) => {
+      event.stopPropagation()
       if (event.target.alt === 'avatar') return
       else userMenuElement.classList.add("hide");
     })

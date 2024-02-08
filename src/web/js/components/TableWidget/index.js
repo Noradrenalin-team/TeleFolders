@@ -1,29 +1,35 @@
+import { Popup } from "../PopupWidget/index.js";
+
 export class Table {
-  get chats() {
+  constructor() {
+    this.getData();
+    this.offset = 0;
+  }
+
+  getData = async () => {
+    this.chats = await eel.get_all_chats()();
+    this.folders = await eel.get_folders()();
+
+    this.drawHeader();
+    this.drawChats();
+  };
+
+  getChats = () => {
     return (async () => {
       return await eel.get_all_chats()();
     })();
-  }
+  };
 
-  get folders() {
+  getFolders = () => {
     return (async () => {
       return await eel.get_folders()();
     })();
-  }
+  };
 
-  async init() {
-    const folders = await this.folders;
-    const chats = await this.chats;
-
-    console.log(folders);
-    console.log(chats);
-    await this.drawHeader(folders)
-    await this.drawChats(chats, folders)
-  }
-
-  async drawHeader(folders) {
+  async drawHeader() {
     const theadElement = document.querySelector(".table thead tr");
     theadElement.textContent = "";
+    const folders = this.folders;
 
     let tableHead = "";
 
@@ -44,9 +50,7 @@ export class Table {
     theadElement.insertAdjacentHTML("beforeend", tableHead);
 
     function handleAddFolder() {
-      const popupComponet = new Popup();
-
-      let popupContent = /* html */ `
+      const popupComponent = new Popup(`
       <div class='popup-content'>
         <h2>Добавление папки</h2>
         <label for='folder-name'>Введите название папки</label>
@@ -56,17 +60,16 @@ export class Table {
           <button id='popup-cancle'>Отменить</button>
         </div>
       </div>
-    `;
+    `);
 
-      popupComponet.show(popupContent);
+      popupComponent.show();
 
       function addFolderHandler() {
-        // add
-        popupComponet.close();
+        popupComponent.close();
       }
 
       function cancleHandler() {
-        popupComponet.close();
+        popupComponent.close();
       }
 
       document
@@ -82,10 +85,13 @@ export class Table {
       .addEventListener("click", handleAddFolder);
   }
 
-  async drawChats(chats, folders) {
+  async drawChats() {
+    const chats = this.chats;
+    const folders = this.folders;
     const tbodyElement = document.querySelector(".table tbody");
     tbodyElement.textContent = "";
 
+    // отрисовка td с названием чата
     if (folders.length === 0) {
       chats.map((value) => {
         tbodyElement.insertAdjacentHTML(
@@ -99,41 +105,21 @@ export class Table {
     }
 
     function setName(value) {
-      let result = "";
+      const flags = {
+        contacts: "Контакты",
+        non_contacts: "Не контакты",
+        groups: "Группы",
+        broadcasts: "Каналы",
+        bots: "Боты",
+        exclude_muted: "Без уведомлений",
+        exclude_read: "Прочитанные",
+        exclude_archived: "Архивированные",
+      };
 
-      switch (value) {
-        case "contacts":
-          result = "Контакты";
-          break;
-        case "non_contacts":
-          result = "Не контакты";
-          break;
-        case "groups":
-          result = "Группы";
-          break;
-        case "broadcasts":
-          result = "Каналы";
-          break;
-        case "bots":
-          result = "Боты";
-          break;
-        case "exclude_muted":
-          result = "Без уведомлений";
-          break;
-        case "exclude_read":
-          result = "Прочитанные";
-          break;
-        case "exclude_archived":
-          result = "Архивированные";
-          break;
-
-        default:
-          break;
-      }
-
-      return result;
+      return flags[value];
     }
 
+    // возвращает разметку кнопки флага
     function setFlugsButton(folder, folderFlag) {
       let result = [
         "exclude_muted",
@@ -145,12 +131,10 @@ export class Table {
           ${
             folder.flags[folderFlag]
               ? /* html */ `
-                <!-- minus white -->
-                <img src="/img/svg/minus-white.svg" />
+                <img src="/img/svg/minus-black.svg" />
             `
               : /* html */ `
-                <!-- minus black -->
-                <img src="/img/svg/minus-black.svg" />
+                <img src="/img/svg/minus-white.svg" />
             `
           }
         </button>`
@@ -159,35 +143,41 @@ export class Table {
           ${
             folder.flags[folderFlag]
               ? /* html */ `
-                <!-- plus white -->
-                <img src="/img/svg/plus-white.svg" />
+                <img src="/img/svg/plus-black.svg" />
             `
               : /* html */ `
-              <!-- plus black -->
-              <img src="/img/svg/plus-black.svg" />
+              <img src="/img/svg/plus-white.svg" />
             `
           }
         </button>`;
       return result;
     }
 
+    // возвращает разметку кнопок чатов
     function setChatsButtons(folderId, userInfo) {
-      let minusPath = "/img/svg/minus-black.svg";
-      let plusPath = "/img/svg/plus-black.svg";
-      let pinPath = "/img/svg/pin-black.svg";
+      let minusPath = "/img/svg/minus-white.svg";
+      let plusPath = "/img/svg/plus-white.svg";
+      let pinPath = "/img/svg/pin-white.svg";
+      let pinValue = false;
+      let plusValue = false;
+      let minusValue = false;
 
       if (userInfo.folders["include"].includes(folderId)) {
-        plusPath = "/img/svg/plus-white.svg";
+        plusPath = "/img/svg/plus-black.svg";
+        plusValue = true;
       } else if (userInfo.folders["exclude"].includes(folderId)) {
-        minusPath = "/img/svg/minus-white.svg";
+        minusPath = "/img/svg/minus-black.svg";
+        minusValue = true;
       } else if (userInfo.folders["pinned"].includes(folderId)) {
-        pinPath = "/img/svg/pin-white.svg";
+        pinPath = "/img/svg/pin-black.svg";
+        pinValue = true;
       }
 
       let result = /* html */ `
         <button
           class='button'
           data-button-type='pinned'
+          data-value='${pinValue}'
           onclick="window.setChatRelation(event=this, relation='pinned')"
         >
           <img src='${pinPath}' />
@@ -195,6 +185,7 @@ export class Table {
         <button
           class='button'
           data-button-type='include'
+          data-value='${plusValue}'
           onclick="window.setChatRelation(event=this, relation='include')"
         >
           <img src='${plusPath}' />
@@ -202,6 +193,7 @@ export class Table {
         <button
           class='button'
           data-button-type='exclude'
+          data-value='${minusValue}'
           onclick="window.setChatRelation(event=this, relation='exclude')"
         >
           <img src='${minusPath}' />
@@ -212,8 +204,11 @@ export class Table {
         let tdElement = event.parentElement.parentElement;
         let buttonsElement = event.parentElement;
 
+        let value = event.getAttribute("data-value") === "true" ? true : false;
         let folderId = tdElement.getAttribute("data-folder-id");
         let chatId = tdElement.getAttribute("data-chat-id");
+
+        relation = value ? null : relation;
 
         const a = await eel.set_chat_folder_relation(
           Number(chatId),
@@ -222,28 +217,32 @@ export class Table {
         )();
 
         if (a.success) {
+          if (value) {
+            event.setAttribute("data-value", !value);
+            let buttonType = event.getAttribute("data-button-type");
+
+            if (buttonType === "pinned") {
+              event.innerHTML = /* html */ `
+                  <img src="/img/svg/pin-white.svg" />
+                `;
+            } else if (buttonType === "include") {
+              event.innerHTML = /* html */ `
+                  <img src="/img/svg/plus-white.svg" />
+                `;
+            } else if (buttonType === "exclude") {
+              event.innerHTML = /* html */ `
+                  <img src="/img/svg/minus-white.svg" />
+                `;
+            }
+            return;
+          }
+
           let buttons = buttonsElement.querySelectorAll("button");
 
           buttons.forEach((item) => {
             let buttonType = item.getAttribute("data-button-type");
 
             if (relation === buttonType) {
-              if (buttonType === "pinned") {
-                item.innerHTML = /* html */ `
-                  <img src="/img/svg/pin-white.svg" />
-                `;
-              } else if (buttonType === "include") {
-                item.innerHTML = /* html */ `
-                  <img src="/img/svg/plus-white.svg" />
-                `;
-              } else if (buttonType === "exclude") {
-                item.innerHTML = /* html */ `
-                  <img src="/img/svg/minus-white.svg" />
-                `;
-              }
-            }
-
-            if (relation !== buttonType) {
               if (buttonType === "pinned") {
                 item.innerHTML = /* html */ `
                   <img src="/img/svg/pin-black.svg" />
@@ -258,13 +257,35 @@ export class Table {
                 `;
               }
             }
+
+            if (relation !== buttonType) {
+              item.setAttribute("data-value", false);
+              if (value) {
+              }
+              if (buttonType === "pinned") {
+                item.innerHTML = /* html */ `
+                  <img src="/img/svg/pin-white.svg" />
+                `;
+              } else if (buttonType === "include") {
+                item.innerHTML = /* html */ `
+                  <img src="/img/svg/plus-white.svg" />
+                `;
+              } else if (buttonType === "exclude") {
+                item.innerHTML = /* html */ `
+                  <img src="/img/svg/minus-white.svg" />
+                `;
+              }
+            }
           });
+
+          event.setAttribute("data-value", !value);
         }
       };
 
       return result;
     }
 
+    // отрисовка строки флага с кнопкой
     Object.keys(folders[0].flags).map((value) => {
       tbodyElement.insertAdjacentHTML(
         "beforeend",
@@ -289,6 +310,7 @@ export class Table {
     `
       );
 
+      // обработчик клика по кнопке флага
       window.flagsOnClick = async function (event) {
         let folderId = event.getAttribute("data-folder-id");
         let flag = event.getAttribute("data-flag");
@@ -311,8 +333,7 @@ export class Table {
               event.innerHTML = /* html */ `
               <div class='buttons'>
                 <button class='button'>
-                  <!-- minus black -->
-                  <img src="/img/svg/minus-black.svg" />
+                  <img src="/img/svg/minus-white.svg" />
                 </button>
               </div>
             `;
@@ -320,8 +341,7 @@ export class Table {
               event.innerHTML = /* html */ `
               <div class='buttons'>
                 <button class='button'>
-                <!-- plus black -->
-                <img src="/img/svg/plus-black.svg" />
+                <img src="/img/svg/plus-white.svg" />
                 </button>
               </div>
               `;
@@ -331,8 +351,7 @@ export class Table {
               event.innerHTML = /* html */ `
               <div class='buttons'>
                 <button class='button'>
-                  <!-- minus white -->
-                  <img src="/img/svg/minus-white.svg" />
+                  <img src="/img/svg/minus-black.svg" />
                 </button>
               </div>
             `;
@@ -340,8 +359,7 @@ export class Table {
               event.innerHTML = /* html */ `
               <div class='buttons'>
                 <button class='button'>
-                  <!-- plus white -->
-                  <img src="/img/svg/plus-white.svg" />
+                  <img src="/img/svg/plus-black.svg" />
                 </button>
               </div>
             `;
@@ -351,6 +369,7 @@ export class Table {
       };
     });
 
+    // отрисовка строки чата с кнопками
     chats.map((value) => {
       tbodyElement.insertAdjacentHTML(
         "beforeend",
@@ -387,15 +406,13 @@ export class Table {
 
   toggleArchive() {}
 
-  addFolder() {}
+  // addFolder() {}
 
   async updateChats() {
-    const folders = await this.folders;
-    const chats = await this.chats;
+    this.chats = await this.getChats();
+    this.folders = await this.getFolders();
 
-    console.log(folders);
-    console.log(chats);
-    await this.drawHeader(folders)
-    await this.drawChats(chats, folders)
+    await this.drawHeader();
+    await this.drawChats();
   }
 }

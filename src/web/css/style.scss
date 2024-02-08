@@ -4,8 +4,9 @@
 
 
 .popup-content {
-  z-index: 10000000000;
+  z-index: 101;
 }
+
 body {
   position: relative;
 
@@ -20,7 +21,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000000;
+    z-index: 100;
 
     .popup-content {
       width: 50vw;
@@ -49,7 +50,7 @@ body {
 
   .app {
     width: 100%;
-    z-index: 50;
+    z-index: 1;
     padding-inline: 1rem;
 
     header.header {
@@ -70,7 +71,7 @@ body {
         width: 50px;
 
         .user-menu {
-          z-index: 500000000;
+          z-index: 20;
           position: absolute;
           width: max-content;
           background-color: #b0b0b0;
@@ -105,7 +106,7 @@ body {
           th {
             padding: 0.25em;
             height: 50px;
-            z-index: 1;
+            z-index: 10;
             background: #FFF;
           }
 
@@ -160,17 +161,41 @@ body {
           }
 
           thead th:not(:last-child),
-          tbody td{
+          tbody td {
             border-right: 1px solid black;
-          }
-
-          thead tr {
-            border-bottom: 1px black solid;
           }
 
           thead tr:not(:last-child),
           tbody tr:not(:last-child) {
             border-bottom: 1px black solid;
+          }
+
+          tbody td:not(:first-child) {
+            position: relative;
+            z-index: 1;
+          }
+
+          thead th:first-child::after,
+          tbody th:first-child::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border-right: 1px solid black;
+            z-index: -1;
+          }
+
+          thead th::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border-bottom: 1px solid black;
+            z-index: -1;
           }
 
           thead th {
@@ -183,22 +208,46 @@ body {
           tbody th:first-child,
           thead th:first-child {
             left: 0;
-            z-index: 100;
+            z-index: 11;
             border: none;
-            border-right: 1px black solid;
             background-color: rgb(208, 208, 208);
           }
 
           tbody th:first-child {
-            z-index: 90;
+            z-index: 10;
           }
-
 
           tbody th {
             position: -webkit-sticky;
             position: sticky;
             left: 0;
             background: #FFF;
+            z-index: 100;
+            border-right: 1px solid black;
+          }
+
+          @media (hover: hover) {
+            tbody tr:hover {
+              td {
+                background-color: #b0b0b0;
+              }
+
+              td:hover {
+                background-color: #646464;
+              }
+
+              td:hover::after {
+                content: '';
+                width: 100%;
+                height: calc(200vh - 12rem);
+                bottom: 0;
+                left: 0;
+                background-color: rgba(100, 100, 100, .2);
+                ;
+                position: absolute;
+                pointer-events: none;
+              }
+            }
           }
 
           button {

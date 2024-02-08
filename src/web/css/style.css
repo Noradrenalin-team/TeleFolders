@@ -38,7 +38,7 @@ p.input-error {
 }
 
 .popup-content {
-  z-index: 10000000000;
+  z-index: 101;
 }
 
 body {
@@ -55,7 +55,7 @@ body .popup-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000000;
+  z-index: 100;
 }
 body .popup-container .popup-content {
   width: 50vw;
@@ -79,7 +79,7 @@ body .popup-hidden {
 }
 body .app {
   width: 100%;
-  z-index: 50;
+  z-index: 1;
   padding-inline: 1rem;
 }
 body .app header.header {
@@ -98,7 +98,7 @@ body .app header.header .avatar {
   width: 50px;
 }
 body .app header.header .avatar .user-menu {
-  z-index: 500000000;
+  z-index: 20;
   position: absolute;
   width: max-content;
   background-color: #b0b0b0;
@@ -129,7 +129,7 @@ body .app main.main .table-container table td,
 body .app main.main .table-container table th {
   padding: 0.25em;
   height: 50px;
-  z-index: 1;
+  z-index: 10;
   background: #FFF;
 }
 body .app main.main .table-container table .buttons {
@@ -178,12 +178,34 @@ body .app main.main .table-container table thead th:not(:last-child),
 body .app main.main .table-container table tbody td {
   border-right: 1px solid black;
 }
-body .app main.main .table-container table thead tr {
-  border-bottom: 1px black solid;
-}
 body .app main.main .table-container table thead tr:not(:last-child),
 body .app main.main .table-container table tbody tr:not(:last-child) {
   border-bottom: 1px black solid;
+}
+body .app main.main .table-container table tbody td:not(:first-child) {
+  position: relative;
+  z-index: 1;
+}
+body .app main.main .table-container table thead th:first-child::after,
+body .app main.main .table-container table tbody th:first-child::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-right: 1px solid black;
+  z-index: -1;
+}
+body .app main.main .table-container table thead th::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-bottom: 1px solid black;
+  z-index: -1;
 }
 body .app main.main .table-container table thead th {
   position: -webkit-sticky;
@@ -194,19 +216,38 @@ body .app main.main .table-container table thead th {
 body .app main.main .table-container table tbody th:first-child,
 body .app main.main .table-container table thead th:first-child {
   left: 0;
-  z-index: 100;
+  z-index: 11;
   border: none;
-  border-right: 1px black solid;
   background-color: rgb(208, 208, 208);
 }
 body .app main.main .table-container table tbody th:first-child {
-  z-index: 90;
+  z-index: 10;
 }
 body .app main.main .table-container table tbody th {
   position: -webkit-sticky;
   position: sticky;
   left: 0;
   background: #FFF;
+  z-index: 100;
+  border-right: 1px solid black;
+}
+@media (hover: hover) {
+  body .app main.main .table-container table tbody tr:hover td {
+    background-color: #b0b0b0;
+  }
+  body .app main.main .table-container table tbody tr:hover td:hover {
+    background-color: #646464;
+  }
+  body .app main.main .table-container table tbody tr:hover td:hover::after {
+    content: "";
+    width: 100%;
+    height: calc(200vh - 12rem);
+    bottom: 0;
+    left: 0;
+    background-color: rgba(100, 100, 100, 0.2);
+    position: absolute;
+    pointer-events: none;
+  }
 }
 body .app main.main .table-container table button {
   background-color: #fff;
