@@ -378,10 +378,10 @@ export class Table {
             <th data-chat-id="${value.chat_id}">
               <div class='wrapper'>
                 <p>${value.title}</p>
-                <!-- <button> -->
-                  <!-- pin white -->
-                  <!-- <img src="/img/svg/pin-white.svg" /> -->
-                <!-- </button> -->
+                <button>
+                  pin white
+                  <img src="/img/svg/pin-black.svg" />
+                </button>
               </div>
             </th>
             ${folders
