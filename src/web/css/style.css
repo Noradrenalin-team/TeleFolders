@@ -41,6 +41,10 @@ p.input-error {
   z-index: 101;
 }
 
+img {
+  pointer-events: none;
+}
+
 body {
   position: relative;
 }
@@ -59,7 +63,7 @@ body .popup-container {
 }
 body .popup-container .popup-content {
   width: 50vw;
-  height: 50vh;
+  height: max-content;
   background-color: #fff;
   padding: 1rem;
   border-radius: 1rem;

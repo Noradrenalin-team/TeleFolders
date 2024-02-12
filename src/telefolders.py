@@ -277,8 +277,14 @@ def set_chat_folder_relation(chat_id, folder_id, relation=None):
         if entity in folder.exclude_peers:
             folder.exclude_peers.remove(entity)
 
-    client(UpdateDialogFilterRequest(folder.id, folder))
-
+    try:
+        client(UpdateDialogFilterRequest(folder.id, folder))
+    except telethon.errors.rpcerrorlist.FilterIncludeEmptyError as e:
+        return {
+            "success": False,
+            "error": "The include_peers vector of the filter is empty",
+            "error_code": "folder_empty_error",
+        }
     return {"success": True}
 
 
