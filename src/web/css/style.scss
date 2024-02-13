@@ -9,6 +9,12 @@
 
 img {
   pointer-events: none;
+  cursor: pointer;
+}
+
+.error {
+  border: 1px red solid;
+  border-radius: .1rem;
 }
 
 body {
@@ -29,7 +35,6 @@ body {
 
     .popup-content {
       width: 50vw;
-      // height: 50vh;
       height: max-content;
       background-color: #fff;
       padding: 1rem;
@@ -39,6 +44,8 @@ body {
 
       input {
         margin-bottom: .3rem;
+        border: black 1px solid;
+        border-radius: 1px;
       }
 
       .buttons {
@@ -94,6 +101,12 @@ body {
 
     main.main {
       padding-bottom: 1rem;
+
+      .login {
+        button {
+          cursor: pointer;
+        }
+      }
 
       .table-container {
         width: 100%;
@@ -244,7 +257,7 @@ body {
               td:hover::after {
                 content: '';
                 width: 100%;
-                height: calc(200vh - 12rem);
+                height: 10000px;
                 bottom: 0;
                 left: 0;
                 background-color: rgba(100, 100, 100, .2);

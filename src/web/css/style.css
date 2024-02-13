@@ -43,6 +43,12 @@ p.input-error {
 
 img {
   pointer-events: none;
+  cursor: pointer;
+}
+
+.error {
+  border: 1px red solid;
+  border-radius: 0.1rem;
 }
 
 body {
@@ -72,6 +78,8 @@ body .popup-container .popup-content {
 }
 body .popup-container .popup-content input {
   margin-bottom: 0.3rem;
+  border: black 1px solid;
+  border-radius: 1px;
 }
 body .popup-container .popup-content .buttons {
   display: flex;
@@ -116,6 +124,9 @@ body .app header.header .avatar img {
 }
 body .app main.main {
   padding-bottom: 1rem;
+}
+body .app main.main .login button {
+  cursor: pointer;
 }
 body .app main.main .table-container {
   width: 100%;
@@ -245,7 +256,7 @@ body .app main.main .table-container table tbody th {
   body .app main.main .table-container table tbody tr:hover td:hover::after {
     content: "";
     width: 100%;
-    height: calc(200vh - 12rem);
+    height: 10000px;
     bottom: 0;
     left: 0;
     background-color: rgba(100, 100, 100, 0.2);
