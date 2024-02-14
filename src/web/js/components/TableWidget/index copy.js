@@ -86,7 +86,7 @@ export default class Table {
     document
       .getElementById("popup-cancle")
       .addEventListener("click", cancleHandler, { once: true });
-  };
+  }
 
   async drawChats() {
     const chats = this.chats;
@@ -138,10 +138,7 @@ export default class Table {
                     data-flag-state="${folder.flags[value]}"
                     data-folder-id="${folder.folder_id}"
                   >
-                    <div class='buttons flag'>${this.setFlugsButton(
-                      folder,
-                      value
-                    )}</div>
+                    <div class='buttons flag'>${this.setFlugsButton(folder, value)}</div>
                   </td>
                 `;
               })
@@ -187,47 +184,62 @@ export default class Table {
 
     tbodyElement.addEventListener("click", (event) => {
       if (event.target.className === "button exclude") {
-        this.setChatRelation(event.target, "pinned");
-      } else if (event.target.className === "button include") {
         this.setChatRelation(event.target, "exclude");
-      } else if (event.target.className === "button pinned") {
-        this.setChatRelation(event.target, "null");
-      } else if (event.target.className === "button null") {
+      } else if (event.target.className === "button include") {
         this.setChatRelation(event.target, "include");
-      } else if (event.target.className === "buttons flag") {
-        let _event = event.target.parentElement;
-        this.setFlagRelation(_event);
-      } else if (event.target.className === "button flag") {
-        let _event = event.target.parentElement.parentElement;
-        this.setFlagRelation(_event);
+      } else if (event.target.className === "button pinned") {
+        this.setChatRelation(event.target, "pinned");
+      } else if (event.target.className === 'buttons flag') {
+        let _event = event.target.parentElement
+        this.flagsOnClick(_event)
+      } else if (event.target.className === 'button flag') {
+        let _event = event.target.parentElement.parentElement
+        this.flagsOnClick(_event)
       }
     });
   }
-
+  
   // !
   setChatsButtons(folderId, userInfo) {
-    let imagePath = "/img/svg/plus-white.svg";
-    let value = "";
+    let minusPath = "/img/svg/minus-white.svg";
+    let plusPath = "/img/svg/plus-white.svg";
+    let pinPath = "/img/svg/pin-white.svg";
+    let pinValue = false;
+    let plusValue = false;
+    let minusValue = false;
 
     if (userInfo.folders["include"].includes(folderId)) {
-      imagePath = "/img/svg/plus-black.svg";
-      value = "include";
+      plusPath = "/img/svg/plus-black.svg";
+      plusValue = true;
     } else if (userInfo.folders["exclude"].includes(folderId)) {
-      imagePath = "/img/svg/minus-black.svg";
-      value = "exclude";
+      minusPath = "/img/svg/minus-black.svg";
+      minusValue = true;
     } else if (userInfo.folders["pinned"].includes(folderId)) {
-      imagePath = "/img/svg/pin-black.svg";
-      value = "pinned";
-    } else {
-      imagePath = "/img/svg/plus-white.svg";
-      value = "null";
+      pinPath = "/img/svg/pin-black.svg";
+      pinValue = true;
     }
 
     let result = /* html */ `
       <button
-        class='button ${value}'
+        class='button pinned'
+        data-button-type='pinned'
+        data-value='${pinValue}'
       >
-        <img src='${imagePath}' />
+        <img src='${pinPath}' />
+      </button>
+      <button
+        class='button include'
+        data-button-type='include'
+        data-value='${plusValue}'
+      >
+        <img src='${plusPath}' />
+      </button>
+      <button
+        class='button exclude'
+        data-button-type='exclude'
+        data-value='${minusValue}'
+      >
+        <img src='${minusPath}' />
       </button>
     `;
 
@@ -235,9 +247,11 @@ export default class Table {
   }
 
   setFlugsButton = (folder, folderFlag) => {
-    let result = ["exclude_muted", "exclude_read", "exclude_archived"].includes(
-      folderFlag
-    )
+    let result = [
+      "exclude_muted",
+      "exclude_read",
+      "exclude_archived",
+    ].includes(folderFlag)
       ? /* html */ `
       <button class='button flag'>
         ${
@@ -263,18 +277,18 @@ export default class Table {
         }
       </button>`;
     return result;
-  };
+  }
 
   // !
   setChatRelation = async (event, relation) => {
     let tdElement = event.parentElement.parentElement;
+    let buttonsElement = event.parentElement;
 
+    let value = event.getAttribute("data-value") === "true" ? true : false;
     let folderId = tdElement.getAttribute("data-folder-id");
     let chatId = tdElement.getAttribute("data-chat-id");
 
-    if (relation === "null") {
-      relation = null;
-    }
+    relation = value ? null : relation;
 
     const a = await eel.set_chat_folder_relation(
       Number(chatId),
@@ -283,29 +297,68 @@ export default class Table {
     )();
 
     if (a.success) {
-      let imagePath = "";
+      if (value) {
+        event.setAttribute("data-value", !value);
+        let buttonType = event.getAttribute("data-button-type");
 
-      if (relation === "include") {
-        imagePath = "/img/svg/plus-black.svg";
-        event.classList.remove("null");
-        event.classList.add("include");
-      } else if (relation === "exclude") {
-        imagePath = "/img/svg/minus-black.svg";
-        event.classList.remove("include");
-        event.classList.add("exclude");
-      } else if (relation === "pinned") {
-        imagePath = "/img/svg/pin-black.svg";
-        event.classList.remove("exclude");
-        event.classList.add("pinned");
-      } else if (relation === null) {
-        imagePath = "/img/svg/plus-white.svg";
-        event.classList.remove("pinned");
-        event.classList.add("null");
+        if (buttonType === "pinned") {
+          event.innerHTML = /* html */ `
+              <img src="/img/svg/pin-white.svg" />
+            `;
+        } else if (buttonType === "include") {
+          event.innerHTML = /* html */ `
+              <img src="/img/svg/plus-white.svg" />
+            `;
+        } else if (buttonType === "exclude") {
+          event.innerHTML = /* html */ `
+              <img src="/img/svg/minus-white.svg" />
+            `;
+        }
+        return;
       }
 
-      event.innerHTML = `
-        <img src='${imagePath}' />
-      `;
+      let buttons = buttonsElement.querySelectorAll("button");
+
+      buttons.forEach((item) => {
+        let buttonType = item.getAttribute("data-button-type");
+
+        if (relation === buttonType) {
+          if (buttonType === "pinned") {
+            item.innerHTML = /* html */ `
+              <img src="/img/svg/pin-black.svg" />
+            `;
+          } else if (buttonType === "include") {
+            item.innerHTML = /* html */ `
+              <img src="/img/svg/plus-black.svg" />
+            `;
+          } else if (buttonType === "exclude") {
+            item.innerHTML = /* html */ `
+              <img src="/img/svg/minus-black.svg" />
+            `;
+          }
+        }
+
+        if (relation !== buttonType) {
+          item.setAttribute("data-value", false);
+          if (value) {
+          }
+          if (buttonType === "pinned") {
+            item.innerHTML = /* html */ `
+              <img src="/img/svg/pin-white.svg" />
+            `;
+          } else if (buttonType === "include") {
+            item.innerHTML = /* html */ `
+              <img src="/img/svg/plus-white.svg" />
+            `;
+          } else if (buttonType === "exclude") {
+            item.innerHTML = /* html */ `
+              <img src="/img/svg/minus-white.svg" />
+            `;
+          }
+        }
+      });
+
+      event.setAttribute("data-value", !value);
     }
     if (!a.success) {
       const text =
@@ -334,10 +387,11 @@ export default class Table {
     }
   };
 
-  setFlagRelation = async (event) => {
+  flagsOnClick = async (event) => {
     let folderId = event.getAttribute("data-folder-id");
     let flag = event.getAttribute("data-flag");
-    let value = event.getAttribute("data-flag-state") === "true" ? true : false;
+    let value =
+      event.getAttribute("data-flag-state") === "true" ? true : false;
     let a = await eel.set_folder_flag(Number(folderId), flag, !value)();
 
     if (a.success === true) {
