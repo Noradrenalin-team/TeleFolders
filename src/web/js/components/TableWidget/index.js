@@ -191,7 +191,7 @@ export default class Table {
       } else if (event.target.className === "button include") {
         this.setChatRelation(event.target, "exclude");
       } else if (event.target.className === "button pinned") {
-        this.setChatRelation(event.target, "null");
+        this.setChatRelation(event.target, null);
       } else if (event.target.className === "button null") {
         this.setChatRelation(event.target, "include");
       } else if (event.target.className === "buttons flag") {
@@ -271,10 +271,6 @@ export default class Table {
 
     let folderId = tdElement.getAttribute("data-folder-id");
     let chatId = tdElement.getAttribute("data-chat-id");
-
-    if (relation === "null") {
-      relation = null;
-    }
 
     const a = await eel.set_chat_folder_relation(
       Number(chatId),
