@@ -67,12 +67,14 @@ def logout():
 
 
 def get_user():
+    me = client.get_me()
     return (
         {
-            "username": client.get_me().username,
-            "first_name": client.get_me().first_name,
-            "last_name": client.get_me().last_name,
+            "username": me.username,
+            "first_name": me.first_name,
+            "last_name": me.last_name,
             "picture": client.download_profile_photo("me", file=bytes),
+            "id": me.id
         }
         if client.is_user_authorized()
         else None
@@ -237,8 +239,10 @@ def set_chat_pin(chat_id, pin: bool = True):
 def set_chat_archive(chat_id, archive):
     if archive:
         client.edit_folder(chat_id, 1)
+        return {'success': True}
     else:
         client.edit_folder(chat_id, 0)
+        return {'success': True}
 
 
 def set_chat_folder_relation(chat_id, folder_id, relation=None):
@@ -339,7 +343,7 @@ if __name__ == "__main__":
 
     # print(set_chat_archive(-1001275444990, False))
 
-    # print(set_chat_folder_relation(-1001275444990, 5, "include"))
+    # print(set_chat_folder_relation(5189774333, 8, None))
 
     # print(set_folder_flag(5, "contacts", False))
     pass

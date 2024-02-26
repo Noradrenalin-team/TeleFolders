@@ -11,11 +11,13 @@ export default class Main {
       document.querySelector(".login").classList.remove("hide");
       return;
     }
+
+    localStorage.setItem("user-id", response.id)
     
     const header = new Header(response)
     header.init()
     
-    new Table()
+    new Table().getData()
     
     document.querySelector(".login").classList.add("hide");
     document.querySelector(".table-container").classList.remove("hide");

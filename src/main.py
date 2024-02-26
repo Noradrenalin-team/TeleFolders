@@ -20,6 +20,11 @@ def login_password(phone, password, phone_code_hash):
     print('login password')
     return telefolders.login_password(phone, password, phone_code_hash)
 
+@eel.expose
+def set_chat_archive(chat_id, archive):
+    print(chat_id, archive)
+    return telefolders.set_chat_archive(chat_id, archive)
+
 
 @eel.expose
 def logout():

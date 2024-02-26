@@ -1,13 +1,29 @@
 import Popup from "../PopupWidget/index.js";
+import Header from "../HeaderWidget/index.js";
 
 export default class Table {
   constructor() {
-    this.getData();
+    if (
+      localStorage.getItem("archiveState") === null ||
+      localStorage.getItem("archiveState") === undefined
+    ) {
+      localStorage.setItem("archiveState", true);
+    }
+    this.archiveState =
+      localStorage.getItem("archiveState") === "true" ? true : false;
+
+    if (!Table.instance) {
+      Table.instance = this;
+    }
+
+    return Table.instance;
   }
 
   getData = async () => {
     this.chats = await eel.get_all_chats()();
     this.folders = await eel.get_folders()();
+
+    console.log(this.chats);
 
     this.drawHeader();
     this.drawChats();
@@ -22,27 +38,34 @@ export default class Table {
   };
 
   async drawHeader() {
-    const theadElement = document.querySelector(".table thead tr");
-    theadElement.textContent = "";
+    const trElement = document.querySelector(".table thead tr");
+    trElement.textContent = "";
     const folders = this.folders;
 
     let tableHead = "";
 
     tableHead += /* html */ `
-      <th>Все чаты</th>
+      <th class="th">Все чаты</th>
     `;
+
+    tableHead += /* html */ `
+        <th>
+          <span>Архив</span>
+        </th>
+      `;
 
     folders.map((value) => {
       tableHead += /* html */ `
-        <th>${value.folder_title}</th>
+        <th class="th"><span>${value.folder_title}</span></th>
       `;
     });
 
     tableHead += /* html */ `
-      <th id='add-folder'>+</th>
+      <th  class="th" id='add-folder'>+</th>
     `;
+    3;
 
-    theadElement.insertAdjacentHTML("beforeend", tableHead);
+    trElement.insertAdjacentHTML("beforeend", tableHead);
 
     document
       .getElementById("add-folder")
@@ -129,6 +152,7 @@ export default class Table {
         /* html */ `
           <tr>
             <th>${setName(value)}</th>
+            <td></td>
             ${folders
               .map((folder) => {
                 return /* html */ `
@@ -153,47 +177,113 @@ export default class Table {
 
     // отрисовка строки чата с кнопками
     chats.map((value) => {
-      tbodyElement.insertAdjacentHTML(
-        "beforeend",
-        /* html */ `
-          <tr>
-            <th data-chat-id="${value.chat_id}">
-              <div class='wrapper'>
-                <p>${value.title}</p>
-                <!-- <button> -->
-                  <!-- pin white -->
-                  <!-- <img src="/img/svg/pin-white.svg" /> -->
-                <!-- </button> -->
-              </div>
-            </th>
-            ${folders
-              .map((folder) => {
-                return /* html */ `
-                <td
+      const id = Number(localStorage.getItem("user-id"));
+      const archiveState =
+        localStorage.getItem("archiveState") === "true" ? true : false;
+
+      const imagePath = value.archived
+        ? "/img/svg/plus-black.svg"
+        : "/img/svg/plus-white.svg";
+
+      if (!archiveState) {
+        if (value.archived) {
+        } else {
+          tbodyElement.insertAdjacentHTML(
+            "beforeend",
+            /* html */ `
+                <tr
+                  data-archive-state="${value.archived}"
                   data-chat-id="${value.chat_id}"
-                  data-folder-id="${folder.folder_id}"
                 >
+                  <th data-chat-id="${value.chat_id}">
+                    <div class='wrapper'>
+                      <p>${id === value.chat_id ? "Избранное" : value.title}</p>
+                      <!-- <button> -->
+                        <!-- pin white -->
+                        <!-- <img src="/img/svg/pin-white.svg" /> -->
+                      <!-- </button> -->
+                    </div>
+                  </th>
+                  <td>
+                    <div class="buttons">
+                      <button class="button archive">
+                        <img src="${imagePath}"/>
+                      </button>
+                    </div>
+                  </td>
+                  ${folders
+                    .map((folder) => {
+                      return /* html */ `
+                      <td
+                        data-chat-id="${value.chat_id}"
+                        data-folder-id="${folder.folder_id}"
+                      >
+                        <div class="buttons">
+                          ${this.setChatsButtons(folder.folder_id, value)}
+                        </div>
+                      </td>
+                    `;
+                    })
+                    .join("")}
+                </tr>
+              `
+          );
+        }
+      } else {
+        tbodyElement.insertAdjacentHTML(
+          "beforeend",
+          /* html */ `
+              <tr
+                data-archive-state="${value.archived}"
+                data-chat-id="${value.chat_id}"
+              >
+                <th data-chat-id="${value.chat_id}">
+                  <div class='wrapper'>
+                    <p>${id === value.chat_id ? "Избранное" : value.title}</p>
+                    <!-- <button> -->
+                      <!-- pin white -->
+                      <!-- <img src="/img/svg/pin-white.svg" /> -->
+                    <!-- </button> -->
+                  </div>
+                </th>
+                <td>
                   <div class="buttons">
-                    ${this.setChatsButtons(folder.folder_id, value)}
+                    <button class="button archive">
+                      <img src="${imagePath}"/>
+                    </button>
                   </div>
                 </td>
-              `;
-              })
-              .join("")}
-          </tr>
-        `
-      );
+                ${folders
+                  .map((folder) => {
+                    return /* html */ `
+                    <td
+                      data-chat-id="${value.chat_id}"
+                      data-folder-id="${folder.folder_id}"
+                    >
+                      <div class="buttons">
+                        ${this.setChatsButtons(folder.folder_id, value)}
+                      </div>
+                    </td>
+                  `;
+                  })
+                  .join("")}
+              </tr>
+            `
+        );
+      }
     });
 
     tbodyElement.addEventListener("click", (event) => {
       if (event.target.className === "button exclude") {
-        this.setChatRelation(event.target, "pinned");
-      } else if (event.target.className === "button include") {
-        this.setChatRelation(event.target, "exclude");
-      } else if (event.target.className === "button pinned") {
         this.setChatRelation(event.target, null);
+      } else if (event.target.className === "button include") {
+        this.setChatRelation(event.target, "pinned");
+      } else if (event.target.className === "button pinned") {
+        this.setChatRelation(event.target, "exclude");
       } else if (event.target.className === "button null") {
         this.setChatRelation(event.target, "include");
+      } else if (event.target.className === "button archive") {
+        this.setArchiveRelation(event.target);
       } else if (event.target.className === "buttons flag") {
         let _event = event.target.parentElement;
         this.setFlagRelation(_event);
@@ -204,7 +294,6 @@ export default class Table {
     });
   }
 
-  // !
   setChatsButtons(folderId, userInfo) {
     let imagePath = "/img/svg/plus-white.svg";
     let value = "";
@@ -265,20 +354,19 @@ export default class Table {
     return result;
   };
 
-  // !
   setChatRelation = async (event, relation) => {
     let tdElement = event.parentElement.parentElement;
 
     let folderId = tdElement.getAttribute("data-folder-id");
     let chatId = tdElement.getAttribute("data-chat-id");
 
-    const a = await eel.set_chat_folder_relation(
+    const response = await eel.set_chat_folder_relation(
       Number(chatId),
       Number(folderId),
       relation
     )();
 
-    if (a.success) {
+    if (response.success) {
       let imagePath = "";
 
       if (relation === "include") {
@@ -287,15 +375,15 @@ export default class Table {
         event.classList.add("include");
       } else if (relation === "exclude") {
         imagePath = "/img/svg/minus-black.svg";
-        event.classList.remove("include");
+        event.classList.remove("pinned");
         event.classList.add("exclude");
       } else if (relation === "pinned") {
         imagePath = "/img/svg/pin-black.svg";
-        event.classList.remove("exclude");
+        event.classList.remove("include");
         event.classList.add("pinned");
       } else if (relation === null) {
         imagePath = "/img/svg/plus-white.svg";
-        event.classList.remove("pinned");
+        event.classList.remove("exclude");
         event.classList.add("null");
       }
 
@@ -303,9 +391,9 @@ export default class Table {
         <img src='${imagePath}' />
       `;
     }
-    if (!a.success) {
+    if (!response.success) {
       const text =
-        a.error_code === "folder_empty_error"
+        response.error_code === "folder_empty_error"
           ? "Папка не может быть пустой"
           : "Произошла ошибка";
       const popupComponent = new Popup(/* html */ `
@@ -333,10 +421,10 @@ export default class Table {
   setFlagRelation = async (event) => {
     let folderId = event.getAttribute("data-folder-id");
     let flag = event.getAttribute("data-flag");
-    let value = event.getAttribute("data-flag-state") === "true" ? true : false;
-    let a = await eel.set_folder_flag(Number(folderId), flag, !value)();
+    let value = JSON.parse(event.getAttribute("data-flag-state"));
+    let response = await eel.set_folder_flag(Number(folderId), flag, !value)();
 
-    if (a.success === true) {
+    if (response.success === true) {
       event.setAttribute("data-flag-state", !value);
       let result = [
         "exclude_muted",
@@ -382,9 +470,9 @@ export default class Table {
         }
       }
     }
-    if (!a.success) {
+    if (!response.success) {
       const text =
-        a.error_code === "folder_empty_error"
+        response.error_code === "folder_empty_error"
           ? "Папка не может быть пустой"
           : "Произошла ошибка";
       const popupComponent = new Popup(/* html */ `
@@ -409,15 +497,57 @@ export default class Table {
     }
   };
 
-  toggleArchive() {}
+  setArchiveRelation = async (event) => {
+    let trElement = event.parentElement.parentElement.parentElement;
+    let chatId = Number(trElement.getAttribute("data-chat-id"));
+    let value = JSON.parse(trElement.getAttribute("data-archive-state"));
+
+    let response = await eel.set_chat_archive(Number(chatId), !value)();
+
+    value = !value;
+
+    let foundChatIndex = this.chats.findIndex((chat) => {
+      return chat.chat_id === chatId;
+    });
+
+    this.chats[foundChatIndex].archived = value;
+
+    if (response.success) {
+      console.log(response);
+      trElement.setAttribute("data-archive-state", value);
+      let imagePath = "";
+
+      if (value) {
+        imagePath = "/img/svg/plus-black.svg";
+      } else {
+        imagePath = "/img/svg/plus-white.svg";
+      }
+
+      event.innerHTML = /* html */ `
+          <img src="${imagePath}" />
+        `;
+    } else {
+      console.log("err");
+    }
+  };
+
+  showArchive = () => {
+    localStorage.setItem("archiveState", true);
+    this.archiveState = true;
+    console.log('show')
+    this.drawChats()
+  };
+
+  hideArchive = () => {
+    localStorage.setItem("archiveState", false);
+    this.archiveState = false;
+    console.log('hide')
+    this.drawChats()
+  };
 
   addFolder() {}
 
   async updateChats() {
-    this.chats = await this.getChats();
-    this.folders = await this.getFolders();
-
-    await this.drawHeader();
-    await this.drawChats();
+    this.getData();
   }
 }

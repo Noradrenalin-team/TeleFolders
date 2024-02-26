@@ -115,17 +115,37 @@ body {
         border-left: 1px black solid;
         border-top: 1px black solid;
 
-        table {
+        .table {
           position: relative;
           border-collapse: collapse;
           height: 400px;
+          table-layout: fixed;
+
 
           td,
           th {
+            min-width: 50px;
+            max-width: 50px;
             padding: 0.25em;
             height: 50px;
             z-index: 10;
-            background: #FFF;
+            background: #FFF; 
+            text-overflow: ellipsis;
+              overflow: hidden;
+          }
+
+          thead tr th {
+            position: relative;
+          }
+
+          thead tr th button {
+            width: max-content;
+            height: max-content;
+            position: absolute;
+            background-color: transparent;
+            right: 0;
+            top: 0;
+            padding: .2rem .1rem;
           }
 
           .buttons {
@@ -188,9 +208,19 @@ body {
             border-bottom: 1px black solid;
           }
 
+          thead tr th span {
+            writing-mode:vertical-rl;
+            transform: rotate(180deg);            
+          }
+
           tbody td:not(:first-child) {
             position: relative;
             z-index: 1;
+          }
+
+          thead tr th {
+            min-height: 116px;
+            max-height: 116px;
           }
 
           thead th:first-child::after,
@@ -217,18 +247,22 @@ body {
           }
 
           thead th {
-            position: -webkit-sticky;
-            position: sticky;
+            position: -webkit-sticky !important;
+            position: sticky !important;
             top: 0;
             background-color: rgb(208, 208, 208);
           }
 
           tbody th:first-child,
           thead th:first-child {
+            min-width: 100px;
+            max-width: 200px;
             left: 0;
             z-index: 11;
             border: none;
             background-color: rgb(208, 208, 208);
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
 
           tbody th:first-child {
@@ -261,7 +295,6 @@ body {
                 bottom: 0;
                 left: 0;
                 background-color: rgba(100, 100, 100, .2);
-                ;
                 position: absolute;
                 pointer-events: none;
               }
