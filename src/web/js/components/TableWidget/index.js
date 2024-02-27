@@ -197,9 +197,15 @@ export default class Table {
                 >
                   <th data-chat-id="${value.chat_id}">
                     <div class='wrapper'>
-                      <p>${id === value.chat_id ? "Избранное" : value.title}</p>
+                      <p>
+                        <!-- <a -->
+                          <!-- href="https://t.me/c/${value.peer_id}" -->
+                          <!-- target="_blank" -->
+                        <!-- > -->
+                          ${id === value.chat_id ? "Избранное" : value.title}
+                        <!-- </a> -->
+                      </p>
                       <!-- <button> -->
-                        <!-- pin white -->
                         <!-- <img src="/img/svg/pin-white.svg" /> -->
                       <!-- </button> -->
                     </div>
@@ -230,6 +236,7 @@ export default class Table {
           );
         }
       } else {
+        console.log(value)
         tbodyElement.insertAdjacentHTML(
           "beforeend",
           /* html */ `
@@ -239,9 +246,15 @@ export default class Table {
               >
                 <th data-chat-id="${value.chat_id}">
                   <div class='wrapper'>
-                    <p>${id === value.chat_id ? "Избранное" : value.title}</p>
+                    <p>
+                      <!-- <a -->
+                        <!-- href="https://t.me/c/${value.peer_id}" -->
+                        <!-- target="_blank" -->
+                      <!-- > -->
+                        ${id === value.chat_id ? "Избранное" : value.title}
+                      <!-- </a> -->
+                    </p>
                     <!-- <button> -->
-                      <!-- pin white -->
                       <!-- <img src="/img/svg/pin-white.svg" /> -->
                     <!-- </button> -->
                   </div>

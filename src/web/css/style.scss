@@ -12,6 +12,11 @@ img {
   cursor: pointer;
 }
 
+a {
+  color: black;
+  text-decoration: none;
+}
+
 .error {
   border: 1px red solid;
   border-radius: .1rem;
@@ -129,7 +134,7 @@ body {
             padding: 0.25em;
             height: 50px;
             z-index: 10;
-            background: #FFF; 
+            background: #FFF;
             text-overflow: ellipsis;
           }
 
