@@ -13,6 +13,8 @@ export default class Header {
       "click",
       this.handleAvatarClick,
     );
+    // Добавляем слушатель событий на всё окно
+    window.addEventListener("click", this.handleWindowClick);
   };
 
   changeAvatar = (picture) => {
@@ -21,6 +23,9 @@ export default class Header {
   };
 
   handleAvatarClick = (event) => {
+    // Отменяем всплытие события, чтобы оно не сработало на всё окно
+    event.stopPropagation();
+
     if (localStorage.getItem("archiveState") === "true") {
       const element = this.userMenuElement.querySelector(".hideArchived");
       element.textContent = "Скрыть архивные";
@@ -46,6 +51,18 @@ export default class Header {
 
     this.userMenuElement.querySelector(".username").textContent =
       "@" + this.data.username;
+  };
+
+  handleWindowClick = (event) => {
+    // Если клик был не на аватаре или на user-menu, скрываем user-menu
+    if (
+      event.target !== this.avatarContainerElement &&
+      !this.avatarContainerElement.contains(event.target) &&
+      event.target !== this.userMenuElement &&
+      !this.userMenuElement.contains(event.target)
+    ) {
+      this.userMenuElement.classList.add("hide");
+    }
   };
 
   changeText() {
