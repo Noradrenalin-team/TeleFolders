@@ -1,4 +1,5 @@
 import Popup from '../PopupWidget/index.js'
+import Table from '../TableWidget/index.js';
 
 export default class Login {
   constructor() {
@@ -105,7 +106,7 @@ export default class Login {
         document.querySelector(".login").classList.add("hide");
         document.querySelector(".table-container").classList.remove("hide");
         
-        start();
+        new Table().getData()
         this.authDonePopup()
     } else {
       this._log()

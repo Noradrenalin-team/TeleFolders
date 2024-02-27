@@ -16,6 +16,7 @@ export default class Table {
     }
 
     return Table.instance;
+
   }
 
   getData = async () => {
@@ -535,14 +536,12 @@ export default class Table {
   showArchive = () => {
     localStorage.setItem("archiveState", true);
     this.archiveState = true;
-    console.log("show");
     this.drawChats();
   };
 
   hideArchive = () => {
     localStorage.setItem("archiveState", false);
     this.archiveState = false;
-    console.log("hide");
     this.drawChats();
   };
 
