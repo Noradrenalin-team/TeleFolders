@@ -13,7 +13,6 @@ export default class Header {
       "click",
       this.handleAvatarClick,
     );
-    // Добавляем слушатель событий на всё окно
     window.addEventListener("click", this.handleWindowClick);
   };
 
@@ -23,7 +22,6 @@ export default class Header {
   };
 
   handleAvatarClick = (event) => {
-    // Отменяем всплытие события, чтобы оно не сработало на всё окно
     event.stopPropagation();
 
     if (localStorage.getItem("archiveState") === "true") {
@@ -54,7 +52,6 @@ export default class Header {
   };
 
   handleWindowClick = (event) => {
-    // Если клик был не на аватаре или на user-menu, скрываем user-menu
     if (
       event.target !== this.avatarContainerElement &&
       !this.avatarContainerElement.contains(event.target) &&
