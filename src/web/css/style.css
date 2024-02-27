@@ -150,7 +150,6 @@ body .app main.main .table-container .table th {
   z-index: 10;
   background: #FFF;
   text-overflow: ellipsis;
-  overflow: hidden;
 }
 body .app main.main .table-container .table thead tr th {
   position: relative;
@@ -286,7 +285,7 @@ body .app main.main .table-container .table tbody th {
     content: "";
     width: 100%;
     height: 10000px;
-    bottom: 0;
+    bottom: 50px;
     left: 0;
     background-color: rgba(100, 100, 100, 0.2);
     position: absolute;
@@ -300,6 +299,7 @@ body .app main.main .table-container .table button {
 body .hide {
   visibility: hidden;
   height: 0;
+  width: 0;
 }
 
 /*# sourceMappingURL=style.css.map */

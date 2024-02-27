@@ -1,5 +1,4 @@
 import Popup from "../PopupWidget/index.js";
-import Header from "../HeaderWidget/index.js";
 
 export default class Table {
   constructor() {
@@ -124,7 +123,7 @@ export default class Table {
           "beforeend",
           /* html */ `
       <td data-id="${value.chat_id}">${value.title}</td>
-    `
+    `,
         );
       });
       return;
@@ -154,8 +153,8 @@ export default class Table {
             <th>${setName(value)}</th>
             <td></td>
             ${folders
-              .map((folder) => {
-                return /* html */ `
+          .map((folder) => {
+            return /* html */ `
                   <td
                     class="td flag"
                     data-flag="${value}"
@@ -163,15 +162,15 @@ export default class Table {
                     data-folder-id="${folder.folder_id}"
                   >
                     <div class='buttons flag'>${this.setFlugsButton(
-                      folder,
-                      value
-                    )}</div>
+              folder,
+              value,
+            )}</div>
                   </td>
                 `;
-              })
-              .join("")}
+          })
+          .join("")}
           </tr>
-    `
+    `,
       );
     });
 
@@ -212,8 +211,8 @@ export default class Table {
                     </div>
                   </td>
                   ${folders
-                    .map((folder) => {
-                      return /* html */ `
+              .map((folder) => {
+                return /* html */ `
                       <td
                         data-chat-id="${value.chat_id}"
                         data-folder-id="${folder.folder_id}"
@@ -223,10 +222,10 @@ export default class Table {
                         </div>
                       </td>
                     `;
-                    })
-                    .join("")}
+              })
+              .join("")}
                 </tr>
-              `
+              `,
           );
         }
       } else {
@@ -254,8 +253,8 @@ export default class Table {
                   </div>
                 </td>
                 ${folders
-                  .map((folder) => {
-                    return /* html */ `
+            .map((folder) => {
+              return /* html */ `
                     <td
                       data-chat-id="${value.chat_id}"
                       data-folder-id="${folder.folder_id}"
@@ -265,10 +264,10 @@ export default class Table {
                       </div>
                     </td>
                   `;
-                  })
-                  .join("")}
+            })
+            .join("")}
               </tr>
-            `
+            `,
         );
       }
     });
@@ -325,31 +324,29 @@ export default class Table {
 
   setFlugsButton = (folder, folderFlag) => {
     let result = ["exclude_muted", "exclude_read", "exclude_archived"].includes(
-      folderFlag
+      folderFlag,
     )
       ? /* html */ `
       <button class='button flag'>
-        ${
-          folder.flags[folderFlag]
-            ? /* html */ `
+        ${folder.flags[folderFlag]
+        ? /* html */ `
               <img src="/img/svg/minus-black.svg" />
           `
-            : /* html */ `
+        : /* html */ `
               <img src="/img/svg/minus-white.svg" />
           `
-        }
+      }
       </button>`
       : /* html */ `
       <button class='button flag'>
-        ${
-          folder.flags[folderFlag]
-            ? /* html */ `
+        ${folder.flags[folderFlag]
+        ? /* html */ `
               <img src="/img/svg/plus-black.svg" />
           `
-            : /* html */ `
+        : /* html */ `
             <img src="/img/svg/plus-white.svg" />
           `
-        }
+      }
       </button>`;
     return result;
   };
@@ -363,7 +360,7 @@ export default class Table {
     const response = await eel.set_chat_folder_relation(
       Number(chatId),
       Number(folderId),
-      relation
+      relation,
     )();
 
     if (response.success) {
@@ -513,7 +510,7 @@ export default class Table {
     this.chats[foundChatIndex].archived = value;
 
     if (response.success) {
-      console.log(response);
+      
       trElement.setAttribute("data-archive-state", value);
       let imagePath = "";
 
@@ -521,6 +518,10 @@ export default class Table {
         imagePath = "/img/svg/plus-black.svg";
       } else {
         imagePath = "/img/svg/plus-white.svg";
+      }
+
+      if (value && !this.archiveState) {
+        trElement.style.display = "none";
       }
 
       event.innerHTML = /* html */ `
@@ -534,18 +535,18 @@ export default class Table {
   showArchive = () => {
     localStorage.setItem("archiveState", true);
     this.archiveState = true;
-    console.log('show')
-    this.drawChats()
+    console.log("show");
+    this.drawChats();
   };
 
   hideArchive = () => {
     localStorage.setItem("archiveState", false);
     this.archiveState = false;
-    console.log('hide')
-    this.drawChats()
+    console.log("hide");
+    this.drawChats();
   };
 
-  addFolder() {}
+  addFolder() { }
 
   async updateChats() {
     this.getData();
