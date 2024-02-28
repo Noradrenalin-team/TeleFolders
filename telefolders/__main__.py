@@ -2,7 +2,7 @@ import eel
 import argparse
 import os
 
-from . import tg
+from . import tg  # noqa
 
 
 def set_env_vars():
