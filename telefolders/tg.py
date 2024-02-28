@@ -8,11 +8,13 @@ from telethon.tl.types import DialogFilter
 import eel
 import os
 import asyncio
+from functools import wraps
 
 client: TelegramClient = None
 
 
 def async_to_sync(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         return asyncio.run(func(*args, **kwargs))
 
