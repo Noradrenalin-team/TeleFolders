@@ -111,7 +111,6 @@ async def get_user():
 
 
 @eel.expose
-@async_to_sync
 def get_folders():
     folders = client(GetDialogFiltersRequest())
 
@@ -141,7 +140,6 @@ def get_folders():
 
 
 @eel.expose
-@async_to_sync
 def get_all_chats():
     chats_with_folders = {}
 
@@ -227,7 +225,6 @@ def get_all_chats():
 
 
 @eel.expose
-@async_to_sync
 def set_chat_pin(chat_id, pin: bool = True):
     return {
         "success": False,
@@ -297,7 +294,6 @@ async def set_chat_folder_relation(chat_id, folder_id, relation=None):
 
 
 @eel.expose
-@async_to_sync
 def set_folder_flag(folder_id, flag, value):
     folders = client(GetDialogFiltersRequest())
 
@@ -340,7 +336,6 @@ def set_folder_flag(folder_id, flag, value):
 
 
 @eel.expose
-@async_to_sync
 def create_folder(title, icon, flags, include_peers, exclude_peers, pinned_peers):
     return {
         "success": False,
