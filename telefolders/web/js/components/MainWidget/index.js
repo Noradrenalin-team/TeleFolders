@@ -4,7 +4,11 @@ import Header from "../HeaderWidget/index.js";
 
 export default class Main {
   async init() {
-    const response = await eel.get_user()();
+    let response = await eel.init()();
+
+    console.log(response)
+
+    response = await eel.get_user()();
   
     if (response === null) {
       new Login().init()
