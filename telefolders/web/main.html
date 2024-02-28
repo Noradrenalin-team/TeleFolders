@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script defer type="text/javascript" src="/eel.js"></script>
+  <script type="module" src="js/main.js"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <title>TeleFolders</title>
+</head>
+
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="logo">
+        <img src="img/custom.png" width="50" alt="logo" />
+      </div>
+      <div class="avatar">
+        <img src="img/noncontacts.png" alt="avatar" />
+        <div class="user-menu hide">
+          <p class="username"></p>
+          <p class="hideArchived" id="hideArchived">Скрыть архивные</p>
+          <p class="reloadChatsList" id="reloadChatsList">
+            Обновить список чатов
+          </p>
+          <p class="logout">Выйти</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="login hide">
+        <h3>Вы не авторизованы, войдите в ваш telegram-аккаунт</h3>
+        <p class="login-label">Введите ваш номер телефона:</p>
+        <div class="login-form">
+          <p class="input-error hide">
+            Неверный номер телефона
+          </p>
+          <input type="tel" class="login-input" placeholder="Номер телефона" />
+          <button class="login-button">Войти</button>
+        </div>
+      </div>
+      <div class="table-container hide">
+        <table class="table">
+          <thead>
+            <tr></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</body>
+
+</html>

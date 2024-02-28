@@ -1,24 +1,23 @@
-import rich
-from telethon import TelegramClient, events, sync
+from telethon import TelegramClient
 import telethon
 from telethon.tl.functions.messages import GetDialogFiltersRequest
 from telethon.tl.functions.messages import UpdateDialogFilterRequest
-from telethon.tl.types import InputPeerUser
 from telethon import errors
 from telethon.tl.types import DialogFilter
-from telethon.tl.custom.dialog import Dialog
 
-from rich import print
+import eel
+import os
 
-# api_hash from https://my.telegram.org, under API Development.
-api_id = 17583130
-api_hash = "0779564a33367691b08608d818442f40"
+# from https://my.telegram.org, under API Development.
+api_id = os.environ.get("TELEFOLDERS_API_ID")
+api_hash = os.environ.get("TELEFOLDERS_API_HASH")
 
-client = TelegramClient("telefolders_session_name", api_id, api_hash, lang_code="ru")
-# client.start()
+client = TelegramClient("telefolders", api_id, api_hash, lang_code="ru")
+
 client.connect()
 
 
+@eel.expose
 def login_phone(phone):
     try:
         print(phone)
@@ -28,10 +27,11 @@ def login_phone(phone):
         return {"success": False, "error": str(e), "error_code": "unknown"}
 
 
+@eel.expose
 def login_code(phone, code):
     try:
         print(phone, code)
-        r = client.sign_in(phone, code)
+        client.sign_in(phone, code)
         return {"success": True, "need_password": False, "user": get_user()}
     except errors.rpcerrorlist.SessionPasswordNeededError as e:
         return {
@@ -48,6 +48,7 @@ def login_code(phone, code):
         }
 
 
+@eel.expose
 def login_password(phone, password, phone_code_hash):
     try:
         print(phone, password, phone_code_hash)
@@ -58,6 +59,7 @@ def login_password(phone, password, phone_code_hash):
         return {"success": False, "error": str(e), "error_code": "unknown"}
 
 
+@eel.expose
 def logout():
     try:
         client.log_out()
@@ -66,6 +68,7 @@ def logout():
         return {"success": False, "error": str(e), "error_code": "unknown"}
 
 
+@eel.expose
 def get_user():
     me = client.get_me()
     return (
@@ -74,13 +77,14 @@ def get_user():
             "first_name": me.first_name,
             "last_name": me.last_name,
             "picture": client.download_profile_photo("me", file=bytes),
-            "id": me.id
+            "id": me.id,
         }
         if client.is_user_authorized()
         else None
     )
 
 
+@eel.expose
 def get_folders():
     folders = client(GetDialogFiltersRequest())
 
@@ -109,11 +113,8 @@ def get_folders():
     return ans
 
 
+@eel.expose
 def get_all_chats():
-    import time
-
-    now = time.time()
-
     chats_with_folders = {}
 
     for folder in client(GetDialogFiltersRequest()):
@@ -176,8 +177,6 @@ def get_all_chats():
                     }
                 chats_with_folders[chat_id]["pinned"].append(folder.id)
 
-    # return chats_with_folders
-
     ans = []
 
     for chat in client.iter_dialogs():
@@ -196,55 +195,29 @@ def get_all_chats():
             }
         )
 
-    print(len(ans))
-
-    print(time.time() - now)
     return ans
 
 
+@eel.expose
 def set_chat_pin(chat_id, pin: bool = True):
     return {
         "success": False,
         "error": "Not implemented yet",
         "error_code": "not_implemented",
     }
-    # dialogs = client.iter_dialogs()
-
-    # # dialogs = client.get_dialogs()
-
-    # dialog = None
-
-    # for dialog in dialogs:
-    #     if dialog.id == chat_id:
-    #         chat = dialog
-    #         break
-
-    # if chat is None:
-    #     return {
-    #         "success": False,
-    #         "error": "Chat not found",
-    #         "error_code": "chat_not_found",
-    #     }
-
-    # if chat.pinned == pin:
-    #     return {
-    #         "success": False,
-    #         "error": "Chat already pinned",
-    #         "error_code": "chat_already_pinned",
-    #     }
-
-    # dialog.pinned = pin
 
 
+@eel.expose
 def set_chat_archive(chat_id, archive):
     if archive:
         client.edit_folder(chat_id, 1)
-        return {'success': True}
+        return {"success": True}
     else:
         client.edit_folder(chat_id, 0)
-        return {'success': True}
+        return {"success": True}
 
 
+@eel.expose
 def set_chat_folder_relation(chat_id, folder_id, relation=None):
     folders = client(GetDialogFiltersRequest())
 
@@ -292,6 +265,7 @@ def set_chat_folder_relation(chat_id, folder_id, relation=None):
     return {"success": True}
 
 
+@eel.expose
 def set_folder_flag(folder_id, flag, value):
     folders = client(GetDialogFiltersRequest())
     print(folder_id, flag, value)
@@ -334,16 +308,10 @@ def set_folder_flag(folder_id, flag, value):
     return {"success": True}
 
 
-if __name__ == "__main__":
-    # print(get_user())
-
-    # print(get_folders())
-
-    # print(get_all_chats())
-
-    # print(set_chat_archive(-1001275444990, False))
-
-    # print(set_chat_folder_relation(5189774333, 8, None))
-
-    # print(set_folder_flag(5, "contacts", False))
-    pass
+@eel.expose
+def create_folder(title, icon, flags, include_peers, exclude_peers, pinned_peers):
+    return {
+        "success": False,
+        "error": "Not implemented yet",
+        "error_code": "not_implemented",
+    }
