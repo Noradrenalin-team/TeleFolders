@@ -7,12 +7,21 @@ from telethon.tl.types import DialogFilter
 
 import eel
 import os
+import asyncio
 
 client: TelegramClient = None
 
 
+def async_to_sync(func):
+    def wrapper(*args, **kwargs):
+        return asyncio.run(func(*args, **kwargs))
+
+    return wrapper
+
+
 @eel.expose
-def init():
+@async_to_sync
+async def init():
     # from https://my.telegram.org, under API Development.
     api_id = os.environ.get("TELEFOLDERS_API_ID")
     api_hash = os.environ.get("TELEFOLDERS_API_HASH")
@@ -21,9 +30,9 @@ def init():
 
     try:
         client = TelegramClient("telefolders", api_id, api_hash, lang_code="ru")
-        client.connect()
+        await client.connect()
 
-        if client.is_user_authorized():
+        if await client.is_user_authorized():
             return {"success": True, "authorized": True}
         else:
             return {"success": True, "authorized": False}
@@ -32,21 +41,23 @@ def init():
 
 
 @eel.expose
-def login_phone(phone):
+@async_to_sync
+async def login_phone(phone):
     try:
-        r = client.send_code_request(phone)
+        r = await client.send_code_request(phone)
         return {"success": True, "phone_code_hash": r.phone_code_hash}
     except Exception as e:
         return {"success": False, "error": str(e), "error_code": "unknown"}
 
 
 @eel.expose
-def login_code(phone, code):
+@async_to_sync
+async def login_code(phone, code):
     try:
         print(phone, code)
-        client.sign_in(phone, code)
+        await client.sign_in(phone, code)
         return {"success": True, "need_password": False, "user": get_user()}
-    except errors.rpcerrorlist.SessionPasswordNeededError:
+    except errors.rpcerrorlist.SessionPasswordNeededError as e:
         return {
             "success": True,
             "need_password": True,
@@ -62,10 +73,11 @@ def login_code(phone, code):
 
 
 @eel.expose
-def login_password(phone, password, phone_code_hash):
+@async_to_sync
+async def login_password(phone, password, phone_code_hash):
     try:
         print(phone, password, phone_code_hash)
-        client.sign_in(phone, password=password, phone_code_hash=phone_code_hash)
+        await client.sign_in(phone, password=password, phone_code_hash=phone_code_hash)
         return {"success": True, "user": get_user()}
 
     except Exception as e:
@@ -73,18 +85,20 @@ def login_password(phone, password, phone_code_hash):
 
 
 @eel.expose
-def logout():
+@async_to_sync
+async def logout():
     try:
-        client.log_out()
+        await client.log_out()
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": str(e), "error_code": "unknown"}
 
 
 @eel.expose
-def get_user():
-    if client.is_user_authorized():
-        me = client.get_me()
+@async_to_sync
+async def get_user():
+    if await client.is_user_authorized():
+        me = await client.get_me()
         return {
             "username": me.username,
             "first_name": me.first_name,
@@ -95,6 +109,7 @@ def get_user():
 
 
 @eel.expose
+@async_to_sync
 def get_folders():
     folders = client(GetDialogFiltersRequest())
 
@@ -124,6 +139,7 @@ def get_folders():
 
 
 @eel.expose
+@async_to_sync
 def get_all_chats():
     chats_with_folders = {}
 
@@ -209,6 +225,7 @@ def get_all_chats():
 
 
 @eel.expose
+@async_to_sync
 def set_chat_pin(chat_id, pin: bool = True):
     return {
         "success": False,
@@ -218,17 +235,19 @@ def set_chat_pin(chat_id, pin: bool = True):
 
 
 @eel.expose
-def set_chat_archive(chat_id, archive):
+@async_to_sync
+async def set_chat_archive(chat_id, archive):
     if archive:
-        client.edit_folder(chat_id, 1)
+        await client.edit_folder(chat_id, 1)
         return {"success": True}
     else:
-        client.edit_folder(chat_id, 0)
+        await client.edit_folder(chat_id, 0)
         return {"success": True}
 
 
 @eel.expose
-def set_chat_folder_relation(chat_id, folder_id, relation=None):
+@async_to_sync
+async def set_chat_folder_relation(chat_id, folder_id, relation=None):
     folders = client(GetDialogFiltersRequest())
 
     for folder_ in folders:
@@ -236,8 +255,8 @@ def set_chat_folder_relation(chat_id, folder_id, relation=None):
             folder = folder_
             break
 
-    entity = client.get_input_entity(
-        telethon.utils.get_peer(client.get_entity(chat_id))
+    entity = await client.get_input_entity(
+        telethon.utils.get_peer(await client.get_entity(chat_id))
     )
 
     if relation == "include":
@@ -266,7 +285,7 @@ def set_chat_folder_relation(chat_id, folder_id, relation=None):
 
     try:
         client(UpdateDialogFilterRequest(folder.id, folder))
-    except telethon.errors.rpcerrorlist.FilterIncludeEmptyError:
+    except telethon.errors.rpcerrorlist.FilterIncludeEmptyError as e:
         return {
             "success": False,
             "error": "The include_peers vector of the filter is empty",
@@ -276,6 +295,7 @@ def set_chat_folder_relation(chat_id, folder_id, relation=None):
 
 
 @eel.expose
+@async_to_sync
 def set_folder_flag(folder_id, flag, value):
     folders = client(GetDialogFiltersRequest())
 
@@ -307,7 +327,7 @@ def set_folder_flag(folder_id, flag, value):
 
     try:
         client(UpdateDialogFilterRequest(folder.id, folder))
-    except telethon.errors.rpcerrorlist.FilterIncludeEmptyError:
+    except telethon.errors.rpcerrorlist.FilterIncludeEmptyError as e:
         return {
             "success": False,
             "error": "The include_peers vector of the filter is empty",
@@ -318,6 +338,7 @@ def set_folder_flag(folder_id, flag, value):
 
 
 @eel.expose
+@async_to_sync
 def create_folder(title, icon, flags, include_peers, exclude_peers, pinned_peers):
     return {
         "success": False,
