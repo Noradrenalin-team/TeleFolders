@@ -11,6 +11,7 @@ import os
 client: TelegramClient = None
 
 
+@eel.expose
 def init():
     # from https://my.telegram.org, under API Development.
     api_id = os.environ.get("TELEFOLDERS_API_ID")
