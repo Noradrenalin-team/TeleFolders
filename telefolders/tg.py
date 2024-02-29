@@ -5,9 +5,6 @@ from telethon.tl.functions.messages import UpdateDialogFilterRequest
 from telethon import errors
 from telethon.tl.types import DialogFilter
 
-from rich import print
-
-
 import os
 
 
@@ -85,7 +82,7 @@ class Telefolders:
                 "username": me.username,
                 "first_name": me.first_name,
                 "last_name": me.last_name,
-                "picture": self.client.download_profile_photo("me", file=bytes),
+                # "picture": self.client.download_profile_photo("me", file=bytes),
                 "id": me.id,
             }
             if self.client.is_user_authorized()

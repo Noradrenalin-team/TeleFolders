@@ -21,7 +21,11 @@ def set_env_vars():
     os.environ["TELEFOLDERS_API_HASH"] = args.api_hash
 
 
-if __name__ == "__main__":
-    set_env_vars()
+def main():
     eel.init("telefolders/web")
     eel.start("main.html")
+
+
+if __name__ == "__main__":
+    set_env_vars()
+    main()
