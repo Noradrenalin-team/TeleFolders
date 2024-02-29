@@ -1,29 +1,28 @@
 import eel
 
-from . import tg as telefolders
+from .tg import Telefolders
+
+
+telefolders = Telefolders()
 
 
 @eel.expose
 def init():
-    print("init")
     return telefolders.init()
 
 
 @eel.expose
 def login_phone(phone):
-    print("login phone")
     return telefolders.login_phone(phone)
 
 
 @eel.expose
 def login_code(phone, code):
-    print("login code")
     return telefolders.login_code(phone, code)
 
 
 @eel.expose
 def login_password(phone, password, phone_code_hash):
-    print("login password")
     return telefolders.login_password(phone, password, phone_code_hash)
 
 
