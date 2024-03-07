@@ -8,7 +8,6 @@ export default class Popup {
   }
 
   show = () => {
-    // let container = document.querySelector('.popup-container')
     this.popup.classList.remove("popup-hidden");
     this.popup.textContent = "";
 
