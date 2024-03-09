@@ -23,8 +23,10 @@ export default class Table {
     this.chats = await eel.get_all_chats()();
     this.folders = await eel.get_folders()();
 
-    console.log("chats: ", this.chats.length);
-    console.log("folders: ", this.folders.length);
+    console.log("chats count: ", this.chats.length);
+    console.log('chats: ', this.chats)
+    console.log("folders count: ", this.folders.length);
+    console.log('folders: ', this.folders)
 
     this.drawHeader();
     this.drawChats();

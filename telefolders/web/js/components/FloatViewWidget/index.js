@@ -25,9 +25,11 @@ class FloatView {
     return FloatView.instance;
   }
 
-  nextChat = () => { };
+  // todo
+  nextChat = () => {};
 
-  prevChat = () => { };
+  // todo
+  prevChat = () => {};
 
   close = async () => {
     if (this.counter >= 1) {
@@ -53,6 +55,7 @@ class FloatView {
           <h2>${title}</h2>
           <button>Добавить в архив</button>
         </div>
+        <div class="table-container">
         <table>
           <thead>
             <tr>
@@ -62,24 +65,25 @@ class FloatView {
           </thead>
           <tbody>
             ${folders
-        .map(
-          (folder) => /* html */ `
+              .map(
+                (folder) => /* html */ `
               <tr
                 data-folder-id="${folder.folder_id}"
               >
                 <th>${folder.folder_title}</th>
                 <td>
                   ${this.setChatsButton(
-            folder.folder_id,
-            table.chats[this.chatIndex],
-          )}
+                    folder.folder_id,
+                    table.chats[this.chatIndex],
+                  )}
                 </td>
               </tr>
               `,
-        )
-        .join("")}
+              )
+              .join("")}
           </tbody>
         </table>
+        </div>
       </div>
     `;
 
@@ -148,7 +152,10 @@ class FloatView {
     )();
 
     if (response.success) {
-      this.counter += 1;
+      if (!relation === null) {
+        this.counter += 1;
+      }
+
       let imagePath = "";
 
       if (relation === "include") {
@@ -252,4 +259,5 @@ class FloatView {
     }
   };
 }
+
 export default FloatView;
