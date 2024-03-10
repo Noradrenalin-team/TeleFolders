@@ -5,14 +5,15 @@ class FloatView {
   constructor() {
     this.chatIndex;
     this.counter = 0;
+    this.table = new Table();
 
     if (!FloatView.instance) {
       document.querySelector("body").insertAdjacentHTML(
         "afterbegin",
         /* html */ `
           <div
-            id="another-view-container"
-            class="another-view-container"
+            id="float-view-container"
+            class="float-view-container"
           ></div>
         `,
       );
@@ -20,69 +21,172 @@ class FloatView {
       FloatView.instance = this;
     }
 
-    this.container = document.getElementById("another-view-container");
+    this.container = document.getElementById("float-view-container");
 
     return FloatView.instance;
   }
 
   // todo
-  nextChat = () => {};
+  nextChat = () => {
+    this.container.removeEventListener("click", this.handleClickListener);
+    let index = Number(this.chatIndex) + 1;
+    const chatsLength = this.table.chats.length;
+    const archiveState = JSON.parse(localStorage.getItem("archiveState"));
+
+    while (true) {
+      if (index >= chatsLength) {
+        index = 0;
+      }
+
+      let chat = this.table.chats[index];
+
+      if (!archiveState) {
+        if (chat.archived) {
+          index = index + 1;
+        } else {
+          this.chatIndex = index;
+          this.container.innerHTML = "";
+
+          this.draw();
+
+          break;
+        }
+      } else {
+        this.chatIndex = index;
+        this.container.innerHTML = "";
+
+        this.draw();
+
+        break;
+      }
+    }
+  };
 
   // todo
-  prevChat = () => {};
+  prevChat = () => {
+    this.container.removeEventListener("click", this.handleClickListener);
+    let index = Number(this.chatIndex) - 1;
+    const chatsLength = this.table.chats.length;
+    const archiveState = JSON.parse(localStorage.getItem("archiveState"));
+
+    while (true) {
+      if (index <= 0) {
+        index = chatsLength - 1;
+      }
+
+      let chat = this.table.chats[index];
+
+      if (!archiveState) {
+        if (chat.archived) {
+          index = index - 1;
+        } else {
+          this.chatIndex = index;
+          this.container.innerHTML = "";
+
+          this.draw();
+
+          break;
+        }
+      } else {
+        this.chatIndex = index;
+        this.container.innerHTML = "";
+
+        this.draw();
+
+        break;
+      }
+    }
+  };
 
   close = async () => {
+    // debugger;
     if (this.counter >= 1) {
       this.counter = 0;
-      new Table().drawChats();
+      this.table.drawChats();
     }
 
     this.container.removeEventListener("click", this.handleClickListener);
-    this.container.classList.add("another-view-hidden");
+    this.container.classList.add("float-view-hidden");
   };
 
   show = () => {
-    this.container.classList.remove("another-view-hidden");
-    const table = new Table();
+    this.container.classList.remove("float-view-hidden");
 
-    const folders = table.folders;
-    const title = table.chats[this.chatIndex].title;
-    const chatId = table.chats[this.chatIndex].chat_id;
+    this.draw();
+  };
+
+  handleClick = (event, chatId) => {
+    if (event.target.id === "float-view-container") {
+      this.close();
+    } else if (event.target.className === "button exclude") {
+      this.setChatRelation(event.target, null, chatId);
+    } else if (event.target.className === "button include") {
+      this.setChatRelation(event.target, "pinned", chatId);
+    } else if (event.target.className === "button pinned") {
+      this.setChatRelation(event.target, "exclude", chatId);
+    } else if (event.target.className === "button null") {
+      this.setChatRelation(event.target, "include", chatId);
+    } else if (event.target.className === "button next") {
+      this.nextChat();
+    } else if (event.target.className === "button prev") {
+      this.prevChat();
+    }
+  };
+
+  draw = () => {
+    const folders = this.table.folders;
+    const title = this.table.chats[this.chatIndex].title;
+    const chatId = this.table.chats[this.chatIndex].chat_id;
 
     let html = /* html */ `
-      <div class="another-view">
+      <div class="float-view">
+        <h2>${title}</h2>
         <div class="row">
-          <h2>${title}</h2>
-          <button>Добавить в архив</button>
-        </div>
+        <button class="button prev">
+          <img src="/img/svg/left-row.svg" />
+        </button>
         <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Папка</th>
-              <th>Значение</th>
-            <tr>
-          </thead>
-          <tbody>
-            ${folders
-              .map(
-                (folder) => /* html */ `
-              <tr
-                data-folder-id="${folder.folder_id}"
-              >
-                <th>${folder.folder_title}</th>
+          <table>
+            <thead>
+              <tr>
+                <th>Папка</th>
+                <th>Значение</th>
+              <tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Архив</th>
                 <td>
-                  ${this.setChatsButton(
-                    folder.folder_id,
-                    table.chats[this.chatIndex],
-                  )}
+                  <button
+                    class='button archive'
+                  >
+                    <img src="/img/svg/plus-white.svg" />
+                  </button>
                 </td>
               </tr>
-              `,
-              )
-              .join("")}
-          </tbody>
-        </table>
+              ${folders
+                .map(
+                  (folder) => /* html */ `
+                <tr
+                  data-folder-id="${folder.folder_id}"
+                >
+                  <th>${folder.folder_title}</th>
+                  <td>
+                    ${this.setChatsButton(
+                      folder.folder_id,
+                      this.table.chats[this.chatIndex],
+                    )}
+                  </td>
+                </tr>
+                `,
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+        <button class="button next">
+          <img src="/img/svg/right-row.svg" />
+        </button>
         </div>
       </div>
     `;
@@ -94,20 +198,6 @@ class FloatView {
     };
 
     this.container.addEventListener("click", this.handleClickListener);
-  };
-
-  handleClick = (event, chatId) => {
-    if (event.target.id === "another-view-container") {
-      this.close();
-    } else if (event.target.className === "button exclude") {
-      this.setChatRelation(event.target, null, chatId);
-    } else if (event.target.className === "button include") {
-      this.setChatRelation(event.target, "pinned", chatId);
-    } else if (event.target.className === "button pinned") {
-      this.setChatRelation(event.target, "exclude", chatId);
-    } else if (event.target.className === "button null") {
-      this.setChatRelation(event.target, "include", chatId);
-    }
   };
 
   setChatsButton(folderId, userInfo) {
@@ -143,8 +233,6 @@ class FloatView {
     const trElement = event.parentElement.parentElement;
     const folderId = trElement.getAttribute("data-folder-id");
 
-    const table = new Table();
-
     const response = await eel.set_chat_folder_relation(
       Number(chatId),
       Number(folderId),
@@ -152,9 +240,7 @@ class FloatView {
     )();
 
     if (response.success) {
-      if (!relation === null) {
-        this.counter += 1;
-      }
+      this.counter += 1;
 
       let imagePath = "";
 
@@ -164,72 +250,88 @@ class FloatView {
         event.classList.add("include");
 
         if (
-          !table.chats[this.chatIndex].folders.include.includes(
+          !this.table.chats[this.chatIndex].folders.include.includes(
             Number(folderId),
           )
         ) {
-          table.chats[this.chatIndex].folders.include.push(Number(folderId));
+          this.table.chats[this.chatIndex].folders.include.push(
+            Number(folderId),
+          );
         }
 
-        // Удаляем из pinned, если есть
-        const pinnedIndex = table.chats[this.chatIndex].folders.pinned.indexOf(
-          Number(folderId),
-        );
+        const pinnedIndex = this.table.chats[
+          this.chatIndex
+        ].folders.pinned.indexOf(Number(folderId));
         if (pinnedIndex !== -1) {
-          table.chats[this.chatIndex].folders.pinned.splice(pinnedIndex, 1);
+          this.table.chats[this.chatIndex].folders.pinned.splice(
+            pinnedIndex,
+            1,
+          );
         }
       } else if (relation === "pinned") {
         imagePath = "/img/svg/pin-black.svg";
         event.classList.remove("include");
         event.classList.add("pinned");
 
-        // Удаляем из include, если есть
-        const includeIndex = table.chats[
+        const includeIndex = this.table.chats[
           this.chatIndex
         ].folders.include.indexOf(Number(folderId));
         if (includeIndex !== -1) {
-          table.chats[this.chatIndex].folders.include.splice(includeIndex, 1);
+          this.table.chats[this.chatIndex].folders.include.splice(
+            includeIndex,
+            1,
+          );
         }
 
         if (
-          !table.chats[this.chatIndex].folders.pinned.includes(Number(folderId))
+          !this.table.chats[this.chatIndex].folders.pinned.includes(
+            Number(folderId),
+          )
         ) {
-          table.chats[this.chatIndex].folders.pinned.push(Number(folderId));
+          this.table.chats[this.chatIndex].folders.pinned.push(
+            Number(folderId),
+          );
         }
       } else if (relation === "exclude") {
         imagePath = "/img/svg/minus-black.svg";
         event.classList.remove("pinned");
         event.classList.add("exclude");
 
-        // Удаляем из pinned, если есть
-        const pinnedIndex = table.chats[this.chatIndex].folders.pinned.indexOf(
-          Number(folderId),
-        );
+        const pinnedIndex = this.table.chats[
+          this.chatIndex
+        ].folders.pinned.indexOf(Number(folderId));
         if (pinnedIndex !== -1) {
-          table.chats[this.chatIndex].folders.pinned.splice(pinnedIndex, 1);
+          this.table.chats[this.chatIndex].folders.pinned.splice(
+            pinnedIndex,
+            1,
+          );
         }
 
         if (
-          !table.chats[this.chatIndex].folders.exclude.includes(
+          !this.table.chats[this.chatIndex].folders.exclude.includes(
             Number(folderId),
           )
         ) {
-          table.chats[this.chatIndex].folders.exclude.push(Number(folderId));
+          this.table.chats[this.chatIndex].folders.exclude.push(
+            Number(folderId),
+          );
         }
       } else if (relation === null) {
         imagePath = "/img/svg/plus-white.svg";
         event.classList.remove("exclude");
         event.classList.add("null");
 
-        const excludeIndex = table.chats[
+        const excludeIndex = this.table.chats[
           this.chatIndex
         ].folders.exclude.indexOf(Number(folderId));
         if (excludeIndex !== -1) {
-          table.chats[this.chatIndex].folders.exclude.splice(excludeIndex, 1);
+          this.table.chats[this.chatIndex].folders.exclude.splice(
+            excludeIndex,
+            1,
+          );
         }
       }
 
-      // Устанавливаем изображение кнопки
       event.innerHTML = `<img src='${imagePath}' />`;
     }
     if (!response.success) {
