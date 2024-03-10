@@ -65,3 +65,9 @@ pyinstaller --noconfirm --onefile --windowed --add-data "telefolders;telefolders
 ## Участие в проекте
 
 Мы приглашаем всех желающих принять участие в развитии проекта и сделать его еще лучше!
+
+Вы можете посмотреть над чем можно поработать или внести своё предложение в [issues](https://github.com/Noradrenalin-team/TeleFolders/issues)
+
+## Обсуждение проекта
+
+Вы можете принять участие в обсуждении проекта или задать нам вопросы в [чате телеграм](https://t.me/+4iWgAed_aDYyMWEy)
