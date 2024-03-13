@@ -1,29 +1,32 @@
 import Popup from "../PopupWidget/index.js";
+import FloatView from "../FloatViewWidget/index.js";
 
 export default class Table {
   constructor() {
     if (
-      localStorage.getItem("archiveState") === null ||
-      localStorage.getItem("archiveState") === undefined
+      JSON.parse(localStorage.getItem("archiveState")) === null ||
+      JSON.parse(localStorage.getItem("archiveState")) === undefined
     ) {
       localStorage.setItem("archiveState", true);
     }
     this.archiveState =
-      localStorage.getItem("archiveState") === "true" ? true : false;
+      JSON.parse(localStorage.getItem("archiveState")) === true;
 
     if (!Table.instance) {
       Table.instance = this;
     }
 
     return Table.instance;
-
   }
 
   getData = async () => {
     this.chats = await eel.get_all_chats()();
     this.folders = await eel.get_folders()();
 
-    console.log(this.chats);
+    console.log("chats count: ", this.chats.length);
+    console.log('chats: ', this.chats)
+    console.log("folders count: ", this.folders.length);
+    console.log('folders: ', this.folders)
 
     this.drawHeader();
     this.drawChats();
@@ -38,7 +41,9 @@ export default class Table {
   };
 
   async drawHeader() {
-    const trElement = document.querySelector(".table thead tr");
+    const trElement = document.querySelector(
+      ".table-container .table thead tr",
+    );
     trElement.textContent = "";
     const folders = this.folders;
 
@@ -63,7 +68,6 @@ export default class Table {
     tableHead += /* html */ `
       <th  class="th" id='add-folder'>+</th>
     `;
-    3;
 
     trElement.insertAdjacentHTML("beforeend", tableHead);
 
@@ -114,18 +118,19 @@ export default class Table {
   async drawChats() {
     const chats = this.chats;
     const folders = this.folders;
-    const tbodyElement = document.querySelector(".table tbody");
+    const tbodyElement = document.querySelector(
+      ".table-container .table tbody",
+    );
     tbodyElement.textContent = "";
+
+    let html = "";
 
     // отрисовка td с названием чата
     if (folders.length === 0) {
       chats.map((value) => {
-        tbodyElement.insertAdjacentHTML(
-          "beforeend",
-          /* html */ `
-      <td data-id="${value.chat_id}">${value.title}</td>
-    `,
-        );
+        html += /* html */ `
+          <td data-id="${value.chat_id}">${value.title}</td>
+        `;
       });
       return;
     }
@@ -147,9 +152,7 @@ export default class Table {
 
     // отрисовка строки флага с кнопкой
     Object.keys(folders[0].flags).map((value) => {
-      tbodyElement.insertAdjacentHTML(
-        "beforeend",
-        /* html */ `
+      html += /* html */ `
           <tr>
             <th>${setName(value)}</th>
             <td></td>
@@ -171,12 +174,11 @@ export default class Table {
           })
           .join("")}
           </tr>
-    `,
-      );
+    `;
     });
 
     // отрисовка строки чата с кнопками
-    chats.map((value) => {
+    chats.map((value, index) => {
       const id = Number(localStorage.getItem("user-id"));
       const archiveState =
         localStorage.getItem("archiveState") === "true" ? true : false;
@@ -188,16 +190,18 @@ export default class Table {
       if (!archiveState) {
         if (value.archived) {
         } else {
-          tbodyElement.insertAdjacentHTML(
-            "beforeend",
-            /* html */ `
+          html += /* html */ `
                 <tr
+                  data-chat-index="${index}"
                   data-archive-state="${value.archived}"
                   data-chat-id="${value.chat_id}"
                 >
-                  <th data-chat-id="${value.chat_id}">
+                  <th
+                    data-chat-id="${value.chat_id}"
+                    class="th title"
+                  >
                     <div class='wrapper'>
-                      <p>
+                      <p class="title">
                         <!-- <a -->
                           <!-- href="https://t.me/c/${value.peer_id}" -->
                           <!-- target="_blank" -->
@@ -232,21 +236,21 @@ export default class Table {
               })
               .join("")}
                 </tr>
-              `,
-          );
+              `;
         }
       } else {
-        console.log(value)
-        tbodyElement.insertAdjacentHTML(
-          "beforeend",
-          /* html */ `
+        html += /* html */ `
               <tr
+                data-chat-index="${index}"
                 data-archive-state="${value.archived}"
                 data-chat-id="${value.chat_id}"
               >
-                <th data-chat-id="${value.chat_id}">
+                <th
+                  data-chat-id="${value.chat_id}"
+                  th title
+                >
                   <div class='wrapper'>
-                    <p>
+                    <p class="title">
                       <!-- <a -->
                         <!-- href="https://t.me/c/${value.peer_id}" -->
                         <!-- target="_blank" -->
@@ -281,31 +285,53 @@ export default class Table {
             })
             .join("")}
               </tr>
-            `,
-        );
+            `;
       }
     });
 
-    tbodyElement.addEventListener("click", (event) => {
-      if (event.target.className === "button exclude") {
-        this.setChatRelation(event.target, null);
-      } else if (event.target.className === "button include") {
-        this.setChatRelation(event.target, "pinned");
-      } else if (event.target.className === "button pinned") {
-        this.setChatRelation(event.target, "exclude");
-      } else if (event.target.className === "button null") {
-        this.setChatRelation(event.target, "include");
-      } else if (event.target.className === "button archive") {
-        this.setArchiveRelation(event.target);
-      } else if (event.target.className === "buttons flag") {
-        let _event = event.target.parentElement;
-        this.setFlagRelation(_event);
-      } else if (event.target.className === "button flag") {
-        let _event = event.target.parentElement.parentElement;
-        this.setFlagRelation(_event);
-      }
-    });
+    tbodyElement.innerHTML = html;
+
+    tbodyElement.removeEventListener("click", this.handleClick);
+    tbodyElement.addEventListener("click", this.handleClick);
   }
+
+  handleClick = (event) => {
+    if (event.target.className === "button exclude") {
+      this.setChatRelation(event.target, null);
+    } else if (event.target.className === "button include") {
+      this.setChatRelation(event.target, "pinned");
+    } else if (event.target.className === "button pinned") {
+      this.setChatRelation(event.target, "exclude");
+    } else if (event.target.className === "button null") {
+      this.setChatRelation(event.target, "include");
+    } else if (event.target.className === "button archive") {
+      this.setArchiveRelation(event.target);
+    } else if (event.target.className === "buttons flag") {
+      let _event = event.target.parentElement;
+      this.setFlagRelation(_event);
+    } else if (event.target.className === "button flag") {
+      let _event = event.target.parentElement.parentElement;
+      this.setFlagRelation(_event);
+    } else if (event.target.className === "th title") {
+      const parent = event.target.parentElement;
+      const chatIndex = parent.getAttribute("data-chat-index");
+
+      const floatView = new FloatView();
+
+      floatView.close();
+      floatView.chatIndex = chatIndex;
+      floatView.show();
+    } else if (event.target.className === "title") {
+      const parent = event.target.parentElement.parentElement.parentElement;
+      const chatIndex = parent.getAttribute("data-chat-index");
+
+      const floatView = new FloatView();
+
+      floatView.close();
+      floatView.chatIndex = chatIndex;
+      floatView.show();
+    }
+  };
 
   setChatsButtons(folderId, userInfo) {
     let imagePath = "/img/svg/plus-white.svg";
@@ -366,10 +392,12 @@ export default class Table {
   };
 
   setChatRelation = async (event, relation) => {
-    let tdElement = event.parentElement.parentElement;
+    const tdElement = event.parentElement.parentElement;
+    const trElement = event.parentElement.parentElement.parentElement;
 
-    let folderId = tdElement.getAttribute("data-folder-id");
-    let chatId = tdElement.getAttribute("data-chat-id");
+    const folderId = tdElement.getAttribute("data-folder-id");
+    const chatId = tdElement.getAttribute("data-chat-id");
+    const chatIndex = trElement.getAttribute("data-chat-index");
 
     const response = await eel.set_chat_folder_relation(
       Number(chatId),
@@ -384,18 +412,53 @@ export default class Table {
         imagePath = "/img/svg/plus-black.svg";
         event.classList.remove("null");
         event.classList.add("include");
-      } else if (relation === "exclude") {
-        imagePath = "/img/svg/minus-black.svg";
-        event.classList.remove("pinned");
-        event.classList.add("exclude");
+
+        if (!this.chats[chatIndex].folders.include.includes(Number(folderId))) {
+          this.chats[chatIndex].folders.include.push(Number(folderId));
+        }
       } else if (relation === "pinned") {
         imagePath = "/img/svg/pin-black.svg";
         event.classList.remove("include");
         event.classList.add("pinned");
+
+        // Удаляем из include, если есть
+        const includeIndex = this.chats[chatIndex].folders.include.indexOf(
+          Number(folderId),
+        );
+        if (includeIndex !== -1) {
+          this.chats[chatIndex].folders.include.splice(includeIndex, 1);
+        }
+
+        if (!this.chats[chatIndex].folders.pinned.includes(Number(folderId))) {
+          this.chats[chatIndex].folders.pinned.push(Number(folderId));
+        }
+      } else if (relation === "exclude") {
+        imagePath = "/img/svg/minus-black.svg";
+        event.classList.remove("pinned");
+        event.classList.add("exclude");
+
+        // Удаляем из pinned, если есть
+        const pinnedIndex = this.chats[chatIndex].folders.pinned.indexOf(
+          Number(folderId),
+        );
+        if (pinnedIndex !== -1) {
+          this.chats[chatIndex].folders.pinned.splice(pinnedIndex, 1);
+        }
+
+        if (!this.chats[chatIndex].folders.exclude.includes(Number(folderId))) {
+          this.chats[chatIndex].folders.exclude.push(Number(folderId));
+        }
       } else if (relation === null) {
         imagePath = "/img/svg/plus-white.svg";
         event.classList.remove("exclude");
         event.classList.add("null");
+
+        const excludeIndex = this.chats[chatIndex].folders.exclude.indexOf(
+          Number(folderId),
+        );
+        if (excludeIndex !== -1) {
+          this.chats[chatIndex].folders.exclude.splice(excludeIndex, 1);
+        }
       }
 
       event.innerHTML = `
@@ -524,7 +587,6 @@ export default class Table {
     this.chats[foundChatIndex].archived = value;
 
     if (response.success) {
-      
       trElement.setAttribute("data-archive-state", value);
       let imagePath = "";
 

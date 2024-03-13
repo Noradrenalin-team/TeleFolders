@@ -13,7 +13,7 @@
   padding-inline: 0;
   padding-block: 0;
   box-sizing: inherit;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
-}/*# sourceMappingURL=reset.css.map */
+  user-select: none;
+}
+
+/*# sourceMappingURL=reset.css.map */
