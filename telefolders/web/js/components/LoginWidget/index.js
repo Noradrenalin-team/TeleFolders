@@ -1,5 +1,6 @@
 import Popup from "../PopupWidget/index.js";
 import Table from "../TableWidget/index.js";
+import Header from "../HeaderWidget/index.js";
 
 export default class Login {
   constructor() {
@@ -17,6 +18,11 @@ export default class Login {
 
   init = () => {
     this.loginButton.addEventListener("click", this.loginPhone);
+    document.addEventListener("keydown", this.click);
+  };
+
+  click = (event) => {
+    if (event.code === "Enter") this.loginButton.click();
   };
 
   loginPhone = async () => {
@@ -99,13 +105,17 @@ export default class Login {
       localStorage.setItem("userInfo", JSON.stringify(response.user));
 
       this.loginButton.removeEventListener("click", this.loginPassword);
+      document.removeEventListener("keydown", this.click);
 
       document.querySelector(".login").classList.add("hide");
       document.querySelector(".table-container").classList.remove("hide");
 
+      new Header(response.user).changeAvatar(response.picture);
       new Table().getData();
+
       this.authDonePopup();
     } else {
+      console.error("error");
       this._log();
       this.changeErrorLabel(true);
     }

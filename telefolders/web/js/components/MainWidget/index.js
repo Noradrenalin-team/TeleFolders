@@ -6,26 +6,25 @@ export default class Main {
   async init() {
     let response = await eel.init()();
 
-    console.log(response)
+    console.log(response);
 
     response = await eel.get_user()();
-  
+
     if (response === null) {
-      new Login().init()
+      new Login().init();
       document.querySelector(".login").classList.remove("hide");
       return;
     }
 
-    localStorage.setItem("user-id", response.id)
-    
-    const header = new Header(response)
-    header.init()
-    
-    new Table().getData()
-    
+    localStorage.setItem("user-id", response.id);
+
+    const header = new Header(response);
+
+    new Table().getData();
+
     document.querySelector(".login").classList.add("hide");
     document.querySelector(".table-container").classList.remove("hide");
-    
-    header.changeAvatar(response.picture)
+
+    header.changeAvatar(response.picture);
   }
 }

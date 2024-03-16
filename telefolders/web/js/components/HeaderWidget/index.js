@@ -5,6 +5,7 @@ export default class Header {
     this.data = data;
     this.avatarContainerElement = document.querySelector(".avatar");
     this.userMenuElement = document.querySelector(".user-menu");
+    this.init();
     this.table = new Table();
   }
 
@@ -66,13 +67,13 @@ export default class Header {
     const element = this.userMenuElement.querySelector(".hideArchived");
 
     if (localStorage.getItem("archiveState") === "true") {
-      this.table.hideArchive()
+      this.table.hideArchive();
       element.textContent = "Показать архивные";
     } else if (localStorage.getItem("archiveState") === "false") {
-      this.table.showArchive()
+      this.table.showArchive();
       element.textContent = "Скрыть архивные";
     }
-  };
+  }
 
   reloadChats = () => {
     this.table.updateChats();

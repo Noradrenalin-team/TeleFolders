@@ -26,7 +26,6 @@ class FloatView {
     return FloatView.instance;
   }
 
-  // todo
   nextChat = () => {
     this.container.removeEventListener("click", this.handleClickListener);
     let index = Number(this.chatIndex) + 1;
@@ -62,7 +61,6 @@ class FloatView {
     }
   };
 
-  // todo
   prevChat = () => {
     this.container.removeEventListener("click", this.handleClickListener);
     let index = Number(this.chatIndex) - 1;
@@ -99,7 +97,6 @@ class FloatView {
   };
 
   close = async () => {
-    // debugger;
     if (this.counter >= 1) {
       this.counter = 0;
       this.table.drawChats();
@@ -107,16 +104,31 @@ class FloatView {
 
     this.container.removeEventListener("click", this.handleClickListener);
     this.container.classList.add("float-view-hidden");
+    document.removeEventListener("keydown", this.click);
   };
 
   show = () => {
     this.container.classList.remove("float-view-hidden");
+    document.addEventListener("keydown", this.click);
 
     this.draw();
   };
 
+  click = (event) => {
+    if (event.code === "ArrowRight") {
+      this.nextChat();
+    } else if (event.code === "ArrowLeft") {
+      this.prevChat();
+    } else if (event.code === "Escape") {
+      this.close();
+    }
+  };
+
   handleClick = (event, chatId) => {
-    if (event.target.id === "float-view-container") {
+    if (
+      event.target.id === "float-view-container" ||
+      event.target.className === "button close"
+    ) {
       this.close();
     } else if (event.target.className === "button exclude") {
       this.setChatRelation(event.target, null, chatId);
@@ -140,7 +152,12 @@ class FloatView {
 
     let html = /* html */ `
       <div class="float-view">
-        <h2>${title}</h2>
+        <div class="row">
+          <h2>${title}</h2>
+          <button class="button close">
+            <img src="/img/svg/close.svg" />
+          </button>
+        </div>
         <div class="row">
         <button class="button prev">
           <img src="/img/svg/left-row.svg" />
@@ -165,22 +182,22 @@ class FloatView {
                 </td>
               </tr>
               ${folders
-                .map(
-                  (folder) => /* html */ `
+        .map(
+          (folder) => /* html */ `
                 <tr
                   data-folder-id="${folder.folder_id}"
                 >
                   <th>${folder.folder_title}</th>
                   <td>
                     ${this.setChatsButton(
-                      folder.folder_id,
-                      this.table.chats[this.chatIndex],
-                    )}
+            folder.folder_id,
+            this.table.chats[this.chatIndex],
+          )}
                   </td>
                 </tr>
                 `,
-                )
-                .join("")}
+        )
+        .join("")}
             </tbody>
           </table>
         </div>
