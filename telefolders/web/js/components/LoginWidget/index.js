@@ -11,7 +11,7 @@ export default class Login {
 
     this.formElement = document.querySelector(".login .login-form");
     this.inputLabel = document.querySelector(".login-label");
-    this.inputError = this.formElement.querySelector("p.input-error");
+    this.inputError = this.formElement.querySelector(".input-error");
     this.loginButton = document.querySelector(".login-button");
     this.inputElement = document.querySelector(".login-input");
   }
@@ -38,7 +38,6 @@ export default class Login {
     console.log(phone);
 
     if (response.success) {
-      this._log();
       this.phone_code_hash = response.phone_code_hash;
       this.phone = this.inputElement.value;
 
@@ -47,7 +46,6 @@ export default class Login {
 
       this.changeFormLabels("code");
     } else {
-      this._log();
       this.authUnOkPopup();
       this.changeErrorLabel(true);
     }
@@ -64,7 +62,6 @@ export default class Login {
     // const response = {success: true, phone_code_hash: 123, need_password: true}
 
     if (response.success) {
-      this._log();
       if (response.need_password) {
         this.phone_code_hash = response.phone_code_hash;
         this.code = code;
@@ -80,28 +77,25 @@ export default class Login {
         this.authDonePopup();
       }
     } else {
-      this._log();
       this.changeErrorLabel(true);
     }
   };
 
   loginPassword = async () => {
-    this.lostFocus();
     let password = this.inputElement.value;
     let phone = this.phone;
     let phone_code_hash = this.phone_code_hash;
 
-    console.log(phone, password, phone_code_hash);
-
     const response = await eel.login_password(
       phone,
       password,
-      phone_code_hash,
+      phone_code_hash
     )();
     // const response = {success: true, user: {username: '123123'}}
 
     if (response.success) {
-      this._log();
+      this.changeErrorLabel(false);
+
       localStorage.setItem("userInfo", JSON.stringify(response.user));
 
       this.loginButton.removeEventListener("click", this.loginPassword);
@@ -116,16 +110,16 @@ export default class Login {
       this.authDonePopup();
     } else {
       console.error("error");
-      this._log();
+      this._log()
       this.changeErrorLabel(true);
     }
   };
 
   _log = () => {
-    console.log("number: ", this.phone);
-    console.log("phone_code_hash: ", this.phone_code_hash);
-    console.log("code: ", this.code);
-    console.log("password: ", this.password);
+    console.debug("number: ", this.phone);
+    console.debug("phone_code_hash: ", this.phone_code_hash);
+    console.debug("code: ", this.code);
+    console.debug("password: ", this.password);
   };
 
   lostFocus = () => {
