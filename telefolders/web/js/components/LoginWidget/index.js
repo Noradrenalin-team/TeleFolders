@@ -102,7 +102,7 @@ export default class Login {
       document.removeEventListener("keydown", this.click);
 
       document.querySelector(".login").classList.add("hide");
-      document.querySelector(".table-container").classList.remove("hide");
+      document.querySelector(".table-container.main-table").classList.remove("hide");
 
       new Header(response.user).changeAvatar(response.picture);
       new Table().getData();

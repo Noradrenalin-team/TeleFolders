@@ -13,6 +13,7 @@ export default class Main {
     if (response === null) {
       new Login().init();
       document.querySelector(".login").classList.remove("hide");
+      document.querySelector(".spinner").classList.add("hide");
       return;
     }
 
@@ -23,7 +24,6 @@ export default class Main {
     new Table().getData();
 
     document.querySelector(".login").classList.add("hide");
-    document.querySelector(".table-container").classList.remove("hide");
 
     header.changeAvatar(response.picture);
   }

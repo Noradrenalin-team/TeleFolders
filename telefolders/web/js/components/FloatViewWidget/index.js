@@ -147,6 +147,13 @@ class FloatView {
   };
 
   setArchive = async (event, chatId) => {
+    //add spinner
+    event.innerHTML = `
+      <div class="spinner">
+        <div class="block"></div>
+      </div>
+    `
+
     let archiveState = !this.table.chats[this.chatIndex].archived;
     console.log(archiveState);
 
@@ -154,7 +161,6 @@ class FloatView {
 
     if (response.success) {
       this.table.chats[this.chatIndex].archived = archiveState;
-
       let imagePath = "/img/svg/plus-white.svg";
 
       if (archiveState) {
@@ -299,6 +305,13 @@ class FloatView {
   }
 
   setChatRelation = async (event, relation, chatId) => {
+    //add spinner
+    event.innerHTML = `
+    <div class="spinner">
+      <div class="block"></div>
+    </div>
+  `
+
     const trElement = event.parentElement.parentElement;
     const thElement = event.parentElement;
     const folderId = trElement.getAttribute("data-folder-id");

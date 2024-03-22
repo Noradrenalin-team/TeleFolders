@@ -20,6 +20,9 @@ export default class Table {
   }
 
   getData = async () => {
+    document.querySelector(".table-container.main-table").classList.add("hide");
+    document.querySelector(".spinner_large").classList.remove("hide");
+
     this.chats = await eel.get_all_chats()();
     this.folders = await eel.get_folders()();
 
@@ -41,6 +44,9 @@ export default class Table {
   };
 
   async drawHeader() {
+    document.querySelector(".table-container.main-table").classList.remove("hide");
+    document.querySelector(".spinner_large").classList.add("hide");
+
     const trElement = document.querySelector(
       ".table-container .table thead tr",
     );
@@ -392,6 +398,13 @@ export default class Table {
   };
 
   setChatRelation = async (event, relation) => {
+    //add spinner
+    event.innerHTML = `
+      <div class="spinner">
+        <div class="block"></div>
+      </div>
+    `
+    
     const tdElement = event.parentElement.parentElement;
     const trElement = event.parentElement.parentElement.parentElement;
 
@@ -493,6 +506,17 @@ export default class Table {
   };
 
   setFlagRelation = async (event) => {
+    console.log(event)
+    //add spinner
+    event.innerHTML = `
+    <div class="buttons flug">
+      <div class="spinner">
+        <div class="block"></div>
+      </div>
+    </div>
+    `
+    console.log(event)
+
     let folderId = event.getAttribute("data-folder-id");
     let flag = event.getAttribute("data-flag");
     let value = JSON.parse(event.getAttribute("data-flag-state"));
@@ -572,6 +596,13 @@ export default class Table {
   };
 
   setArchiveRelation = async (event) => {
+    //add spinner
+    event.innerHTML = `
+      <div class="spinner">
+        <div class="block"></div>
+      </div>
+    `
+
     let trElement = event.parentElement.parentElement.parentElement;
     let chatId = Number(trElement.getAttribute("data-chat-id"));
     let value = JSON.parse(trElement.getAttribute("data-archive-state"));

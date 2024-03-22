@@ -54,6 +54,48 @@ a {
   border-radius: 0.1rem;
 }
 
+.spinner_large {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner_large .block {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border-top: 3px solid rgba(0, 0, 0, 0.1);
+  border-right: 3px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 3px solid rgba(0, 0, 0, 0.1);
+  border-left: 3px solid rgb(129, 138, 145);
+  animation: spinner 0.5s infinite linear;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+}
+
+.spinner .block {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border-top: 3px solid rgba(0, 0, 0, 0.1);
+  border-right: 3px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 3px solid rgba(0, 0, 0, 0.1);
+  border-left: 3px solid rgb(129, 138, 145);
+  animation: spinner 0.5s infinite linear;
+}
+
+@keyframes spinner {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 body {
   position: relative;
   scroll-behavior: auto;
