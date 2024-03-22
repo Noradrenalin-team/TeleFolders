@@ -25,10 +25,10 @@ export default class Header {
   handleAvatarClick = (event) => {
     event.stopPropagation();
 
-    if (localStorage.getItem("archiveState") === "true") {
+    if (JSON.parse(localStorage.getItem("archiveState"))) {
       const element = this.userMenuElement.querySelector(".hideArchived");
       element.textContent = "Скрыть архивные";
-    } else if (localStorage.getItem("archiveState") === "false") {
+    } else if (JSON.parse(localStorage.getItem("archiveState")) === "false") {
       const element = this.userMenuElement.querySelector(".hideArchived");
       element.textContent = "Показать архивные";
     }
@@ -82,6 +82,7 @@ export default class Header {
 
   logout = () => {
     eel.logout()();
+    document.querySelector(".spinner_large").classList.add("hide");
     window.location.reload();
   };
 }

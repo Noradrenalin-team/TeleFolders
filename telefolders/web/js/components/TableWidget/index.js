@@ -27,9 +27,9 @@ export default class Table {
     this.folders = await eel.get_folders()();
 
     console.log("chats count: ", this.chats.length);
-    console.log('chats: ', this.chats)
+    console.log("chats: ", this.chats);
     console.log("folders count: ", this.folders.length);
-    console.log('folders: ', this.folders)
+    console.log("folders: ", this.folders);
 
     this.drawHeader();
     this.drawChats();
@@ -44,11 +44,13 @@ export default class Table {
   };
 
   async drawHeader() {
-    document.querySelector(".table-container.main-table").classList.remove("hide");
+    document
+      .querySelector(".table-container.main-table")
+      .classList.remove("hide");
     document.querySelector(".spinner_large").classList.add("hide");
 
     const trElement = document.querySelector(
-      ".table-container .table thead tr",
+      ".table-container .table thead tr"
     );
     trElement.textContent = "";
     const folders = this.folders;
@@ -125,7 +127,7 @@ export default class Table {
     const chats = this.chats;
     const folders = this.folders;
     const tbodyElement = document.querySelector(
-      ".table-container .table tbody",
+      ".table-container .table tbody"
     );
     tbodyElement.textContent = "";
 
@@ -163,8 +165,8 @@ export default class Table {
             <th>${setName(value)}</th>
             <td></td>
             ${folders
-          .map((folder) => {
-            return /* html */ `
+              .map((folder) => {
+                return /* html */ `
                   <td
                     class="td flag"
                     data-flag="${value}"
@@ -172,13 +174,13 @@ export default class Table {
                     data-folder-id="${folder.folder_id}"
                   >
                     <div class='buttons flag'>${this.setFlugsButton(
-              folder,
-              value,
-            )}</div>
+                      folder,
+                      value
+                    )}</div>
                   </td>
                 `;
-          })
-          .join("")}
+              })
+              .join("")}
           </tr>
     `;
     });
@@ -228,8 +230,8 @@ export default class Table {
                     </div>
                   </td>
                   ${folders
-              .map((folder) => {
-                return /* html */ `
+                    .map((folder) => {
+                      return /* html */ `
                       <td
                         data-chat-id="${value.chat_id}"
                         data-folder-id="${folder.folder_id}"
@@ -239,8 +241,8 @@ export default class Table {
                         </div>
                       </td>
                     `;
-              })
-              .join("")}
+                    })
+                    .join("")}
                 </tr>
               `;
         }
@@ -277,8 +279,8 @@ export default class Table {
                   </div>
                 </td>
                 ${folders
-            .map((folder) => {
-              return /* html */ `
+                  .map((folder) => {
+                    return /* html */ `
                     <td
                       data-chat-id="${value.chat_id}"
                       data-folder-id="${folder.folder_id}"
@@ -288,8 +290,8 @@ export default class Table {
                       </div>
                     </td>
                   `;
-            })
-            .join("")}
+                  })
+                  .join("")}
               </tr>
             `;
       }
@@ -370,29 +372,31 @@ export default class Table {
 
   setFlugsButton = (folder, folderFlag) => {
     let result = ["exclude_muted", "exclude_read", "exclude_archived"].includes(
-      folderFlag,
+      folderFlag
     )
       ? /* html */ `
       <button class='button flag'>
-        ${folder.flags[folderFlag]
-        ? /* html */ `
+        ${
+          folder.flags[folderFlag]
+            ? /* html */ `
               <img src="/img/svg/minus-black.svg" />
           `
-        : /* html */ `
+            : /* html */ `
               <img src="/img/svg/minus-white.svg" />
           `
-      }
+        }
       </button>`
       : /* html */ `
       <button class='button flag'>
-        ${folder.flags[folderFlag]
-        ? /* html */ `
+        ${
+          folder.flags[folderFlag]
+            ? /* html */ `
               <img src="/img/svg/plus-black.svg" />
           `
-        : /* html */ `
+            : /* html */ `
             <img src="/img/svg/plus-white.svg" />
           `
-      }
+        }
       </button>`;
     return result;
   };
@@ -403,8 +407,8 @@ export default class Table {
       <div class="spinner">
         <div class="block"></div>
       </div>
-    `
-    
+    `;
+
     const tdElement = event.parentElement.parentElement;
     const trElement = event.parentElement.parentElement.parentElement;
 
@@ -415,7 +419,7 @@ export default class Table {
     const response = await eel.set_chat_folder_relation(
       Number(chatId),
       Number(folderId),
-      relation,
+      relation
     )();
 
     if (response.success) {
@@ -436,7 +440,7 @@ export default class Table {
 
         // Удаляем из include, если есть
         const includeIndex = this.chats[chatIndex].folders.include.indexOf(
-          Number(folderId),
+          Number(folderId)
         );
         if (includeIndex !== -1) {
           this.chats[chatIndex].folders.include.splice(includeIndex, 1);
@@ -452,7 +456,7 @@ export default class Table {
 
         // Удаляем из pinned, если есть
         const pinnedIndex = this.chats[chatIndex].folders.pinned.indexOf(
-          Number(folderId),
+          Number(folderId)
         );
         if (pinnedIndex !== -1) {
           this.chats[chatIndex].folders.pinned.splice(pinnedIndex, 1);
@@ -467,7 +471,7 @@ export default class Table {
         event.classList.add("null");
 
         const excludeIndex = this.chats[chatIndex].folders.exclude.indexOf(
-          Number(folderId),
+          Number(folderId)
         );
         if (excludeIndex !== -1) {
           this.chats[chatIndex].folders.exclude.splice(excludeIndex, 1);
@@ -506,7 +510,7 @@ export default class Table {
   };
 
   setFlagRelation = async (event) => {
-    console.log(event)
+    console.log(event);
     //add spinner
     event.innerHTML = `
     <div class="buttons flug">
@@ -514,8 +518,8 @@ export default class Table {
         <div class="block"></div>
       </div>
     </div>
-    `
-    console.log(event)
+    `;
+    console.log(event);
 
     let folderId = event.getAttribute("data-folder-id");
     let flag = event.getAttribute("data-flag");
@@ -601,7 +605,7 @@ export default class Table {
       <div class="spinner">
         <div class="block"></div>
       </div>
-    `
+    `;
 
     let trElement = event.parentElement.parentElement.parentElement;
     let chatId = Number(trElement.getAttribute("data-chat-id"));
@@ -651,7 +655,7 @@ export default class Table {
     this.drawChats();
   };
 
-  addFolder() { }
+  addFolder() {}
 
   async updateChats() {
     this.getData();

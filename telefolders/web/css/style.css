@@ -49,7 +49,7 @@ a {
   text-decoration: none;
 }
 
-.error {
+input.error {
   border: 1px red solid;
   border-radius: 0.1rem;
 }
