@@ -13,22 +13,29 @@ class Telefolders:
         self.client: TelegramClient = None
 
     def init(self):
-        # from https://my.telegram.org, under API Development.
-        api_id = os.environ.get("TELEFOLDERS_API_ID")
-        api_hash = os.environ.get("TELEFOLDERS_API_HASH")
 
-        try:
-            self.client = TelegramClient(
-                "telefolders", api_id, api_hash, lang_code="ru"
-            )
-            self.client.connect()
+        if not self.client:
+            # from https://my.telegram.org, under API Development.
+            api_id = os.environ.get("TELEFOLDERS_API_ID")
+            api_hash = os.environ.get("TELEFOLDERS_API_HASH")
 
-            if self.client.is_user_authorized():
-                return {"success": True, "authorized": True}
-            else:
-                return {"success": True, "authorized": False}
-        except Exception as e:
-            return {"success": False, "error": str(e), "error_code": "unknown"}
+            try:
+                self.client = TelegramClient(
+                    "telefolders", api_id, api_hash, lang_code="ru"
+                )
+                self.client.connect()
+
+                if self.client.is_user_authorized():
+                    return {"success": True, "authorized": True}
+                else:
+                    return {"success": True, "authorized": False}
+            except Exception as e:
+                return {"success": False, "error": str(e), "error_code": "unknown"}
+
+        if self.client.is_user_authorized():
+            return {"success": True, "authorized": True}
+        else:
+            return {"success": True, "authorized": False}
 
     def login_phone(self, phone):
         try:

@@ -1,5 +1,15 @@
 # TeleFolders
 
+![GitHub License](https://img.shields.io/github/license/Noradrenalin-team/TeleFolders)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Noradrenalin-team/TeleFolders/total)
+![GitHub Release](https://img.shields.io/github/v/release/Noradrenalin-team/TeleFolders)
+![GitHub Release Date](https://img.shields.io/github/release-date/Noradrenalin-team/TeleFolders)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/Noradrenalin-team/TeleFolders/latest)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/Noradrenalin-team/TeleFolders)
+![GitHub last commit](https://img.shields.io/github/last-commit/Noradrenalin-team/TeleFolders)<!-- ![GitHub contributors from allcontributors.org](https://img.shields.io/github/all-contributors/Noradrenalin-team/TeleFolders) -->
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/Noradrenalin-team/TeleFolders)
+![GitHub Repo stars](https://img.shields.io/github/stars/Noradrenalin-team/TeleFolders)
+
 TeleFolders - это менеджер папок для управления чатами и каналами в Telegram
 
 ## Что можно делать с TeleFolders
@@ -14,7 +24,8 @@ TeleFolders - это менеджер папок для управления ч�
 
 ## Использование
 
-![Скриншот](https://raw.githubusercontent.com/Noradrenalin-team/Noradrenalin-team/main/tf.jpg)
+![Скриншот](/img/tf.jpg)
+![Скриншот](/img/tf2.jpg)
 
 С помощью кнопок вы можете добавлять чаты в папки, закреплять чаты, а также исключать чаты из папок. У каждой папки есть возможность установить "флаги", например, в папку можно добавить все контакты или каналы, а также исключить прочитанные или чаты без уведомлений.
 

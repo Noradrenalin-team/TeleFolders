@@ -23,7 +23,7 @@ def set_env_vars():
 
 def main():
     eel.init("telefolders/web")
-    eel.start("main.html")
+    eel.start("main.html", mode="default")
 
 
 if __name__ == "__main__":
