@@ -32,7 +32,8 @@ input.error {
   border-right: 3px solid rgba(0, 0, 0, 0.1);
   border-bottom: 3px solid rgba(0, 0, 0, 0.1);
   border-left: 3px solid rgb(129, 138, 145);
-  animation: spinner 0.5s infinite linear;
+  -webkit-animation: spinner 0.5s infinite linear;
+          animation: spinner 0.5s infinite linear;
 }
 
 .spinner {
@@ -48,7 +49,18 @@ input.error {
   border-right: 3px solid rgba(0, 0, 0, 0.1);
   border-bottom: 3px solid rgba(0, 0, 0, 0.1);
   border-left: 3px solid rgb(129, 138, 145);
-  animation: spinner 0.5s infinite linear;
+  -webkit-animation: spinner 0.5s infinite linear;
+          animation: spinner 0.5s infinite linear;
+}
+
+@-webkit-keyframes spinner {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes spinner {
@@ -177,6 +189,8 @@ body {
 
     .popup-content {
       width: 50vw;
+      height: -webkit-max-content;
+      height: -moz-max-content;
       height: max-content;
       background-color: #fff;
       padding: 1rem;
@@ -228,6 +242,8 @@ body {
         .user-menu {
           z-index: 20;
           position: absolute;
+          width: -webkit-max-content;
+          width: -moz-max-content;
           width: max-content;
           background-color: #b0b0b0;
           right: 0;
@@ -280,7 +296,11 @@ body {
           }
 
           thead tr th button {
+            width: -webkit-max-content;
+            width: -moz-max-content;
             width: max-content;
+            height: -webkit-max-content;
+            height: -moz-max-content;
             height: max-content;
             position: absolute;
             background-color: transparent;
@@ -340,7 +360,9 @@ body {
           }
 
           thead tr th span {
-            writing-mode: vertical-rl;
+            -webkit-writing-mode: vertical-rl;
+                -ms-writing-mode: tb-rl;
+                    writing-mode: vertical-rl;
             transform: rotate(180deg);
           }
 
