@@ -15,7 +15,7 @@ class FloatView {
             id="float-view-container"
             class="float-view-container"
           ></div>
-        `,
+        `
       );
 
       FloatView.instance = this;
@@ -26,7 +26,6 @@ class FloatView {
     return FloatView.instance;
   }
 
-  // todo
   nextChat = () => {
     this.container.removeEventListener("click", this.handleClickListener);
     let index = Number(this.chatIndex) + 1;
@@ -62,7 +61,6 @@ class FloatView {
     }
   };
 
-  // todo
   prevChat = () => {
     this.container.removeEventListener("click", this.handleClickListener);
     let index = Number(this.chatIndex) - 1;
@@ -99,7 +97,6 @@ class FloatView {
   };
 
   close = async () => {
-    // debugger;
     if (this.counter >= 1) {
       this.counter = 0;
       this.table.drawChats();
@@ -107,29 +104,92 @@ class FloatView {
 
     this.container.removeEventListener("click", this.handleClickListener);
     this.container.classList.add("float-view-hidden");
+    document.removeEventListener("keydown", this.click);
   };
 
   show = () => {
     this.container.classList.remove("float-view-hidden");
+    document.addEventListener("keydown", this.click);
 
     this.draw();
   };
 
-  handleClick = (event, chatId) => {
-    if (event.target.id === "float-view-container") {
+  click = (event) => {
+    console.log("123");
+    if (event.code === "ArrowRight") {
+      this.nextChat();
+    } else if (event.code === "ArrowLeft") {
+      this.prevChat();
+    } else if (event.code === "Escape") {
       this.close();
-    } else if (event.target.className === "button exclude") {
-      this.setChatRelation(event.target, null, chatId);
+    }
+  };
+
+  handleClick = (event, chatId) => {
+    if (
+      event.target.id === "float-view-container" ||
+      event.target.className === "button close"
+    ) {
+      this.close();
     } else if (event.target.className === "button include") {
-      this.setChatRelation(event.target, "pinned", chatId);
-    } else if (event.target.className === "button pinned") {
-      this.setChatRelation(event.target, "exclude", chatId);
-    } else if (event.target.className === "button null") {
       this.setChatRelation(event.target, "include", chatId);
+    } else if (event.target.className === "button pinned") {
+      this.setChatRelation(event.target, "pinned", chatId);
+    } else if (event.target.className === "button exclude") {
+      this.setChatRelation(event.target, "exclude", chatId);
     } else if (event.target.className === "button next") {
       this.nextChat();
     } else if (event.target.className === "button prev") {
       this.prevChat();
+    } else if (event.target.className === "button archive") {
+      this.setArchive(event.target, chatId);
+    }
+  };
+
+  setArchive = async (event, chatId) => {
+    //add spinner
+    event.innerHTML = `
+      <div class="spinner">
+        <div class="block"></div>
+      </div>
+    `
+
+    let archiveState = !this.table.chats[this.chatIndex].archived;
+    console.log(archiveState);
+
+    const response = await eel.set_chat_archive(chatId, archiveState)();
+
+    if (response.success) {
+      this.table.chats[this.chatIndex].archived = archiveState;
+      let imagePath = "/img/svg/plus-white.svg";
+
+      if (archiveState) {
+        imagePath = "/img/svg/plus-black.svg";
+        event.innerHTML = `<img src="${imagePath}" />`;
+      } else {
+        event.innerHTML = `<img src="${imagePath}" />`;
+      }
+    } else {
+      const text = "Неисзвестная ошибка";
+      const popupComponent = new Popup(/* html */ `
+          <div class='popup-content'>
+            <h2>Произошла ошибка</h2>
+            <p>${text}</p>
+            <div class='buttons'>
+              <button id='popup-done'>OK</button>
+            </div>
+          </div>
+        `);
+
+      popupComponent.show();
+
+      function addFolderHandler() {
+        popupComponent.close();
+      }
+
+      document
+        .getElementById("popup-done")
+        .addEventListener("click", addFolderHandler, { once: true });
     }
   };
 
@@ -137,10 +197,16 @@ class FloatView {
     const folders = this.table.folders;
     const title = this.table.chats[this.chatIndex].title;
     const chatId = this.table.chats[this.chatIndex].chat_id;
+    const archiveState = this.table.chats[this.chatIndex].archived;
 
     let html = /* html */ `
       <div class="float-view">
-        <h2>${title}</h2>
+        <div class="row">
+          <h2>${title}</h2>
+          <button class="button close">
+            <img src="/img/svg/close.svg" />
+          </button>
+        </div>
         <div class="row">
         <button class="button prev">
           <img src="/img/svg/left-row.svg" />
@@ -160,7 +226,11 @@ class FloatView {
                   <button
                     class='button archive'
                   >
-                    <img src="/img/svg/plus-white.svg" />
+                    <img src="${
+                      archiveState
+                        ? "/img/svg/plus-black.svg"
+                        : "/img/svg/plus-white.svg"
+                    }" />
                   </button>
                 </td>
               </tr>
@@ -174,11 +244,11 @@ class FloatView {
                   <td>
                     ${this.setChatsButton(
                       folder.folder_id,
-                      this.table.chats[this.chatIndex],
+                      this.table.chats[this.chatIndex]
                     )}
                   </td>
                 </tr>
-                `,
+                `
                 )
                 .join("")}
             </tbody>
@@ -201,28 +271,33 @@ class FloatView {
   };
 
   setChatsButton(folderId, userInfo) {
-    let imagePath = "/img/svg/plus-white.svg";
-    let value = "";
+    let includePath = "/img/svg/plus-white.svg";
+    let pinnedPath = "/img/svg/pin-white.svg";
+    let excludePath = "/img/svg/minus-white.svg";
 
     if (userInfo.folders["include"].includes(folderId)) {
-      imagePath = "/img/svg/plus-black.svg";
-      value = "include";
+      includePath = "/img/svg/plus-black.svg";
     } else if (userInfo.folders["exclude"].includes(folderId)) {
-      imagePath = "/img/svg/minus-black.svg";
-      value = "exclude";
+      excludePath = "/img/svg/minus-black.svg";
     } else if (userInfo.folders["pinned"].includes(folderId)) {
-      imagePath = "/img/svg/pin-black.svg";
-      value = "pinned";
-    } else {
-      imagePath = "/img/svg/plus-white.svg";
-      value = "null";
+      pinnedPath = "/img/svg/pin-black.svg";
     }
 
     let result = /* html */ `
       <button
-        class='button ${value}'
+        class='button include'
       >
-        <img src='${imagePath}' />
+        <img src='${includePath}' />
+      </button>
+      <button
+        class='button pinned'
+      >
+        <img src='${pinnedPath}' />
+      </button>
+      <button
+        class='button exclude'
+      >
+        <img src='${excludePath}' />
       </button>
     `;
 
@@ -230,109 +305,353 @@ class FloatView {
   }
 
   setChatRelation = async (event, relation, chatId) => {
+    //add spinner
+    event.innerHTML = `
+    <div class="spinner">
+      <div class="block"></div>
+    </div>
+  `
+
     const trElement = event.parentElement.parentElement;
+    const thElement = event.parentElement;
     const folderId = trElement.getAttribute("data-folder-id");
 
-    const response = await eel.set_chat_folder_relation(
-      Number(chatId),
-      Number(folderId),
-      relation,
-    )();
+    let includePath = "/img/svg/plus-white.svg";
+    let pinnedPath = "/img/svg/pin-white.svg";
+    let excludePath = "/img/svg/minus-white.svg";
+
+    let response
+
+    if (relation === "include") {
+      console.log('include')
+      if (
+        this.table.chats[this.chatIndex].folders.include.includes(
+          Number(folderId)
+        )) {
+          console.log('false')
+          response = await eel.set_chat_folder_relation(
+            Number(chatId),
+            Number(folderId),
+          )();
+      } else {
+        console.log(relation)
+        response = await eel.set_chat_folder_relation(
+          Number(chatId),
+          Number(folderId),
+          relation
+        )();
+      }
+    } else if (relation === "pinned") {
+      console.log('pinned')
+      if (
+        this.table.chats[this.chatIndex].folders.pinned.includes(
+          Number(folderId)
+        )) {
+          let res1 = await eel.set_chat_folder_relation(
+            Number(chatId),
+            Number(folderId),
+            'include'
+          )();
+
+          if (res1.success) {
+            response = await eel.set_chat_folder_relation(
+              Number(chatId),
+              Number(folderId),
+            )();
+          } else {
+            const text =
+        response.error_code === "folder_empty_error"
+          ? "Папка не может быть пустой"
+          : "Произошла ошибка";
+      const popupComponent = new Popup(/* html */ `
+          <div class='popup-content'>
+            <h2>Произошла ошибка</h2>
+            <p>${text}</p>
+            <div class='buttons'>
+              <button id='popup-done'>OK</button>
+            </div>
+          </div>
+        `);
+
+      popupComponent.show();
+
+      function addFolderHandler() {
+        popupComponent.close();
+      }
+
+      document
+        .getElementById("popup-done")
+        .addEventListener("click", addFolderHandler, { once: true });
+          }
+      } else {
+        console.log(relation)
+        response = await eel.set_chat_folder_relation(
+          Number(chatId),
+          Number(folderId),
+          relation
+        )();
+      }
+    } else if (relation === "exclude") {
+      console.log('exclude')
+      if (
+        this.table.chats[this.chatIndex].folders.exclude.includes(
+          Number(folderId)
+          )) {
+          console.log('false')
+          response = await eel.set_chat_folder_relation(
+            Number(chatId),
+            Number(folderId),
+          )();
+      } else {
+        console.log(relation)
+        response = await eel.set_chat_folder_relation(
+          Number(chatId),
+          Number(folderId),
+          relation
+        )();
+      }
+    }
 
     if (response.success) {
       this.counter += 1;
 
-      let imagePath = "";
-
       if (relation === "include") {
-        imagePath = "/img/svg/plus-black.svg";
-        event.classList.remove("null");
-        event.classList.add("include");
-
         if (
-          !this.table.chats[this.chatIndex].folders.include.includes(
-            Number(folderId),
+          this.table.chats[this.chatIndex].folders.include.includes(
+            Number(folderId)
           )
         ) {
-          this.table.chats[this.chatIndex].folders.include.push(
-            Number(folderId),
+          thElement.innerHTML = /* html */ `
+            <button
+              class='button include'
+            >
+              <img src='${includePath}' />
+            </button>
+            <button
+              class='button pinned'
+            >
+              <img src='${pinnedPath}' />
+            </button>
+            <button
+              class='button exclude'
+            >
+              <img src='${excludePath}' />
+            </button>
+          `;
+          let index = this.table.chats[this.chatIndex].folders.include.indexOf(
+            Number(folderId)
           );
-        }
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.include.splice(index, 1);
+          }
+          index = this.table.chats[this.chatIndex].folders.exclude.indexOf(
+            Number(folderId)
+          );
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.exclude.splice(index, 1);
+          }
+          index = this.table.chats[this.chatIndex].folders.pinned.indexOf(
+            Number(folderId)
+          );
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.pinned.splice(index, 1);
+          }
+        } else {
+          includePath = "/img/svg/plus-black.svg";
 
-        const pinnedIndex = this.table.chats[
-          this.chatIndex
-        ].folders.pinned.indexOf(Number(folderId));
-        if (pinnedIndex !== -1) {
-          this.table.chats[this.chatIndex].folders.pinned.splice(
-            pinnedIndex,
-            1,
+          thElement.innerHTML = /* html */ `
+            <button
+              class='button include'
+            >
+              <img src='${includePath}' />
+            </button>
+            <button
+              class='button pinned'
+            >
+              <img src='${pinnedPath}' />
+            </button>
+            <button
+              class='button exclude'
+            >
+              <img src='${excludePath}' />
+            </button>
+          `;
+          this.table.chats[this.chatIndex].folders.include.push(
+            Number(folderId)
           );
+
+          let index = this.table.chats[this.chatIndex].folders.pinned.indexOf(
+            Number(folderId)
+          );
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.pinned.splice(index, 1);
+          }
+          index = this.table.chats[this.chatIndex].folders.exclude.indexOf(
+            Number(folderId)
+          );
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.exclude.splice(index, 1);
+          }
         }
       } else if (relation === "pinned") {
-        imagePath = "/img/svg/pin-black.svg";
-        event.classList.remove("include");
-        event.classList.add("pinned");
-
-        const includeIndex = this.table.chats[
-          this.chatIndex
-        ].folders.include.indexOf(Number(folderId));
-        if (includeIndex !== -1) {
-          this.table.chats[this.chatIndex].folders.include.splice(
-            includeIndex,
-            1,
-          );
-        }
-
         if (
-          !this.table.chats[this.chatIndex].folders.pinned.includes(
-            Number(folderId),
+          this.table.chats[this.chatIndex].folders.pinned.includes(
+            Number(folderId)
           )
         ) {
-          this.table.chats[this.chatIndex].folders.pinned.push(
-            Number(folderId),
+          thElement.innerHTML = /* html */ `
+            <button
+              class='button include'
+            >
+              <img src='${includePath}' />
+            </button>
+            <button
+              class='button pinned'
+            >
+              <img src='${pinnedPath}' />
+            </button>
+            <button
+              class='button exclude'
+            >
+              <img src='${excludePath}' />
+            </button>
+          `;
+          let index = this.table.chats[this.chatIndex].folders.include.indexOf(
+            Number(folderId)
           );
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.include.splice(index, 1);
+          }
+          index = this.table.chats[this.chatIndex].folders.pinned.indexOf(
+            Number(folderId)
+          );
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.pinned.splice(index, 1);
+          }
+          index = this.table.chats[this.chatIndex].folders.exclude.indexOf(
+            Number(folderId)
+          );
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.exclude.splice(index, 1);
+          }
+        } else {
+          pinnedPath = "/img/svg/pin-black.svg";
+
+          thElement.innerHTML = /* html */ `
+            <button
+              class='button include'
+            >
+              <img src='${includePath}' />
+            </button>
+            <button
+              class='button pinned'
+            >
+              <img src='${pinnedPath}' />
+            </button>
+            <button
+              class='button exclude'
+            >
+              <img src='${excludePath}' />
+            </button>
+          `;
+          this.table.chats[this.chatIndex].folders.pinned.push(
+            Number(folderId)
+          );
+
+          let index = this.table.chats[this.chatIndex].folders.include.indexOf(
+            Number(folderId)
+          );
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.include.splice(index, 1);
+          }
+          index = this.table.chats[this.chatIndex].folders.exclude.indexOf(
+            Number(folderId)
+          );
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.exclude.splice(index, 1);
+          }
         }
       } else if (relation === "exclude") {
-        imagePath = "/img/svg/minus-black.svg";
-        event.classList.remove("pinned");
-        event.classList.add("exclude");
-
-        const pinnedIndex = this.table.chats[
-          this.chatIndex
-        ].folders.pinned.indexOf(Number(folderId));
-        if (pinnedIndex !== -1) {
-          this.table.chats[this.chatIndex].folders.pinned.splice(
-            pinnedIndex,
-            1,
-          );
-        }
-
         if (
-          !this.table.chats[this.chatIndex].folders.exclude.includes(
-            Number(folderId),
+          this.table.chats[this.chatIndex].folders.exclude.includes(
+            Number(folderId)
           )
         ) {
-          this.table.chats[this.chatIndex].folders.exclude.push(
-            Number(folderId),
+          thElement.innerHTML = /* html */ `
+            <button
+              class='button include'
+            >
+              <img src='${includePath}' />
+            </button>
+            <button
+              class='button pinned'
+            >
+              <img src='${pinnedPath}' />
+            </button>
+            <button
+              class='button exclude'
+            >
+              <img src='${excludePath}' />
+            </button>
+          `;
+          let index = this.table.chats[this.chatIndex].folders.include.indexOf(
+            Number(folderId)
           );
-        }
-      } else if (relation === null) {
-        imagePath = "/img/svg/plus-white.svg";
-        event.classList.remove("exclude");
-        event.classList.add("null");
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.include.splice(index, 1);
+          }
+          index = this.table.chats[this.chatIndex].folders.pinned.indexOf(
+            Number(folderId)
+          );
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.pinned.splice(index, 1);
+          }
+          index = this.table.chats[this.chatIndex].folders.exclude.indexOf(
+            Number(folderId)
+          );
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.exclude.splice(index, 1);
+          }
+        } else {
+          excludePath = "/img/svg/minus-black.svg";
 
-        const excludeIndex = this.table.chats[
-          this.chatIndex
-        ].folders.exclude.indexOf(Number(folderId));
-        if (excludeIndex !== -1) {
-          this.table.chats[this.chatIndex].folders.exclude.splice(
-            excludeIndex,
-            1,
+          thElement.innerHTML = /* html */ `
+            <button
+              class='button include'
+            >
+              <img src='${includePath}' />
+            </button>
+            <button
+              class='button pinned'
+            >
+              <img src='${pinnedPath}' />
+            </button>
+            <button
+              class='button exclude'
+            >
+              <img src='${excludePath}' />
+            </button>
+          `;
+          this.table.chats[this.chatIndex].folders.exclude.push(
+            Number(folderId)
           );
+
+          let index = this.table.chats[this.chatIndex].folders.include.indexOf(
+            Number(folderId)
+          );
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.include.splice(index, 1);
+          }
+          index = this.table.chats[this.chatIndex].folders.pinned.indexOf(
+            Number(folderId)
+          );
+          if (index !== -1) {
+            this.table.chats[this.chatIndex].folders.pinned.splice(index, 1);
+          }
         }
       }
 
-      event.innerHTML = `<img src='${imagePath}' />`;
+      console.log(this.table.chats[this.chatIndex].folders);
     }
     if (!response.success) {
       const text =

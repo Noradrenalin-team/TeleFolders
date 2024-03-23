@@ -1,5 +1,6 @@
 import Popup from "../PopupWidget/index.js";
 import Table from "../TableWidget/index.js";
+import Header from "../HeaderWidget/index.js";
 
 export default class Login {
   constructor() {
@@ -8,31 +9,54 @@ export default class Login {
     this.code = "";
     this.password = "";
 
+    document.querySelector("main").insertAdjacentHTML(
+      "afterbegin",
+      /* html */ `
+        <div class="login">
+          <h3>Вы не авторизованы, войдите в ваш telegram-аккаунт</h3>
+          <p class="login-label">Введите ваш номер телефона:</p>
+          <div class="login-form">
+            <p class="input-error hide">
+              Неверный номер телефона
+            </p>
+            <input type="tel" class="login-input" placeholder="Номер телефона" />
+            <button class="login-button">Войти</button>
+          </div>
+        </div>
+      `
+    );
+
     this.formElement = document.querySelector(".login .login-form");
     this.inputLabel = document.querySelector(".login-label");
-    this.inputError = this.formElement.querySelector("p.input-error");
+    this.inputError = document.querySelector("p.input-error");
     this.loginButton = document.querySelector(".login-button");
     this.inputElement = document.querySelector(".login-input");
   }
 
   init = () => {
     this.loginButton.addEventListener("click", this.loginPhone);
+    document.addEventListener("keydown", this.click);
+  };
+
+  click = (event) => {
+    if (event.code === "Enter") this.loginButton.click();
   };
 
   loginPhone = async () => {
     this.lostFocus();
-    console.log(this.inputElement.value);
+    this.loginButton.disabled = true;
+    this.loginButton.innerHTML = `
+      <div class="spinner">
+        <div class="block"></div>
+      </div>
+    `;
 
     let phone = this.inputElement.value;
 
     const response = await eel.login_phone(phone)();
     // const response = {success: true, phone_code_hash: 123}
 
-    console.log(response);
-    console.log(phone);
-
     if (response.success) {
-      this._log();
       this.phone_code_hash = response.phone_code_hash;
       this.phone = this.inputElement.value;
 
@@ -40,25 +64,31 @@ export default class Login {
       this.loginButton.addEventListener("click", this.loginCode);
 
       this.changeFormLabels("code");
+      this.loginButton.disabled = false;
+      this.loginButton.textContent = "Войти"
     } else {
-      this._log();
       this.authUnOkPopup();
       this.changeErrorLabel(true);
+      this.loginButton.disabled = false;
+      this.loginButton.textContent = "Войти"
     }
   };
 
   loginCode = async () => {
+    this.loginButton.disabled = true;
+    this.loginButton.innerHTML = `
+      <div class="spinner">
+        <div class="block"></div>
+      </div>
+    `;
     this.lostFocus();
     let phone = this.phone;
     let code = this.inputElement.value;
-
-    console.log(phone, code);
 
     const response = await eel.login_code(phone, code)();
     // const response = {success: true, phone_code_hash: 123, need_password: true}
 
     if (response.success) {
-      this._log();
       if (response.need_password) {
         this.phone_code_hash = response.phone_code_hash;
         this.code = code;
@@ -73,49 +103,67 @@ export default class Login {
 
         this.authDonePopup();
       }
+
+      this.loginButton.disabled = false;
+      this.loginButton.textContent = "Войти"
     } else {
-      this._log();
       this.changeErrorLabel(true);
+      this.loginButton.disabled = false;
+      this.loginButton.textContent = "Войти"
     }
   };
 
   loginPassword = async () => {
-    this.lostFocus();
+    this.loginButton.disabled = true;
+    this.loginButton.innerHTML = `
+      <div class="spinner">
+        <div class="block"></div>
+      </div>
+    `;
     let password = this.inputElement.value;
     let phone = this.phone;
     let phone_code_hash = this.phone_code_hash;
 
-    console.log(phone, password, phone_code_hash);
-
     const response = await eel.login_password(
       phone,
       password,
-      phone_code_hash,
+      phone_code_hash
     )();
     // const response = {success: true, user: {username: '123123'}}
 
     if (response.success) {
-      this._log();
+      this.changeErrorLabel(false);
+
       localStorage.setItem("userInfo", JSON.stringify(response.user));
 
       this.loginButton.removeEventListener("click", this.loginPassword);
+      document.removeEventListener("keydown", this.click);
 
       document.querySelector(".login").classList.add("hide");
-      document.querySelector(".table-container").classList.remove("hide");
+      document
+        .querySelector(".table-container.main-table")
+        .classList.remove("hide");
 
+      new Header(response.user).changeAvatar(response.picture);
       new Table().getData();
+
       this.authDonePopup();
+      this.loginButton.disabled = false;
+      this.loginButton.textContent = "Войти"
     } else {
+      console.error("error");
       this._log();
       this.changeErrorLabel(true);
+      this.loginButton.disabled = false;
+      this.loginButton.textContent = "Войти"
     }
   };
 
   _log = () => {
-    console.log("number: ", this.phone);
-    console.log("phone_code_hash: ", this.phone_code_hash);
-    console.log("code: ", this.code);
-    console.log("password: ", this.password);
+    console.debug("number: ", this.phone);
+    console.debug("phone_code_hash: ", this.phone_code_hash);
+    console.debug("code: ", this.code);
+    console.debug("password: ", this.password);
   };
 
   lostFocus = () => {
@@ -125,13 +173,13 @@ export default class Login {
 
   authDonePopup = () => {
     const popup = new Popup(`
-        <div class='popup-content'>
-          <h2>Вы успешно авторизовались</h2>
-          <div class='buttons'>
-            <button id='popup-done'>ОК</button>
-          </div>
-        </div>
-      `);
+<div class='popup-content'>
+  <h2>Вы успешно авторизовались</h2>
+  <div class='buttons'>
+    <button id='popup-done'>ОК</button>
+  </div>
+</div>
+`);
 
     popup.show();
 
@@ -141,19 +189,21 @@ export default class Login {
 
     document
       .getElementById("popup-done")
-      .addEventListener("click", addFolderHandler, { once: true });
+      .addEventListener("click", addFolderHandler, {
+        once: true,
+      });
   };
 
   authUnOkPopup = () => {
     const popup = new Popup(`
-        <div class='popup-content'>
-          <h2>Произошла ошибка</h2>
-          <p>Попробуйте еще раз ввести номер телефона или попробуйте войти позже</p>
-          <div class='buttons'>
-            <button id='popup-done'>ОК</button>
-          </div>
-        </div>
-      `);
+<div class='popup-content'>
+  <h2>Произошла ошибка</h2>
+  <p>Попробуйте еще раз ввести номер телефона или попробуйте войти позже</p>
+  <div class='buttons'>
+    <button id='popup-done'>ОК</button>
+  </div>
+</div>
+`);
 
     popup.show();
 
@@ -163,7 +213,9 @@ export default class Login {
 
     document
       .getElementById("popup-done")
-      .addEventListener("click", addFolderHandler, { once: true });
+      .addEventListener("click", addFolderHandler, {
+        once: true,
+      });
   };
 
   changeErrorLabel = (isError) => {
