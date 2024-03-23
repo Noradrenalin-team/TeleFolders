@@ -13,6 +13,9 @@
   padding-inline: 0;
   padding-block: 0;
   box-sizing: inherit;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
   scrollbar-width: 1px;
   scrollbar-color: #bbb;
@@ -69,6 +72,7 @@ input.error {
   border-right: 3px solid rgba(0, 0, 0, 0.1);
   border-bottom: 3px solid rgba(0, 0, 0, 0.1);
   border-left: 3px solid rgb(129, 138, 145);
+  -webkit-animation: spinner 0.5s infinite linear;
   animation: spinner 0.5s infinite linear;
 }
 
@@ -85,9 +89,18 @@ input.error {
   border-right: 3px solid rgba(0, 0, 0, 0.1);
   border-bottom: 3px solid rgba(0, 0, 0, 0.1);
   border-left: 3px solid rgb(129, 138, 145);
+  -webkit-animation: spinner 0.5s infinite linear;
   animation: spinner 0.5s infinite linear;
 }
 
+@-webkit-keyframes spinner {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 @keyframes spinner {
   0% {
     transform: rotate(0deg);
@@ -198,6 +211,8 @@ body .popup-container {
 }
 body .popup-container .popup-content {
   width: 50vw;
+  height: -webkit-max-content;
+  height: -moz-max-content;
   height: max-content;
   background-color: #fff;
   padding: 1rem;
@@ -242,6 +257,8 @@ body .app header.header .avatar {
 body .app header.header .avatar .user-menu {
   z-index: 20;
   position: absolute;
+  width: -webkit-max-content;
+  width: -moz-max-content;
   width: max-content;
   background-color: #b0b0b0;
   right: 0;
@@ -285,7 +302,11 @@ body .app main.main .table-container .table thead tr th {
   position: relative;
 }
 body .app main.main .table-container .table thead tr th button {
+  width: -webkit-max-content;
+  width: -moz-max-content;
   width: max-content;
+  height: -webkit-max-content;
+  height: -moz-max-content;
   height: max-content;
   position: absolute;
   background-color: transparent;
@@ -336,6 +357,8 @@ body .app main.main .table-container .table tbody tr:not(:last-child) {
   border-bottom: 1px black solid;
 }
 body .app main.main .table-container .table thead tr th span {
+  -webkit-writing-mode: vertical-rl;
+  -ms-writing-mode: tb-rl;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
 }
