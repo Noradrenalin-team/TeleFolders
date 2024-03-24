@@ -13,6 +13,9 @@
   padding-inline: 0;
   padding-block: 0;
   box-sizing: inherit;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
   scrollbar-width: 1px;
   scrollbar-color: #bbb;
