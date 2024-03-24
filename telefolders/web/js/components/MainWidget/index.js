@@ -6,6 +6,7 @@ import Popup from "../PopupWidget/index.js";
 export default class Main {
   async init() {
     let response = await eel.init()();
+    console.log('init: ' + response)
 
     if (!response.success) {
       const popupComponent = new Popup(`
@@ -37,6 +38,8 @@ export default class Main {
         .addEventListener("click", closeHandler, {once: true});
     } else {
       response = await eel.get_user()();
+
+      console.log('get_user: ' + response)
 
       if (response === null) {
         document.querySelector(".spinner_large").classList.add("hide");
