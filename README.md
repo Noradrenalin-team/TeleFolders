@@ -33,7 +33,7 @@ TeleFolders - это менеджер папок для управления ч�
 
 ### Использование исполняемого файла
 
-1. Скачайте исполняемый файл [telefolders.exe](https://github.com/Noradrenalin-team/TeleFolders/releases/download/v0.1.0/telefolders.exe) из раздела [релизов](https://github.com/Noradrenalin-team/TeleFolders/releases)
+1. Скачайте и запустите исполняемый файл для вашей операционной системы из раздела [релизов](https://github.com/Noradrenalin-team/TeleFolders/releases)
 
 2. Запустите исполняемый файл
 
@@ -93,10 +93,10 @@ python -m telefolders --api_id <api_id> --api_hash <api_hash>
 
 ## Сборка проекта
 
-Для сборки проекта в исполняемый файл exe используется библиотека PyInstaller:
+Для сборки проекта в исполняемый файл используется библиотека PyInstaller:
 
 ```bash
-pyinstaller --noconfirm --onefile --windowed --add-data "telefolders;telefolders/"  "main.py"
+pyinstaller --noconfirm --onefile --windowed --add-data "telefolders:telefolders/"  "main.py"
 ```
 
 ## Участие в проекте

@@ -21,7 +21,12 @@ class Telefolders:
 
             try:
                 self.client = TelegramClient(
-                    "telefolders", api_id, api_hash, lang_code="ru"
+                    os.path.join(
+                        os.path.dirname(os.path.realpath(__file__)), "telefolders"
+                    ),
+                    api_id,
+                    api_hash,
+                    lang_code="ru",
                 )
                 self.client.connect()
 
