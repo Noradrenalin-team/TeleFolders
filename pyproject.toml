@@ -1,13 +1,14 @@
 [tool.poetry]
 name = "telefolders"
-version = "0.1.0"
+version = "0.2.1"
 description = "TeleFolders is a folder and chatmanager designed for Telegram"
 authors = ["Dmitry (DevDK) <Dmitry@kolyadin.me>","Shevluk Vasiliy <shevlukvp@shevluk.ru>"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/Noradrenalin-team/TeleFolders"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "3.11.*"
 telethon = "^1.34.0"
 eel = "^0.16.0"
 

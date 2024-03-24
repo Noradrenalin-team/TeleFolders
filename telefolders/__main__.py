@@ -22,7 +22,7 @@ def set_env_vars():
 
 
 def main():
-    eel.init("telefolders/web")
+    eel.init(os.path.join(os.path.dirname(os.path.realpath(__file__)), "web"))
     eel.start("main.html", mode="default")
 
 
