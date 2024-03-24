@@ -1,4 +1,12 @@
+/**
+ * @class Popup
+ * @classdesc класс реализующий popup
+ */
 export default class Popup {
+  /**
+   * @constructor
+   * @param {String} content HTML разметка в виде строки
+   */
   constructor(content) {
     let container = /* html */ `<div id="popup" class="popup-container popup-hidden"></div>`
     document.querySelector('body').insertAdjacentHTML('afterbegin', container)
@@ -7,6 +15,10 @@ export default class Popup {
     this.popup = document.getElementById("popup");
   }
 
+  /**
+   * @method show
+   * @description метод, который показывает popup
+   */
   show = () => {
     this.popup.classList.remove("popup-hidden");
     this.popup.textContent = "";
@@ -14,6 +26,10 @@ export default class Popup {
     this.popup.insertAdjacentHTML("beforeend", this.content);
   }
 
+  /**
+   * @method close
+   * @description метод, который скрывает popup
+   */
   close = () => {
     this.popup.classList.add("popup-hidden");
     this.popup.textContent = "";

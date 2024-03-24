@@ -69,6 +69,7 @@ input.error {
   border-right: 3px solid rgba(0, 0, 0, 0.1);
   border-bottom: 3px solid rgba(0, 0, 0, 0.1);
   border-left: 3px solid rgb(129, 138, 145);
+  -webkit-animation: spinner 0.5s infinite linear;
   animation: spinner 0.5s infinite linear;
 }
 
@@ -85,9 +86,18 @@ input.error {
   border-right: 3px solid rgba(0, 0, 0, 0.1);
   border-bottom: 3px solid rgba(0, 0, 0, 0.1);
   border-left: 3px solid rgb(129, 138, 145);
+  -webkit-animation: spinner 0.5s infinite linear;
   animation: spinner 0.5s infinite linear;
 }
 
+@-webkit-keyframes spinner {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 @keyframes spinner {
   0% {
     transform: rotate(0deg);
@@ -198,6 +208,8 @@ body .popup-container {
 }
 body .popup-container .popup-content {
   width: 50vw;
+  height: -webkit-max-content;
+  height: -moz-max-content;
   height: max-content;
   background-color: #fff;
   padding: 1rem;
@@ -212,8 +224,34 @@ body .popup-container .popup-content input {
   border-radius: 1px;
 }
 body .popup-container .popup-content .buttons {
+  margin-top: 1rem;
   display: flex;
+  justify-content: center;
   gap: 0.5rem;
+}
+body .popup-container .popup-content .buttons button {
+  border: none;
+  width: 100px;
+  height: 30px;
+  border-radius: 0.3rem;
+  background-color: #000;
+  color: #fff;
+  transition: 200ms all ease;
+}
+@media (hover: hover) {
+  body .popup-container .popup-content .buttons button:hover {
+    background-color: #fff;
+    color: #000;
+    border: 2px solid #000;
+    box-sizing: border-box;
+  }
+}
+body .popup-container .popup-content .buttons button:active {
+  background-color: #fff;
+  color: #000;
+  border: 2px solid #000;
+  transform: scale(0.9);
+  box-sizing: border-box;
 }
 body .popup-hidden {
   height: 0;
@@ -242,6 +280,8 @@ body .app header.header .avatar {
 body .app header.header .avatar .user-menu {
   z-index: 20;
   position: absolute;
+  width: -webkit-max-content;
+  width: -moz-max-content;
   width: max-content;
   background-color: #b0b0b0;
   right: 0;
@@ -255,8 +295,88 @@ body .app header.header .avatar img {
 body .app main.main {
   padding-bottom: 1rem;
 }
-body .app main.main .login button {
-  cursor: pointer;
+body .app main.main .login-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+body .app main.main .login {
+  display: flex;
+  flex-direction: column;
+}
+body .app main.main .login .login-label {
+  margin-bottom: 0.5rem;
+}
+body .app main.main .login .login-form {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+body .app main.main .login .login-form input {
+  width: 100%;
+  border: 2px solid black;
+  outline: none;
+}
+body .app main.main .login .login-form input::-webkit-outer-spin-button,
+body .app main.main .login .login-form input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: textfield;
+  margin: 0;
+}
+body .app main.main .login .login-form input[type=number] {
+  -moz-appearance: textfield;
+  -webkit-appearance: textfield;
+  appearance: textfield;
+}
+body .app main.main .login .login-form input::-webkit-outer-spin-button,
+body .app main.main .login .login-form input::-webkit-inner-spin-button {
+  display: none;
+}
+body .app main.main .login .login-form input.error {
+  border: 2px solid red;
+}
+body .app main.main .login .login-form input.error::-webkit-input-placeholder {
+  color: red;
+}
+body .app main.main .login .login-form input.error::-moz-placeholder {
+  color: red;
+}
+body .app main.main .login .login-form input.error:-ms-input-placeholder {
+  color: red;
+}
+body .app main.main .login .login-form input.error::-ms-input-placeholder {
+  color: red;
+}
+body .app main.main .login .login-form input.error::placeholder {
+  color: red;
+}
+body .app main.main .login .login-form button {
+  border: none;
+  width: 100px;
+  height: 30px;
+  border-radius: 0.3rem;
+  background-color: #000;
+  color: #fff;
+  transition: 200ms all ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (hover: hover) {
+  body .app main.main .login .login-form button:hover {
+    background-color: #fff;
+    color: #000;
+    border: 2px solid #000;
+    box-sizing: border-box;
+  }
+}
+body .app main.main .login .login-form button:active {
+  background-color: #fff;
+  color: #000;
+  border: 2px solid #000;
+  transform: scale(0.9);
+  box-sizing: border-box;
 }
 body .app main.main .table-container {
   width: 100%;
@@ -285,7 +405,11 @@ body .app main.main .table-container .table thead tr th {
   position: relative;
 }
 body .app main.main .table-container .table thead tr th button {
+  width: -webkit-max-content;
+  width: -moz-max-content;
   width: max-content;
+  height: -webkit-max-content;
+  height: -moz-max-content;
   height: max-content;
   position: absolute;
   background-color: transparent;
@@ -336,6 +460,8 @@ body .app main.main .table-container .table tbody tr:not(:last-child) {
   border-bottom: 1px black solid;
 }
 body .app main.main .table-container .table thead tr th span {
+  -webkit-writing-mode: vertical-rl;
+  -ms-writing-mode: tb-rl;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
 }
