@@ -227,8 +227,34 @@ body .popup-container .popup-content input {
   border-radius: 1px;
 }
 body .popup-container .popup-content .buttons {
+  margin-top: 1rem;
   display: flex;
+  justify-content: center;
   gap: 0.5rem;
+}
+body .popup-container .popup-content .buttons button {
+  border: none;
+  width: 100px;
+  height: 30px;
+  border-radius: 0.3rem;
+  background-color: #000;
+  color: #fff;
+  transition: 200ms all ease;
+}
+@media (hover: hover) {
+  body .popup-container .popup-content .buttons button:hover {
+    background-color: #fff;
+    color: #000;
+    border: 2px solid #000;
+    box-sizing: border-box;
+  }
+}
+body .popup-container .popup-content .buttons button:active {
+  background-color: #fff;
+  color: #000;
+  border: 2px solid #000;
+  transform: scale(0.9);
+  box-sizing: border-box;
 }
 body .popup-hidden {
   height: 0;
@@ -272,8 +298,88 @@ body .app header.header .avatar img {
 body .app main.main {
   padding-bottom: 1rem;
 }
-body .app main.main .login button {
-  cursor: pointer;
+body .app main.main .login-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+body .app main.main .login {
+  display: flex;
+  flex-direction: column;
+}
+body .app main.main .login .login-label {
+  margin-bottom: 0.5rem;
+}
+body .app main.main .login .login-form {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+body .app main.main .login .login-form input {
+  width: 100%;
+  border: 2px solid black;
+  outline: none;
+}
+body .app main.main .login .login-form input::-webkit-outer-spin-button,
+body .app main.main .login .login-form input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: textfield;
+  margin: 0;
+}
+body .app main.main .login .login-form input[type=number] {
+  -moz-appearance: textfield;
+  -webkit-appearance: textfield;
+  appearance: textfield;
+}
+body .app main.main .login .login-form input::-webkit-outer-spin-button,
+body .app main.main .login .login-form input::-webkit-inner-spin-button {
+  display: none;
+}
+body .app main.main .login .login-form input.error {
+  border: 2px solid red;
+}
+body .app main.main .login .login-form input.error::-webkit-input-placeholder {
+  color: red;
+}
+body .app main.main .login .login-form input.error::-moz-placeholder {
+  color: red;
+}
+body .app main.main .login .login-form input.error:-ms-input-placeholder {
+  color: red;
+}
+body .app main.main .login .login-form input.error::-ms-input-placeholder {
+  color: red;
+}
+body .app main.main .login .login-form input.error::placeholder {
+  color: red;
+}
+body .app main.main .login .login-form button {
+  border: none;
+  width: 100px;
+  height: 30px;
+  border-radius: 0.3rem;
+  background-color: #000;
+  color: #fff;
+  transition: 200ms all ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (hover: hover) {
+  body .app main.main .login .login-form button:hover {
+    background-color: #fff;
+    color: #000;
+    border: 2px solid #000;
+    box-sizing: border-box;
+  }
+}
+body .app main.main .login .login-form button:active {
+  background-color: #fff;
+  color: #000;
+  border: 2px solid #000;
+  transform: scale(0.9);
+  box-sizing: border-box;
 }
 body .app main.main .table-container {
   width: 100%;

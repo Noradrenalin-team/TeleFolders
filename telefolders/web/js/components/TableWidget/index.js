@@ -1,7 +1,15 @@
 import Popup from "../PopupWidget/index.js";
 import FloatView from "../FloatViewWidget/index.js";
 
+/**
+ * @class Table
+ * @classdesc класс, реализующий работу с главной таблицей
+ */
 export default class Table {
+  /**
+   * @constructor
+   * @returns {Table.instance} возвращает singleton
+   */
   constructor() {
     if (
       JSON.parse(localStorage.getItem("archiveState")) === null ||
@@ -19,6 +27,10 @@ export default class Table {
     return Table.instance;
   }
 
+  /**
+   * @method getData
+   * @description метод, который получает данные
+   */
   getData = async () => {
     document.querySelector(".table-container.main-table").classList.add("hide");
     document.querySelector(".spinner_large").classList.remove("hide");
@@ -35,14 +47,26 @@ export default class Table {
     this.drawChats();
   };
 
+  /**
+   * @method getChats
+   * @description метод, который получает чаты
+   */
   getChats = async () => {
     return await eel.get_all_chats()();
   };
 
+  /**
+   * @method getFolders
+   * @description метод, который получает папки
+   */
   getFolders = async () => {
     return await eel.get_folders()();
   };
 
+  /**
+   * @method drawHeader
+   * @description метод, который рисует header таблицы
+   */
   async drawHeader() {
     document
       .querySelector(".table-container.main-table")
@@ -84,6 +108,11 @@ export default class Table {
       .addEventListener("click", this.handleAddFolder);
   }
 
+  /**
+   * TODO
+   * @method handleAddFolder
+   * @description метод, который создает popup для получания названия папки
+   */
   handleAddFolder = () => {
     const popupComponent = new Popup(`
       <div class='popup-content'>
@@ -123,6 +152,10 @@ export default class Table {
       .addEventListener("click", cancleHandler, { once: true });
   };
 
+  /**
+   * @method drawChats
+   * @description метод, который рисует таблицу
+   */
   async drawChats() {
     const chats = this.chats;
     const folders = this.folders;
@@ -303,6 +336,11 @@ export default class Table {
     tbodyElement.addEventListener("click", this.handleClick);
   }
 
+  /**
+   * @method handleClick
+   * @description метод, который делегирует события
+   * @param {Event} event объект события javascript
+   */
   handleClick = (event) => {
     if (event.target.className === "button exclude") {
       this.setChatRelation(event.target, null);
@@ -341,6 +379,13 @@ export default class Table {
     }
   };
 
+  /**
+   * @method setChatsButtons
+   * @description метод, который возвращает разметку для кнопки (кнопка для чата)
+   * @param {String | Number} folderId id папки
+   * @param {Object} userInfo данные об пользователе
+   * @returns {String} возвращает HTML в виде строки
+   */
   setChatsButtons(folderId, userInfo) {
     let imagePath = "/img/svg/plus-white.svg";
     let value = "";
@@ -359,7 +404,7 @@ export default class Table {
       value = "null";
     }
 
-    let result = /* html */ `
+    let html = /* html */ `
       <button
         class='button ${value}'
       >
@@ -367,11 +412,18 @@ export default class Table {
       </button>
     `;
 
-    return result;
+    return html;
   }
 
+  /**
+   * @method setFlugsButton
+   * @description метод, который возвращает разметку для кнопки (кнопка для флага)
+   * @param {Object} folder данные об папке
+   * @param {String} folderFlag флаг папки
+   * @returns {String} возвращает HTML в виде строки
+   */
   setFlugsButton = (folder, folderFlag) => {
-    let result = ["exclude_muted", "exclude_read", "exclude_archived"].includes(
+    let html = ["exclude_muted", "exclude_read", "exclude_archived"].includes(
       folderFlag
     )
       ? /* html */ `
@@ -398,9 +450,15 @@ export default class Table {
           `
         }
       </button>`;
-    return result;
+    return html;
   };
 
+  /**
+   * @method setChatRelation
+   * @description метод, который изменяет состояние чата
+   * @param {String} relation состояние чата в папке
+   * @param {Event} event объект события javascript
+   */
   setChatRelation = async (event, relation) => {
     //add spinner
     event.innerHTML = `
@@ -509,6 +567,11 @@ export default class Table {
     }
   };
 
+  /**
+   * @method setFlagRelation
+   * @description метод, который добавляет или убирает флаги у папки
+   * @param {Event} event объект события javascript
+   */
   setFlagRelation = async (event) => {
     console.log(event);
     //add spinner
@@ -528,14 +591,14 @@ export default class Table {
 
     if (response.success === true) {
       event.setAttribute("data-flag-state", !value);
-      let result = [
+      let html = [
         "exclude_muted",
         "exclude_read",
         "exclude_archived",
       ].includes(flag);
 
       if (value) {
-        if (result) {
+        if (html) {
           event.innerHTML = /* html */ `
           <div class='buttons flag'>
             <button class='button flag'>
@@ -553,7 +616,7 @@ export default class Table {
           `;
         }
       } else {
-        if (result) {
+        if (html) {
           event.innerHTML = /* html */ `
           <div class='buttons flag'>
             <button class='button flag'>
@@ -572,6 +635,30 @@ export default class Table {
         }
       }
     }
+
+    const text =
+        response.error_code === "folder_empty_error"
+          ? "Папка не может быть пустой"
+          : "Произошла ошибка";
+      const popupComponent = new Popup(/* html */ `
+          <div class='popup-content'>
+            <h2>Произошла ошибка</h2>
+            <p>${text}</p>
+            <div class='buttons'>
+              <button id='popup-done'>OK</button>
+            </div>
+          </div>
+        `);
+
+      popupComponent.show();
+
+      function addFolderHandler() {
+        popupComponent.close();
+      }
+
+      document
+        .getElementById("popup-done")
+        .addEventListener("click", addFolderHandler, { once: true });
     if (!response.success) {
       const text =
         response.error_code === "folder_empty_error"
@@ -599,6 +686,11 @@ export default class Table {
     }
   };
 
+  /**
+   * @method setArchiveRelation
+   * @description метод, который добавляет или убирает чат из архива
+   * @param {Event} event объект события javascript
+   */
   setArchiveRelation = async (event) => {
     //add spinner
     event.innerHTML = `
@@ -643,20 +735,37 @@ export default class Table {
     }
   };
 
+  /**
+   * @method showArchive
+   * @description метод, который показывает архивные чаты
+   */
   showArchive = () => {
     localStorage.setItem("archiveState", true);
     this.archiveState = true;
     this.drawChats();
   };
 
+  /**
+   * @method hideArchive
+   * @description метод, который скрывает архивные чаты
+   */
   hideArchive = () => {
     localStorage.setItem("archiveState", false);
     this.archiveState = false;
     this.drawChats();
   };
 
+  /**
+   * TODO
+   * @method addFolder
+   * @description метод, который создает и добавляет новую папку
+   */
   addFolder() {}
 
+  /**
+   * @method updateChats
+   * @description метод, который обновляет данные об чатах и папках и перерисовывает таблицу
+   */
   async updateChats() {
     this.getData();
   }

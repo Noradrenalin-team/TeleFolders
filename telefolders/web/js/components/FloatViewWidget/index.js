@@ -1,7 +1,15 @@
 import Table from "../TableWidget/index.js";
 import Popup from "../PopupWidget/index.js";
 
+/**
+ * @class FloatView
+ * @classdesc класс, который реализует вид FloatView
+ */
 class FloatView {
+  /**
+   * @constructor
+   * @returns {FloatView.instance} возвращает singleton
+   */
   constructor() {
     this.chatIndex;
     this.counter = 0;
@@ -15,7 +23,7 @@ class FloatView {
             id="float-view-container"
             class="float-view-container"
           ></div>
-        `
+        `,
       );
 
       FloatView.instance = this;
@@ -26,6 +34,10 @@ class FloatView {
     return FloatView.instance;
   }
 
+  /**
+   * @method nextChat
+   * @description метод, который переключает отображения чата на следующий чат
+   */
   nextChat = () => {
     this.container.removeEventListener("click", this.handleClickListener);
     let index = Number(this.chatIndex) + 1;
@@ -61,6 +73,10 @@ class FloatView {
     }
   };
 
+  /**
+   * @method prevChat
+   * @description метод, который переключает отображение чата на предыдущий чат
+   */
   prevChat = () => {
     this.container.removeEventListener("click", this.handleClickListener);
     let index = Number(this.chatIndex) - 1;
@@ -96,6 +112,10 @@ class FloatView {
     }
   };
 
+  /**
+   * @method close
+   * @description закрывает FloatView
+   */
   close = async () => {
     if (this.counter >= 1) {
       this.counter = 0;
@@ -106,7 +126,11 @@ class FloatView {
     this.container.classList.add("float-view-hidden");
     document.removeEventListener("keydown", this.click);
   };
-
+  
+  /**
+   * @method show
+   * @description показывает FloatView
+   */
   show = () => {
     this.container.classList.remove("float-view-hidden");
     document.addEventListener("keydown", this.click);
@@ -114,6 +138,11 @@ class FloatView {
     this.draw();
   };
 
+  /**
+   * @method click
+   * @description метод который проверяет какую кнопку нажали и при сходстве с условием выполняет функции
+   * @param {Event} event объект события javascript
+   */
   click = (event) => {
     console.log("123");
     if (event.code === "ArrowRight") {
@@ -125,6 +154,12 @@ class FloatView {
     }
   };
 
+  /**
+   * @method handleClick
+   * @description метод, который производит делегирование событий
+   * @param {Event} event объект события javascript
+   * @param {String | Number} chatId 
+   */
   handleClick = (event, chatId) => {
     if (
       event.target.id === "float-view-container" ||
@@ -146,13 +181,19 @@ class FloatView {
     }
   };
 
+  /**
+   * @method setArchive
+   * @description метод, который добавляет чат в архив
+   * @param {Event} event объект события javascript
+   * @param {String | Number} chatId id чата
+   */
   setArchive = async (event, chatId) => {
     //add spinner
     event.innerHTML = `
       <div class="spinner">
         <div class="block"></div>
       </div>
-    `
+    `;
 
     let archiveState = !this.table.chats[this.chatIndex].archived;
     console.log(archiveState);
@@ -193,6 +234,10 @@ class FloatView {
     }
   };
 
+  /**
+   * @method draw
+   * @description метод, который рисует FloatView
+   */
   draw = () => {
     const folders = this.table.folders;
     const title = this.table.chats[this.chatIndex].title;
@@ -244,11 +289,11 @@ class FloatView {
                   <td>
                     ${this.setChatsButton(
                       folder.folder_id,
-                      this.table.chats[this.chatIndex]
+                      this.table.chats[this.chatIndex],
                     )}
                   </td>
                 </tr>
-                `
+                `,
                 )
                 .join("")}
             </tbody>
@@ -270,6 +315,13 @@ class FloatView {
     this.container.addEventListener("click", this.handleClickListener);
   };
 
+  /**
+   * @method setChatsButton
+   * @description метод, который возвращает содержимое кнопки (HTML в виде строки)
+   * @param {String | Number} folderId id папки
+   * @param {Object} userInfo объект с данными о пользователе
+   * @returns {String} строка в виде html
+   */
   setChatsButton(folderId, userInfo) {
     let includePath = "/img/svg/plus-white.svg";
     let pinnedPath = "/img/svg/pin-white.svg";
@@ -304,13 +356,20 @@ class FloatView {
     return result;
   }
 
+  /**
+   * @method setChatRelation
+   * @description метод, который изменяет состояние чата
+   * @param {Event} event объект события javascript
+   * @param {String} relation состояние чата
+   * @param {String | Number} chatId id чата
+   */
   setChatRelation = async (event, relation, chatId) => {
     //add spinner
     event.innerHTML = `
     <div class="spinner">
       <div class="block"></div>
     </div>
-  `
+  `;
 
     const trElement = event.parentElement.parentElement;
     const thElement = event.parentElement;
@@ -320,50 +379,52 @@ class FloatView {
     let pinnedPath = "/img/svg/pin-white.svg";
     let excludePath = "/img/svg/minus-white.svg";
 
-    let response
+    let response;
 
     if (relation === "include") {
-      console.log('include')
+      console.log("include");
       if (
         this.table.chats[this.chatIndex].folders.include.includes(
-          Number(folderId)
-        )) {
-          console.log('false')
+          Number(folderId),
+        )
+      ) {
+        console.log("false");
+        response = await eel.set_chat_folder_relation(
+          Number(chatId),
+          Number(folderId),
+        )();
+      } else {
+        console.log(relation);
+        response = await eel.set_chat_folder_relation(
+          Number(chatId),
+          Number(folderId),
+          relation,
+        )();
+      }
+    } else if (relation === "pinned") {
+      console.log("pinned");
+      if (
+        this.table.chats[this.chatIndex].folders.pinned.includes(
+          Number(folderId),
+        )
+      ) {
+        let res1 = await eel.set_chat_folder_relation(
+          Number(chatId),
+          Number(folderId),
+          "include",
+        )();
+
+        if (res1.success) {
           response = await eel.set_chat_folder_relation(
             Number(chatId),
             Number(folderId),
           )();
-      } else {
-        console.log(relation)
-        response = await eel.set_chat_folder_relation(
-          Number(chatId),
-          Number(folderId),
-          relation
-        )();
-      }
-    } else if (relation === "pinned") {
-      console.log('pinned')
-      if (
-        this.table.chats[this.chatIndex].folders.pinned.includes(
-          Number(folderId)
-        )) {
-          let res1 = await eel.set_chat_folder_relation(
-            Number(chatId),
-            Number(folderId),
-            'include'
-          )();
-
-          if (res1.success) {
-            response = await eel.set_chat_folder_relation(
-              Number(chatId),
-              Number(folderId),
-            )();
-          } else {
-            const text =
-        response.error_code === "folder_empty_error"
-          ? "Папка не может быть пустой"
-          : "Произошла ошибка";
-      const popupComponent = new Popup(/* html */ `
+        } else {
+          const text =
+            response.error_code === "folder_empty_error"
+              ? "Папка не может быть пустой"
+              : "Произошла ошибка";
+          const popupComponent = new Popup(/* html */ `
           <div class='popup-content'>
             <h2>Произошла ошибка</h2>
             <p>${text}</p>
@@ -373,41 +434,42 @@ class FloatView {
           </div>
         `);
 
-      popupComponent.show();
+          popupComponent.show();
 
-      function addFolderHandler() {
-        popupComponent.close();
-      }
-
-      document
-        .getElementById("popup-done")
-        .addEventListener("click", addFolderHandler, { once: true });
+          function addFolderHandler() {
+            popupComponent.close();
           }
+
+          document
+            .getElementById("popup-done")
+            .addEventListener("click", addFolderHandler, { once: true });
+        }
       } else {
-        console.log(relation)
+        console.log(relation);
         response = await eel.set_chat_folder_relation(
           Number(chatId),
           Number(folderId),
-          relation
+          relation,
         )();
       }
     } else if (relation === "exclude") {
-      console.log('exclude')
+      console.log("exclude");
       if (
         this.table.chats[this.chatIndex].folders.exclude.includes(
-          Number(folderId)
-          )) {
-          console.log('false')
-          response = await eel.set_chat_folder_relation(
-            Number(chatId),
-            Number(folderId),
-          )();
-      } else {
-        console.log(relation)
+          Number(folderId),
+        )
+      ) {
+        console.log("false");
         response = await eel.set_chat_folder_relation(
           Number(chatId),
           Number(folderId),
-          relation
+        )();
+      } else {
+        console.log(relation);
+        response = await eel.set_chat_folder_relation(
+          Number(chatId),
+          Number(folderId),
+          relation,
         )();
       }
     }
@@ -418,7 +480,7 @@ class FloatView {
       if (relation === "include") {
         if (
           this.table.chats[this.chatIndex].folders.include.includes(
-            Number(folderId)
+            Number(folderId),
           )
         ) {
           thElement.innerHTML = /* html */ `
@@ -439,19 +501,19 @@ class FloatView {
             </button>
           `;
           let index = this.table.chats[this.chatIndex].folders.include.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.include.splice(index, 1);
           }
           index = this.table.chats[this.chatIndex].folders.exclude.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.exclude.splice(index, 1);
           }
           index = this.table.chats[this.chatIndex].folders.pinned.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.pinned.splice(index, 1);
@@ -477,17 +539,17 @@ class FloatView {
             </button>
           `;
           this.table.chats[this.chatIndex].folders.include.push(
-            Number(folderId)
+            Number(folderId),
           );
 
           let index = this.table.chats[this.chatIndex].folders.pinned.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.pinned.splice(index, 1);
           }
           index = this.table.chats[this.chatIndex].folders.exclude.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.exclude.splice(index, 1);
@@ -496,7 +558,7 @@ class FloatView {
       } else if (relation === "pinned") {
         if (
           this.table.chats[this.chatIndex].folders.pinned.includes(
-            Number(folderId)
+            Number(folderId),
           )
         ) {
           thElement.innerHTML = /* html */ `
@@ -517,19 +579,19 @@ class FloatView {
             </button>
           `;
           let index = this.table.chats[this.chatIndex].folders.include.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.include.splice(index, 1);
           }
           index = this.table.chats[this.chatIndex].folders.pinned.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.pinned.splice(index, 1);
           }
           index = this.table.chats[this.chatIndex].folders.exclude.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.exclude.splice(index, 1);
@@ -555,17 +617,17 @@ class FloatView {
             </button>
           `;
           this.table.chats[this.chatIndex].folders.pinned.push(
-            Number(folderId)
+            Number(folderId),
           );
 
           let index = this.table.chats[this.chatIndex].folders.include.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.include.splice(index, 1);
           }
           index = this.table.chats[this.chatIndex].folders.exclude.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.exclude.splice(index, 1);
@@ -574,7 +636,7 @@ class FloatView {
       } else if (relation === "exclude") {
         if (
           this.table.chats[this.chatIndex].folders.exclude.includes(
-            Number(folderId)
+            Number(folderId),
           )
         ) {
           thElement.innerHTML = /* html */ `
@@ -595,19 +657,19 @@ class FloatView {
             </button>
           `;
           let index = this.table.chats[this.chatIndex].folders.include.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.include.splice(index, 1);
           }
           index = this.table.chats[this.chatIndex].folders.pinned.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.pinned.splice(index, 1);
           }
           index = this.table.chats[this.chatIndex].folders.exclude.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.exclude.splice(index, 1);
@@ -633,17 +695,17 @@ class FloatView {
             </button>
           `;
           this.table.chats[this.chatIndex].folders.exclude.push(
-            Number(folderId)
+            Number(folderId),
           );
 
           let index = this.table.chats[this.chatIndex].folders.include.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.include.splice(index, 1);
           }
           index = this.table.chats[this.chatIndex].folders.pinned.indexOf(
-            Number(folderId)
+            Number(folderId),
           );
           if (index !== -1) {
             this.table.chats[this.chatIndex].folders.pinned.splice(index, 1);

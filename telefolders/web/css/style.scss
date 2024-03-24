@@ -33,7 +33,7 @@ input.error {
   border-bottom: 3px solid rgba(0, 0, 0, 0.1);
   border-left: 3px solid rgb(129, 138, 145);
   -webkit-animation: spinner 0.5s infinite linear;
-          animation: spinner 0.5s infinite linear;
+  animation: spinner 0.5s infinite linear;
 }
 
 .spinner {
@@ -50,7 +50,7 @@ input.error {
   border-bottom: 3px solid rgba(0, 0, 0, 0.1);
   border-left: 3px solid rgb(129, 138, 145);
   -webkit-animation: spinner 0.5s infinite linear;
-          animation: spinner 0.5s infinite linear;
+  animation: spinner 0.5s infinite linear;
 }
 
 @-webkit-keyframes spinner {
@@ -206,8 +206,37 @@ body {
       }
 
       .buttons {
+        margin-top: 1rem;
         display: flex;
+        justify-content: center;
         gap: 0.5rem;
+
+        button {
+          border: none;
+          width: 100px;
+          height: 30px;
+          border-radius: .3rem;
+          background-color: #000;
+          color: #fff;
+          transition: 200ms all ease;
+        }
+
+        @media (hover: hover) {
+          button:hover {
+            background-color: #fff;
+            color: #000;
+            border: 2px solid #000;
+            box-sizing: border-box;
+          }
+        }
+
+        button:active {
+          background-color: #fff;
+          color: #000;
+          border: 2px solid #000;
+          transform: scale(0.9);
+          box-sizing: border-box;
+        }
       }
     }
   }
@@ -261,9 +290,104 @@ body {
     main.main {
       padding-bottom: 1rem;
 
+      .login-wrapper {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+      }
+
       .login {
-        button {
-          cursor: pointer;
+        display: flex;
+        flex-direction: column;
+
+        .login-label {
+          margin-bottom: .5rem;
+        }
+
+        .login-form {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+
+          input {
+            width: 100%;
+            border: 2px solid black;
+            outline: none;
+          }
+
+          input::-webkit-outer-spin-button,
+          input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            appearance: textfield;
+            margin: 0;
+          }
+
+          input[type=number] {
+            -moz-appearance: textfield;
+            -webkit-appearance: textfield;
+                    appearance: textfield;
+          }
+
+          input::-webkit-outer-spin-button,
+          input::-webkit-inner-spin-button {
+            display: none;
+          }
+
+          input.error {
+            border: 2px solid red;
+          }
+
+          input.error::-webkit-input-placeholder {
+            color: red;
+          }
+
+          input.error::-moz-placeholder {
+            color: red;
+          }
+
+          input.error:-ms-input-placeholder {
+            color: red;
+          }
+
+          input.error::-ms-input-placeholder {
+            color: red;
+          }
+
+          input.error::placeholder {
+            color: red;
+          }
+
+          button {
+            border: none;
+            width: 100px;
+            height: 30px;
+            border-radius: .3rem;
+            background-color: #000;
+            color: #fff;
+            transition: 200ms all ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          @media (hover: hover) {
+            button:hover {
+              background-color: #fff;
+              color: #000;
+              border: 2px solid #000;
+              box-sizing: border-box;
+            }
+          }
+
+          button:active {
+            background-color: #fff;
+            color: #000;
+            border: 2px solid #000;
+            transform: scale(0.9);
+            box-sizing: border-box;
+          }
         }
       }
 
@@ -325,7 +449,7 @@ body {
               border-radius: 50%;
               background-color: rgba(0, 0, 0, 0);
             }
-            
+
           }
 
           .wrapper {
@@ -361,8 +485,8 @@ body {
 
           thead tr th span {
             -webkit-writing-mode: vertical-rl;
-                -ms-writing-mode: tb-rl;
-                    writing-mode: vertical-rl;
+            -ms-writing-mode: tb-rl;
+            writing-mode: vertical-rl;
             transform: rotate(180deg);
           }
 

@@ -1,6 +1,15 @@
+import Login from "../LoginWidget/index.js";
 import Table from "../TableWidget/index.js";
 
+/**
+  @class Header
+  @classdesc класс, реализующий работу с header`ом
+ */
 export default class Header {
+  /**
+   * @constructor
+   * @param {Object} data данные об пользователе
+   */
   constructor(data) {
     this.data = data;
     this.avatarContainerElement = document.querySelector(".avatar");
@@ -9,6 +18,10 @@ export default class Header {
     this.table = new Table();
   }
 
+  /**
+   * @method init
+   * @description метод, создающий слушатели для heder`а
+   */
   init = () => {
     this.avatarContainerElement.addEventListener(
       "click",
@@ -17,11 +30,22 @@ export default class Header {
     window.addEventListener("click", this.handleWindowClick);
   };
 
+
+  /**
+   * @method changeAvatar
+   * @description метод, меняющий аватар
+   * @param {String} picture 
+   */
   changeAvatar = (picture) => {
     this.avatarContainerElement.querySelector(".header .avatar img").src =
       picture ? picture : "/img/contacts.png";
   };
 
+  /**
+   * @method handleAvatarClick
+   * @description метод, делегирующий события
+   * @param {Event} event объект события javascript
+   */
   handleAvatarClick = (event) => {
     event.stopPropagation();
 
@@ -52,6 +76,11 @@ export default class Header {
       "@" + this.data.username;
   };
 
+  /**
+   * @method handleWindowClick
+   * @description метод, отслеживающий клики вне "userMenuElement"
+   * @param {Event} event объект события javascript
+   */
   handleWindowClick = (event) => {
     if (
       event.target !== this.avatarContainerElement &&
@@ -63,6 +92,10 @@ export default class Header {
     }
   };
 
+  /**
+   * @method changeText
+   * @description метод, меняющий текст, сигнализирующий о том показываются ли сейчас архивные чаты
+   */
   changeText() {
     const element = this.userMenuElement.querySelector(".hideArchived");
 
@@ -75,14 +108,24 @@ export default class Header {
     }
   }
 
+  /**
+   * @method reloadChats
+   * @description метод, который выполняет побновление списка чатов
+   */
   reloadChats = () => {
     this.table.updateChats();
     this.userMenuElement.classList.add("hide");
   };
 
+  /**
+   * @method logout
+   * @description метод, который выполняет выход из аккаунта
+   */
   logout = () => {
     eel.logout()();
     document.querySelector(".spinner_large").classList.add("hide");
-    window.location.reload();
+    document.querySelector(".table-container.main-table").classList.add("hide");
+    const login = new Login()
+    login.init()
   };
 }
