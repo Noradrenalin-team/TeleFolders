@@ -1,110 +1,247 @@
-# TeleFolders
+Welcome to your new TanStack Start app!
 
-![GitHub License](https://img.shields.io/github/license/Noradrenalin-team/TeleFolders)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Noradrenalin-team/TeleFolders/total)
-![GitHub Release](https://img.shields.io/github/v/release/Noradrenalin-team/TeleFolders)
-![GitHub Release Date](https://img.shields.io/github/release-date/Noradrenalin-team/TeleFolders)
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/Noradrenalin-team/TeleFolders/latest)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/m/Noradrenalin-team/TeleFolders)
-![GitHub last commit](https://img.shields.io/github/last-commit/Noradrenalin-team/TeleFolders)<!-- ![GitHub contributors from allcontributors.org](https://img.shields.io/github/all-contributors/Noradrenalin-team/TeleFolders) -->
-![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/Noradrenalin-team/TeleFolders)
-![GitHub Repo stars](https://img.shields.io/github/stars/Noradrenalin-team/TeleFolders)
+# Getting Started
 
-TeleFolders - это менеджер папок для управления чатами и каналами в Telegram
-
-## Что можно делать с TeleFolders
-
-- **Добавлять чаты в папки**: Легко добавляйте и удаляйте чаты и каналы из папок.
-- **Закреплять чаты**: Важные чаты всегда будут под рукой.
-- **Управлять флагами папок**: Можно, например, добавить все контакты или исключить все прочитанные из папки.
-- **Синхронизировать папки**: Все изменения, сделанные в официальном клиенте Telegram, отражаются и в TeleFolders.
-- **Простой интерфейс**: Интуитивно понятный интерфейс для управления папками и чатами.
-- [***FUTURE***] **Создавать папки**: Группируйте чаты и каналы в удобные папки.
-- [***FUTURE***] **Быстрый доступ**: Легкий и быстрый доступ к чатам и каналам из папок.
-
-## Использование
-
-![Скриншот](https://github.com/Noradrenalin-team/TeleFolders/raw/main/img/tf.jpg)
-![Скриншот](https://github.com/Noradrenalin-team/TeleFolders/raw/main/img/tf2.jpg)
-
-С помощью кнопок вы можете добавлять чаты в папки, закреплять чаты, а также исключать чаты из папок. У каждой папки есть возможность установить "флаги", например, в папку можно добавить все контакты или каналы, а также исключить прочитанные или чаты без уведомлений.
-
-## Установка и запуск
-
-### Использование исполняемого файла
-
-1. Скачайте и запустите исполняемый файл для вашей операционной системы из раздела [релизов](https://github.com/Noradrenalin-team/TeleFolders/releases)
-
-2. Запустите исполняемый файл
-
-3. Войдите в свой аккаунт Telegram, используя номер телефона и код подтверждения
-
-### Установка через pip
-
-(ВАЖНО!) Необходимо использовать python 3.11
+To run this application:
 
 ```bash
-pip install telefolders
+pnpm install
+pnpm dev
 ```
 
-Запуск
+# Building For Production
+
+To build this application for production:
 
 ```bash
-python -m telefolders --api_id <api_id> --api_hash <api_hash>
+pnpm build
 ```
 
-### Запуск из исходного кода
+## Styling
 
-1. Склонируйте репозиторий:
+This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+
+### Removing Tailwind CSS
+
+If you prefer not to use Tailwind CSS:
+
+1. Remove the demo pages in `src/routes/demo/`
+2. Replace the Tailwind import in `src/styles.css` with your own styles
+3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
+4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
+
+## Linting & Formatting
+
+This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
 
 ```bash
-git clone https://github.com/Noradrenalin-team/TeleFolders
-
-cd TeleFolders
+pnpm lint
+pnpm format
+pnpm check
 ```
 
-2. Установите зависимости:
+# TanStack Chat Application
 
-Через poetry (рекомендуется)
+Am example chat application built with TanStack Start, TanStack Store, and Claude AI.
+
+## .env Updates
+
+```env
+ANTHROPIC_API_KEY=your_anthropic_api_key
+```
+
+## ✨ Features
+
+### AI Capabilities
+
+- 🤖 Powered by Claude 3.5 Sonnet
+- 📝 Rich markdown formatting with syntax highlighting
+- 🎯 Customizable system prompts for tailored AI behavior
+- 🔄 Real-time message updates and streaming responses (coming soon)
+
+### User Experience
+
+- 🎨 Modern UI with Tailwind CSS and Lucide icons
+- 🔍 Conversation management and history
+- 🔐 Secure API key management
+- 📋 Markdown rendering with code highlighting
+
+### Technical Features
+
+- 📦 Centralized state management with TanStack Store
+- 🔌 Extensible architecture for multiple AI providers
+- 🛠️ TypeScript for type safety
+
+## Architecture
+
+### Tech Stack
+
+- **Frontend Framework**: TanStack Start
+- **Routing**: TanStack Router
+- **State Management**: TanStack Store
+- **Styling**: Tailwind CSS
+- **AI Integration**: Anthropic's Claude API
+
+# Paraglide i18n
+
+This add-on wires up ParaglideJS for localized routing and message formatting.
+
+- Messages live in `project.inlang/messages`.
+- URLs are localized through the Paraglide Vite plugin and router `rewrite` hooks.
+- Run the dev server or build to regenerate the `src/paraglide` outputs.
+
+## Shadcn
+
+Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
 
 ```bash
-pip install poetry
-
-poetry install
+pnpm dlx shadcn@latest add button
 ```
 
-Через pip
+## Routing
 
-```bash
-pip install -r requirements.txt
+This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
+
+### Adding A Route
+
+To add a new route to your application just add a new file in the `./src/routes` directory.
+
+TanStack will automatically generate the content of the route file for you.
+
+Now that you have two routes you can use a `Link` component to navigate between them.
+
+### Adding Links
+
+To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+
+```tsx
+import { Link } from '@tanstack/react-router'
 ```
 
-3. Запустите приложение и передайте параметры клиента [Telegram](https://my.telegram.org) (api_id и api_hash):
+Then anywhere in your JSX you can use it like so:
 
-```bash
-poetry run -m telefolders --api_id <api_id> --api_hash <api_hash>
-# Или
-python -m telefolders --api_id <api_id> --api_hash <api_hash>
+```tsx
+<Link to="/about">About</Link>
 ```
 
-## Технологии
+This will create a link that will navigate to the `/about` route.
 
-Этот проект был реализован с использованием языка программирования Python в сочетании с фреймворком Eel для создания веб-интерфейса приложения, а также библиотекой Telethon для взаимодействия с Telegram API.
+More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
 
-## Сборка проекта
+### Using A Layout
 
-Для сборки проекта в исполняемый файл используется библиотека PyInstaller:
+In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
 
-```bash
-pyinstaller --noconfirm --onefile --windowed --add-data "telefolders:telefolders/"  "main.py"
+Here is an example layout that includes a header:
+
+```tsx
+import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+
+export const Route = createRootRoute({
+  head: () => ({
+    meta: [
+      { charSet: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { title: 'My App' },
+    ],
+  }),
+  shellComponent: ({ children }) => (
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        <header>
+          <nav>
+            <Link to="/">Home</Link>
+            <Link to="/about">About</Link>
+          </nav>
+        </header>
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  ),
+})
 ```
 
-## Участие в проекте
+More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
 
-Мы приглашаем всех желающих принять участие в развитии проекта и сделать его еще лучше!
+## Server Functions
 
-Вы можете посмотреть над чем можно поработать или внести своё предложение в [issues](https://github.com/Noradrenalin-team/TeleFolders/issues)
+TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
 
-## Обсуждение проекта
+```tsx
+import { createServerFn } from '@tanstack/react-start'
 
-Вы можете принять участие в обсуждении проекта или задать нам вопросы в [чате телеграм](https://t.me/+4iWgAed_aDYyMWEy)
+const getServerTime = createServerFn({
+  method: 'GET',
+}).handler(async () => {
+  return new Date().toISOString()
+})
+
+// Use in a component
+function MyComponent() {
+  const [time, setTime] = useState('')
+
+  useEffect(() => {
+    getServerTime().then(setTime)
+  }, [])
+
+  return <div>Server time: {time}</div>
+}
+```
+
+## API Routes
+
+You can create API routes by using the `server` property in your route definitions:
+
+```tsx
+import { createFileRoute } from '@tanstack/react-router'
+import { json } from '@tanstack/react-start'
+
+export const Route = createFileRoute('/api/hello')({
+  server: {
+    handlers: {
+      GET: () => json({ message: 'Hello, World!' }),
+    },
+  },
+})
+```
+
+## Data Fetching
+
+There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
+
+For example:
+
+```tsx
+import { createFileRoute } from '@tanstack/react-router'
+
+export const Route = createFileRoute('/people')({
+  loader: async () => {
+    const response = await fetch('https://swapi.dev/api/people')
+    return response.json()
+  },
+  component: PeopleComponent,
+})
+
+function PeopleComponent() {
+  const data = Route.useLoaderData()
+  return (
+    <ul>
+      {data.results.map((person) => (
+        <li key={person.name}>{person.name}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
+
+# Learn More
+
+You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
+
+For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).

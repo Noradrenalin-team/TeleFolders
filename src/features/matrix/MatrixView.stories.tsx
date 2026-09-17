@@ -1,0 +1,132 @@
+import { useState } from 'react'
+import type { Meta, StoryObj } from '@storybook/tanstack-react'
+import { MatrixView } from '#/features/matrix/MatrixView'
+import { FIXTURE_CHATS, FIXTURE_FOLDERS } from '#/features/matrix/fixtures'
+import {
+  nextRelation,
+  wouldEmptyFolder,
+} from '#/features/matrix/relation-cycle'
+
+const meta = {
+  title: 'features/matrix/MatrixView',
+  component: MatrixView,
+  parameters: { layout: 'fullscreen' },
+  decorators: [
+    (Story) => (
+      <div style={{ height: '600px' }}>
+        <Story />
+      </div>
+    ),
+  ],
+} satisfies Meta<typeof MatrixView>
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+export const Default: Story = {
+  args: {
+    folders: FIXTURE_FOLDERS,
+    chats: FIXTURE_CHATS,
+    isLoading: false,
+    loadedCount: FIXTURE_CHATS.length,
+  },
+}
+
+export const Loading: Story = {
+  args: {
+    folders: [],
+    chats: [],
+    isLoading: true,
+    loadedCount: 128,
+  },
+}
+
+export const NoFolders: Story = {
+  args: {
+    folders: [],
+    chats: FIXTURE_CHATS,
+    isLoading: false,
+    loadedCount: FIXTURE_CHATS.length,
+  },
+}
+
+export const NoChats: Story = {
+  args: {
+    folders: FIXTURE_FOLDERS,
+    chats: [],
+    isLoading: false,
+    loadedCount: 0,
+  },
+}
+
+/**
+ * Local-state clone of the real cycling/empty-folder-guard logic in
+ * src/routes/matrix.tsx, so cell clicks are actually verifiable here without
+ * a live Telegram connection.
+ */
+function InteractiveMatrix() {
+  const [chats, setChats] = useState(FIXTURE_CHATS)
+  const [folders, setFolders] = useState(FIXTURE_FOLDERS)
+
+  return (
+    <MatrixView
+      folders={folders}
+      chats={chats}
+      isLoading={false}
+      loadedCount={chats.length}
+      onCycleRelation={(chat, folder, current) => {
+        if (wouldEmptyFolder(folder, current)) return
+        const next = nextRelation(current)
+        const wasIncluded = current === 'include' || current === 'pinned'
+        const willBeIncluded = next === 'include' || next === 'pinned'
+        const delta = Number(willBeIncluded) - Number(wasIncluded)
+
+        setChats((prev) =>
+          prev.map((c) => {
+            if (c.id !== chat.id) return c
+            const nextFolders = { ...c.folders }
+            if (next) nextFolders[folder.id] = next
+            else delete nextFolders[folder.id]
+            return { ...c, folders: nextFolders }
+          }),
+        )
+        if (delta !== 0) {
+          setFolders((prev) =>
+            prev.map((f) =>
+              f.id === folder.id
+                ? { ...f, includeCount: f.includeCount + delta }
+                : f,
+            ),
+          )
+        }
+      }}
+      onToggleFlag={(folder, flag, next) => {
+        setFolders((prev) =>
+          prev.map((f) =>
+            f.id === folder.id
+              ? { ...f, flags: { ...f.flags, [flag]: next } }
+              : f,
+          ),
+        )
+      }}
+      onSetArchived={(chat, archived) => {
+        setChats((prev) =>
+          prev.map((c) =>
+            c.id === chat.id ? { ...c, isArchived: archived } : c,
+          ),
+        )
+      }}
+    />
+  )
+}
+
+export const Interactive: Story = {
+  args: {
+    folders: FIXTURE_FOLDERS,
+    chats: FIXTURE_CHATS,
+    isLoading: false,
+    loadedCount: FIXTURE_CHATS.length,
+  },
+  render: () => <InteractiveMatrix />,
+}

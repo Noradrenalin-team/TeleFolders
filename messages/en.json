@@ -1,0 +1,114 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "app_title": "TeleFolders",
+  "language_label": "Language",
+  "current_locale": "Current locale: {locale}",
+  "theme_label": "Theme",
+  "theme_light": "Light",
+  "theme_dark": "Dark",
+  "theme_system": "System",
+  "error_boundary_title": "Something went wrong",
+  "error_boundary_description": "The app hit an unexpected error. Try reloading the page.",
+  "error_boundary_reload": "Reload",
+  "nav_logout": "Log out",
+
+  "login_disclaimer": "TeleFolders is an unofficial client. It runs directly from your browser, and no data is sent anywhere else.",
+  "login_not_configured": "The app isn't configured yet: VITE_TELEGRAM_API_ID / VITE_TELEGRAM_API_HASH are not set.",
+
+  "login_phone_title": "Sign in with your phone number",
+  "login_phone_label": "Phone number",
+  "login_phone_placeholder": "+1 555 000-0000",
+  "login_phone_submit": "Get code",
+
+  "login_code_title": "Enter the code",
+  "login_code_description": "Code sent to {phone}",
+  "login_code_label": "Code",
+  "login_code_submit": "Continue",
+  "login_code_resend": "Resend code",
+  "login_code_change_number": "Change number",
+
+  "login_password_title": "Two-step verification",
+  "login_password_description": "Enter your Telegram account password",
+  "login_password_label": "Password",
+  "login_password_submit": "Sign in",
+
+  "auth_error_phone_invalid": "Invalid phone number.",
+  "auth_error_phone_banned": "This number is banned from Telegram.",
+  "auth_error_code_invalid": "Invalid code.",
+  "auth_error_code_expired": "The code expired, request a new one.",
+  "auth_error_password_invalid": "Invalid password.",
+
+  "error_flood_wait": [
+    {
+      "declarations": [
+        "input seconds",
+        "local secondsPlural = seconds: plural"
+      ],
+      "selectors": ["secondsPlural"],
+      "match": {
+        "secondsPlural=one": "Too many attempts. Try again in {seconds} second.",
+        "secondsPlural=other": "Too many attempts. Try again in {seconds} seconds."
+      }
+    }
+  ],
+  "error_network": "Can't reach Telegram. Check your connection and try again.",
+  "error_unknown": "Something went wrong. Please try again.",
+  "error_limit_reached": "Telegram limit reached. Premium might help.",
+  "error_folder_empty": "A folder can't be empty.",
+  "error_permission_denied": "You don't have permission to do that.",
+  "error_auth_required": "Your session expired, please sign in again.",
+
+  "matrix_column_chat": "Chat",
+  "matrix_column_archive": "Archive",
+  "matrix_column_add": "Add folder",
+  "matrix_self_label": "Saved Messages",
+  "matrix_refresh": "Refresh",
+  "matrix_loading_progress": "Loaded {count} chats",
+  "matrix_empty_no_chats": "No chats found",
+  "matrix_unread_count": "{count} unread",
+  "matrix_folder_counts": "Included: {include}, excluded: {exclude}, pinned: {pinned}",
+
+  "folder_dialog_create_title": "New folder",
+  "folder_dialog_edit_title": "Folder \"{title}\"",
+  "folder_dialog_title_label": "Title",
+  "folder_dialog_emoji_label": "Emoji",
+  "folder_dialog_create": "Create",
+  "folder_dialog_save": "Save",
+  "folder_dialog_cancel": "Cancel",
+  "folder_dialog_delete": "Delete folder",
+  "folder_dialog_delete_confirm": "Delete permanently?",
+  "folder_dialog_delete_confirm_yes": "Yes, delete",
+
+  "matrix_search_placeholder": "Search by name or @username",
+  "matrix_filter_type_all": "All types",
+  "matrix_filter_type_user": "Personal",
+  "matrix_filter_type_bot": "Bots",
+  "matrix_filter_type_group": "Groups",
+  "matrix_filter_type_channel": "Channels",
+  "matrix_filter_archived": "Show archived",
+  "matrix_filter_muted": "Muted",
+  "matrix_filter_unread": "Unread",
+  "matrix_filter_no_folder": "No folder",
+  "matrix_sort_default": "Telegram order",
+  "matrix_sort_name": "By name",
+  "matrix_sort_folders": "By folder count",
+  "matrix_sort_unread": "By unread",
+
+  "matrix_flag_contacts": "Contacts",
+  "matrix_flag_non_contacts": "Non-contacts",
+  "matrix_flag_groups": "Groups",
+  "matrix_flag_broadcasts": "Channels",
+  "matrix_flag_bots": "Bots",
+  "matrix_flag_exclude_muted": "Muted (exclude)",
+  "matrix_flag_exclude_read": "Read (exclude)",
+  "matrix_flag_exclude_archived": "Archived (exclude)",
+
+  "matrix_cell_none": "Not in folder",
+  "matrix_cell_include": "In folder",
+  "matrix_cell_pinned": "Pinned in folder",
+  "matrix_cell_exclude": "Excluded from folder",
+  "matrix_cell_archived": "Archived",
+  "matrix_cell_not_archived": "Not archived",
+  "matrix_chat_pinned": "Chat pinned",
+  "matrix_chat_not_pinned": "Chat not pinned"
+}
