@@ -8,13 +8,16 @@ export async function listDialogs(
 ): Promise<Chat[]> {
   const client = getClient()
   const { filters } = await client.getFolders()
+  // Cached, synchronous — no extra round-trip (ТЗ §3.1 needs this to resolve
+  // `inputPeerSelf` entries a folder might store for "Избранное").
+  const selfId = client.storage.self.getCached()?.userId
 
   const chats: Chat[] = []
   for await (const dialog of client.iterDialogs({
     archived: 'keep',
     pinned: 'include',
   })) {
-    chats.push(mapDialogToChat(dialog, filters))
+    chats.push(mapDialogToChat(dialog, filters, selfId))
     onProgress?.(chats.length)
   }
 
@@ -34,6 +37,17 @@ export function getChatPhoto(peer: PeerRef): Promise<string | undefined> {
   }
 
   return cached
+}
+
+/** Revokes every cached avatar blob URL and forgets them (F1.5: sign-out must
+ * not leak the previous account's photos into the next session). */
+export function clearPhotoCache(): void {
+  for (const pending of photoCache.values()) {
+    void pending.then((url) => {
+      if (url) URL.revokeObjectURL(url)
+    })
+  }
+  photoCache.clear()
 }
 
 async function fetchChatPhoto(peer: PeerRef): Promise<string | undefined> {

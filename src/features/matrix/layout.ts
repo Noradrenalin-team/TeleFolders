@@ -7,16 +7,11 @@ export const ROW_HEIGHT = 44
 export const FLAG_ROW_HEIGHT = 36
 export const HEADER_ROW_HEIGHT = 44
 
-export function gridTemplateColumns(folderCount: number): string {
-  // `repeat(0, ...)` is invalid per the CSS Grid spec (the repeat count must
-  // be >= 1), which drops the *entire* grid-template-columns declaration —
-  // so the folders segment has to be omitted outright when there are none.
-  return [
-    `${CHAT_COLUMN_WIDTH}px`,
-    `${ARCHIVE_COLUMN_WIDTH}px`,
-    folderCount > 0 ? `repeat(${folderCount}, ${FOLDER_COLUMN_WIDTH}px)` : null,
-    `${ADD_COLUMN_WIDTH}px`,
-  ]
-    .filter((part) => part !== null)
-    .join(' ')
+/** `grid-template-columns` from a table's own column sizes (`column.getSize()`
+ * order), so header, flag rows and chat rows never drift out of alignment
+ * with each other or with the table's `getTotalSize()` (ТЗ §5 sticky first
+ * column/header — see MatrixView.tsx for why the row width itself also has
+ * to match `getTotalSize()`, not just this). */
+export function gridTemplateColumns(sizes: number[]): string {
+  return sizes.map((size) => `${size}px`).join(' ')
 }

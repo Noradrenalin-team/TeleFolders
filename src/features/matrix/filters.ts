@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type { Chat, PeerKind } from '#/telegram/types'
+import { m } from '#/paraglide/messages'
 
 export const matrixSearchSchema = z.object({
   q: z.string().catch(''),
@@ -9,6 +10,8 @@ export const matrixSearchSchema = z.object({
   unread: z.boolean().catch(false),
   noFolder: z.boolean().catch(false),
   sort: z.enum(['default', 'name', 'folders', 'unread']).catch('default'),
+  /** F7: which chat's card is open (`/matrix?chat=<id>`), if any. */
+  chat: z.number().optional().catch(undefined),
 })
 
 export type MatrixSearch = z.infer<typeof matrixSearchSchema>
@@ -21,6 +24,7 @@ export const DEFAULT_MATRIX_SEARCH: MatrixSearch = {
   unread: false,
   noFolder: false,
   sort: 'default',
+  chat: undefined,
 }
 
 const TYPE_KINDS: Record<
@@ -33,28 +37,45 @@ const TYPE_KINDS: Record<
   channel: ['channel'],
 }
 
+/** What's actually shown as the chat's name (F2.5: "Избранное" for the
+ * user's own saved-messages chat, not its raw title) — search and
+ * "sort by name" both go by this, not `chat.title`, so they match what the
+ * matrix visibly displays. */
+export function chatDisplayTitle(chat: Chat): string {
+  return chat.isSelf ? m.matrix_self_label() : chat.title
+}
+
 export function filterAndSortChats(
   chats: Chat[],
   search: MatrixSearch,
 ): Chat[] {
-  const q = search.q.trim().toLowerCase()
+  // Users type "@name" out of habit; strip it so it still matches (F3.1).
+  const q = search.q.trim().replace(/^@/, '').toLowerCase()
 
   let result = chats.filter((chat) => {
-    if (!search.archived && chat.isArchived) return false
+    // "Показывать архивные" is a view switch, not an inclusive checkbox —
+    // matches the official client's separate Archive section: off shows only
+    // the main list, on shows only the archive. Otherwise un-/archiving a
+    // chat while the toggle is on never removes it from view (it's included
+    // either way), which reads as the action silently doing nothing.
+    if (chat.isArchived !== search.archived) return false
     if (search.type !== 'all' && !TYPE_KINDS[search.type].includes(chat.kind))
       return false
     if (search.muted && !chat.isMuted) return false
     if (search.unread && chat.unreadCount === 0) return false
     if (search.noFolder && Object.keys(chat.folders).length > 0) return false
     if (q) {
-      const haystack = `${chat.title} ${chat.username ?? ''}`.toLowerCase()
+      const haystack =
+        `${chatDisplayTitle(chat)} ${chat.username ?? ''}`.toLowerCase()
       if (!haystack.includes(q)) return false
     }
     return true
   })
 
   if (search.sort === 'name') {
-    result = [...result].sort((a, b) => a.title.localeCompare(b.title))
+    result = [...result].sort((a, b) =>
+      chatDisplayTitle(a).localeCompare(chatDisplayTitle(b)),
+    )
   } else if (search.sort === 'unread') {
     result = [...result].sort((a, b) => b.unreadCount - a.unreadCount)
   } else if (search.sort === 'folders') {
@@ -64,4 +85,17 @@ export function filterAndSortChats(
   }
 
   return result
+}
+
+/** Whether any search/filter narrows the list beyond "show archived or not"
+ * (F2.11: decides between the "no chats" and "nothing matches" empty
+ * states — an empty *unfiltered* list isn't the same situation). */
+export function hasActiveMatrixFilters(search: MatrixSearch): boolean {
+  return (
+    search.q.trim() !== '' ||
+    search.type !== 'all' ||
+    search.muted ||
+    search.unread ||
+    search.noFolder
+  )
 }

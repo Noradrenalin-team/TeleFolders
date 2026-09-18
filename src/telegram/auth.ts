@@ -1,5 +1,10 @@
 import { tl } from '@mtcute/web'
-import { getClient, resetClient, STORAGE_DB_NAME } from '#/telegram/client'
+import type {
+  SentCode as MtcuteSentCode,
+  User as MtcuteUser,
+} from '@mtcute/web'
+import { getClient, wipeLocalSession } from '#/telegram/client'
+import { clearPhotoCache } from '#/telegram/dialogs'
 import { isAuthRequiredError } from '#/telegram/errors'
 import type { Profile } from '#/telegram/types'
 
@@ -11,6 +16,15 @@ export type SentCode = {
   nextType: string
   timeoutSec: number
 }
+
+/**
+ * `sendCode`/`resendCode` normally hand back a code prompt, but Telegram can
+ * also sign the user in immediately without one (`auth.sentCodeSuccess`,
+ * e.g. a valid future-auth token from a previous session on this device) —
+ * `status: 'ok'` is that case.
+ */
+export type SentCodeResult =
+  { status: 'code'; sentCode: SentCode } | { status: 'ok'; profile: Profile }
 
 export type SignInResult =
   { status: 'ok'; profile: Profile } | { status: 'password_needed' }
@@ -29,6 +43,24 @@ function toProfile(user: {
   }
 }
 
+function toSentCodeResult(result: MtcuteSentCode | MtcuteUser): SentCodeResult {
+  if ('phoneCodeHash' in result) {
+    return {
+      status: 'code',
+      sentCode: {
+        phoneCodeHash: result.phoneCodeHash,
+        nextType: result.nextType,
+        timeoutSec: result.timeout,
+      },
+    }
+  }
+
+  // `auth.sentCodeSuccess`: mtcute resolves `sendCode` to a `User` instead of
+  // a `SentCode` in this case, meaning the user is already signed in — not
+  // an error (ТЗ §3).
+  return { status: 'ok', profile: toProfile(result) }
+}
+
 export async function getAuthState(): Promise<AuthState> {
   try {
     const me = await getClient().getMe()
@@ -39,34 +71,17 @@ export async function getAuthState(): Promise<AuthState> {
   }
 }
 
-export async function sendCode(phone: string): Promise<SentCode> {
+export async function sendCode(phone: string): Promise<SentCodeResult> {
   const result = await getClient().sendCode({ phone })
-
-  // sendCode resolves to a `User` instead of `SentCode` when a future auth
-  // token already logged the user in without a code prompt.
-  if (!(result instanceof Object) || !('phoneCodeHash' in result)) {
-    throw new Error(
-      'Already authorized: sendCode returned a User instead of SentCode',
-    )
-  }
-
-  return {
-    phoneCodeHash: result.phoneCodeHash,
-    nextType: result.nextType,
-    timeoutSec: result.timeout,
-  }
+  return toSentCodeResult(result)
 }
 
 export async function resendCode(
   phone: string,
   phoneCodeHash: string,
-): Promise<SentCode> {
+): Promise<SentCodeResult> {
   const result = await getClient().resendCode({ phone, phoneCodeHash })
-  return {
-    phoneCodeHash: result.phoneCodeHash,
-    nextType: result.nextType,
-    timeoutSec: result.timeout,
-  }
+  return toSentCodeResult(result)
 }
 
 export async function signIn(
@@ -85,6 +100,14 @@ export async function signIn(
   }
 }
 
+/** Text hint for the 2FA password (F1.2), if the user set one. `undefined`
+ * when there's no hint, not when the password itself is unknown. */
+export async function getPasswordHint(): Promise<string | undefined> {
+  const client = getClient()
+  const password = await client.call({ _: 'account.getPassword' })
+  return password.hint
+}
+
 export async function checkPassword(password: string): Promise<Profile> {
   const user = await getClient().checkPassword(password)
   return toProfile(user)
@@ -95,20 +118,22 @@ export async function getMe(): Promise<Profile> {
 }
 
 /**
- * Ends the session and wipes the local IndexedDB database (F1.5). The
- * TelegramClient singleton is dropped so the next `getClient()` call opens a
- * fresh database instead of reusing an instance tied to the deleted one.
+ * Resets the local session without calling the server (ТЗ §3): used when the
+ * server has already invalidated it (`AUTH_KEY_UNREGISTERED`,
+ * `SESSION_REVOKED`) and calling `logOut()` would just fail the same way.
  */
+export async function resetLocalSession(): Promise<void> {
+  await wipeLocalSession()
+  clearPhotoCache()
+}
+
+/** Ends the session and wipes the local IndexedDB database + cached avatars
+ * (F1.5). The local wipe always runs, even if the server call fails, so a
+ * broken connection can't leave the old session sitting on disk. */
 export async function logOut(): Promise<void> {
   try {
     await getClient().logOut()
   } finally {
-    resetClient()
-    await new Promise<void>((resolve) => {
-      const request = indexedDB.deleteDatabase(STORAGE_DB_NAME)
-      request.onsuccess = () => resolve()
-      request.onerror = () => resolve()
-      request.onblocked = () => resolve()
-    })
+    await resetLocalSession()
   }
 }

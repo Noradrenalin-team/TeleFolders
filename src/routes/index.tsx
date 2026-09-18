@@ -2,28 +2,55 @@ import { useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { authStateQueryOptions } from '#/queries/auth'
+import { isTelegramConfigured } from '#/telegram/client'
 import { DEFAULT_MATRIX_SEARCH } from '#/features/matrix/filters'
+import { Button } from '#/components/ui/button'
+import { FullPageSpinner } from '#/components/FullPageSpinner'
+import { m } from '#/paraglide/messages'
 
 export const Route = createFileRoute('/')({ component: Home })
 
 function Home() {
   const navigate = useNavigate()
-  // getAuthState() talks to mtcute, which is client-only (see src/telegram/client.ts),
-  // so the query must stay disabled during SSR and only run after hydration.
+  const configured = typeof window !== 'undefined' && isTelegramConfigured()
+
+  // getAuthState() talks to mtcute, which is client-only (see
+  // src/telegram/client.ts), so the query must stay disabled during SSR and
+  // only run after hydration — and only once configured, since an
+  // unconfigured app has no client to ask at all (login.tsx shows that
+  // message on its own, this route just needs to get there).
   const authState = useQuery({
     ...authStateQueryOptions,
-    enabled: typeof window !== 'undefined',
+    enabled: configured,
+    retry: false,
   })
 
   useEffect(() => {
-    // Any failure (including "not configured") is treated as unauthorized:
-    // the login screen shows a precise message for each case.
-    if (authState.data?.status === 'unauthorized' || authState.isError) {
+    if (typeof window === 'undefined') return
+    if (!configured) {
+      void navigate({ to: '/login' })
+      return
+    }
+    if (authState.data?.status === 'unauthorized') {
       void navigate({ to: '/login' })
     } else if (authState.data?.status === 'authorized') {
       void navigate({ to: '/matrix', search: DEFAULT_MATRIX_SEARCH })
     }
-  }, [authState.data, authState.isError, navigate])
+  }, [configured, authState.data, navigate])
 
-  return null
+  // A real failure (network down, MTProto unreachable) is not the same as
+  // "you're logged out" — bouncing straight to /login here would be
+  // misleading, so this shows its own retry instead (F9.2).
+  if (configured && authState.isError) {
+    return (
+      <div className="mx-auto flex max-w-sm flex-col items-center gap-3 px-4 py-24 text-center">
+        <p className="text-sm text-muted-foreground">{m.matrix_load_error()}</p>
+        <Button type="button" onClick={() => void authState.refetch()}>
+          {m.matrix_retry()}
+        </Button>
+      </div>
+    )
+  }
+
+  return <FullPageSpinner />
 }

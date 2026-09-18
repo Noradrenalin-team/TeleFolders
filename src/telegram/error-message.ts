@@ -12,6 +12,12 @@ export function errorMessage(error: unknown): string {
     case 'FOLDER_MUST_NOT_BE_EMPTY':
       return m.error_folder_empty()
     case 'LIMIT_REACHED':
+      // `PINNED_DIALOGS_TOO_MUCH` also normalizes to LIMIT_REACHED (any
+      // `*_TOO_MUCH` RPC error does, ТЗ §3) but reads better with a message
+      // that names what's actually full (F5.2).
+      if (normalized.raw === 'PINNED_DIALOGS_TOO_MUCH') {
+        return m.error_pinned_limit()
+      }
       return m.error_limit_reached()
     case 'PERMISSION_DENIED':
       return m.error_permission_denied()

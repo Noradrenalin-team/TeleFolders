@@ -21,7 +21,12 @@ const config = defineConfig({
     tsconfigPaths: true,
   },
   plugins: [
-    devtools(),
+    devtools({
+      // Piping echoes client logs into the terminal and server logs back into
+      // the browser, where they get piped again — every warning bounces and
+      // grows until the dev server runs out of memory.
+      consolePiping: { enabled: false },
+    }),
     paraglideVitePlugin({
       project: './project.inlang',
       outdir: './src/paraglide',
@@ -54,6 +59,14 @@ const config = defineConfig({
               },
             ],
           },
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'unit',
+          environment: 'node',
+          include: ['src/**/*.test.ts'],
         },
       },
     ],

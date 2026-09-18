@@ -1,6 +1,7 @@
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
+import { useReactTable, getCoreRowModel } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { RefreshCw } from 'lucide-react'
+import { AlertCircle, RefreshCw } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import type {
   Chat,
@@ -11,6 +12,7 @@ import type {
 import { m } from '#/paraglide/messages'
 import { ROW_HEIGHT } from '#/features/matrix/layout'
 import { FOLDER_FLAGS } from '#/features/matrix/flags'
+import { buildMatrixColumns, CHAT_COLUMN_ID } from '#/features/matrix/columns'
 import { MatrixHeader } from '#/features/matrix/MatrixHeader'
 import { FlagRow } from '#/features/matrix/FlagRow'
 import { ChatRow } from '#/features/matrix/ChatRow'
@@ -19,27 +21,44 @@ import { MatrixSkeleton } from '#/features/matrix/MatrixSkeleton'
 export function MatrixView({
   folders,
   chats,
+  totalCount,
   isLoading,
+  isError = false,
   loadedCount,
   isRefreshing = false,
+  hasActiveFilters = false,
   onRefresh,
+  onRetry,
+  onResetFilters,
   onAddFolder,
   onSetArchived,
   onCycleRelation,
   onToggleFlag,
   onSelectFolder,
   onTogglePinned,
+  onOpenChat,
+  onReorderFolders,
   isArchivePending,
+  isPinnedPending,
   isRelationPending,
   isFlagPending,
   toolbar,
 }: {
   folders: Folder[]
   chats: Chat[]
+  /** Total chats before search/type/state filters — for "Показано N из M"
+   * (distinct from `chats.length`, which already reflects the filters). */
+  totalCount?: number
   isLoading: boolean
+  isError?: boolean
   loadedCount: number
   isRefreshing?: boolean
+  /** Whether any search/filter is currently narrowing `chats` — decides
+   * between "no chats at all" and "nothing matches" empty states (F2.11). */
+  hasActiveFilters?: boolean
   onRefresh?: () => void
+  onRetry?: () => void
+  onResetFilters?: () => void
   onAddFolder?: () => void
   onSetArchived?: (chat: Chat, archived: boolean) => void
   onCycleRelation?: (
@@ -50,19 +69,46 @@ export function MatrixView({
   onToggleFlag?: (folder: Folder, flag: FolderFlag, next: boolean) => void
   onSelectFolder?: (folder: Folder) => void
   onTogglePinned?: (chat: Chat, pinned: boolean) => void
+  onOpenChat?: (chat: Chat) => void
+  onReorderFolders?: (folderIds: number[]) => void
   isArchivePending?: (chatId: number) => boolean
+  isPinnedPending?: (chatId: number) => boolean
   isRelationPending?: (chatId: number, folderId: number) => boolean
   isFlagPending?: (folderId: number, flag: FolderFlag) => boolean
   toolbar?: React.ReactNode
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  const columns = useMemo(() => buildMatrixColumns(folders), [folders])
+
+  // Column identity/order/width lives on the table (F2.1) — everything else
+  // (filtering, sorting) stays outside it, done up front by
+  // `filterAndSortChats` before `chats` ever gets here.
+  const table = useReactTable({
+    data: chats,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getRowId: (chat) => String(chat.id),
+    initialState: { columnPinning: { left: [CHAT_COLUMN_ID] } },
+  })
+
+  const visibleColumns = table.getVisibleLeafColumns()
+  const rows = table.getRowModel().rows
+  // The row's own width has to match the table's *total* column width, not
+  // 100% of the scroll container's viewport — otherwise the sticky first
+  // column only has room to "stick" within one screen-width of horizontal
+  // scroll and detaches past that (ТЗ §5).
+  const totalWidth = table.getTotalSize()
+
   const virtualizer = useVirtualizer({
-    count: chats.length,
+    count: rows.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => ROW_HEIGHT,
     overscan: 12,
   })
+
+  const showNoResults = !isLoading && !isError && chats.length === 0
+  const showNoFoldersHint = !isLoading && !isError && folders.length === 0
 
   return (
     <div className="flex h-full flex-col">
@@ -70,7 +116,9 @@ export function MatrixView({
         <span className="text-sm text-muted-foreground">
           {isLoading
             ? m.matrix_loading_progress({ count: loadedCount })
-            : m.matrix_loading_progress({ count: chats.length })}
+            : totalCount !== undefined && totalCount !== chats.length
+              ? m.matrix_shown_count({ shown: chats.length, total: totalCount })
+              : m.matrix_loading_progress({ count: chats.length })}
         </span>
         <Button
           type="button"
@@ -89,43 +137,92 @@ export function MatrixView({
 
       {toolbar}
 
+      {showNoFoldersHint && (
+        <p className="border-b border-border bg-muted/40 px-4 py-2 text-xs text-muted-foreground">
+          {m.matrix_no_folders_hint()}
+        </p>
+      )}
+
       {isLoading ? (
         <MatrixSkeleton loadedCount={loadedCount} />
-      ) : chats.length === 0 ? (
-        <EmptyState message={m.matrix_empty_no_chats()} />
+      ) : isError ? (
+        <ErrorState onRetry={onRetry} />
+      ) : showNoResults ? (
+        <EmptyState
+          message={
+            hasActiveFilters
+              ? m.matrix_empty_no_results()
+              : m.matrix_empty_no_chats()
+          }
+          action={
+            hasActiveFilters && onResetFilters ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onResetFilters}
+              >
+                {m.matrix_reset_filters()}
+              </Button>
+            ) : undefined
+          }
+        />
       ) : (
-        <div ref={scrollRef} role="grid" className="flex-1 overflow-auto">
-          <div className="sticky top-0 z-20">
+        <div
+          ref={scrollRef}
+          role="grid"
+          aria-rowcount={rows.length + 1 + FOLDER_FLAGS.length}
+          aria-colcount={visibleColumns.length}
+          className="flex-1 overflow-auto"
+        >
+          <div
+            className="sticky top-0 z-20"
+            style={{ width: totalWidth, minWidth: '100%' }}
+          >
             <MatrixHeader
-              folders={folders}
+              columns={visibleColumns}
               onAddFolder={onAddFolder}
               onSelectFolder={onSelectFolder}
+              onReorderFolders={onReorderFolders}
             />
-            {FOLDER_FLAGS.map(({ flag, label }) => (
-              <FlagRow
-                key={flag}
-                flag={flag}
-                label={label()}
-                folders={folders}
-                onToggle={onToggleFlag}
-                isPending={isFlagPending}
-              />
-            ))}
+            {/* Flag rows toggle a category (contacts, groups, …) *within a
+                folder column* — with no folder columns there's nothing for
+                them to act on, so they'd just be a list of unclickable
+                labels (F2.2 only makes sense once F4.1 has created a
+                folder). */}
+            {folders.length > 0 &&
+              FOLDER_FLAGS.map(({ flag, label }) => (
+                <FlagRow
+                  key={flag}
+                  flag={flag}
+                  label={label()}
+                  columns={visibleColumns}
+                  onToggle={onToggleFlag}
+                  isPending={isFlagPending}
+                />
+              ))}
           </div>
           <div
-            style={{ height: virtualizer.getTotalSize(), position: 'relative' }}
+            style={{
+              height: virtualizer.getTotalSize(),
+              width: totalWidth,
+              minWidth: '100%',
+              position: 'relative',
+            }}
           >
             {virtualizer.getVirtualItems().map((virtualRow) => {
-              const chat = chats[virtualRow.index]
+              const chat = rows[virtualRow.index].original
               return (
                 <ChatRow
                   key={chat.id}
                   chat={chat}
-                  folders={folders}
+                  columns={visibleColumns}
+                  onOpenChat={onOpenChat}
                   onSetArchived={onSetArchived}
                   onCycleRelation={onCycleRelation}
                   onTogglePinned={onTogglePinned}
                   isArchivePending={isArchivePending}
+                  isPinnedPending={isPinnedPending}
                   isRelationPending={isRelationPending}
                   style={{
                     position: 'absolute',
@@ -145,10 +242,31 @@ export function MatrixView({
   )
 }
 
-function EmptyState({ message }: { message: string }) {
+function EmptyState({
+  message,
+  action,
+}: {
+  message: string
+  action?: React.ReactNode
+}) {
   return (
-    <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-      {message}
+    <div className="flex flex-1 flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
+      <span>{message}</span>
+      {action}
+    </div>
+  )
+}
+
+function ErrorState({ onRetry }: { onRetry?: () => void }) {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 text-center text-sm text-muted-foreground">
+      <AlertCircle className="size-8 text-destructive" aria-hidden="true" />
+      <span>{m.matrix_load_error()}</span>
+      {onRetry && (
+        <Button type="button" variant="outline" size="sm" onClick={onRetry}>
+          {m.matrix_retry()}
+        </Button>
+      )}
     </div>
   )
 }

@@ -48,7 +48,12 @@ export type Folder = {
   title: string
   emoticon?: string
   flags: Record<FolderFlag, boolean>
-  /** Explicitly included, excluded and pinned peer counts (F4.5 column header). */
+  /**
+   * Explicitly included, excluded and pinned peer counts (F4.5 column
+   * header). `includeCount` is the union of `include` and `pinned` — the
+   * number of distinct chats the folder actually contains, since a pinned
+   * peer isn't also counted in `include` (ТЗ §3.3/§3.4).
+   */
   includeCount: number
   excludeCount: number
   pinnedCount: number

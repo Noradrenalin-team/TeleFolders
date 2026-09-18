@@ -1,40 +1,39 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useForm } from '@tanstack/react-form'
-import { toast } from 'sonner'
-import { z } from 'zod'
-import { Button } from '#/components/ui/button'
-import { Input } from '#/components/ui/input'
-import { Label } from '#/components/ui/label'
+import { useQuery } from '@tanstack/react-query'
 import { isTelegramConfigured } from '#/telegram/client'
-import {
-  useCheckPassword,
-  useResendCode,
-  useSendCode,
-  useSignIn,
-} from '#/queries/auth'
-import { authErrorMessage } from '#/features/auth/auth-error-message'
+import { authStateQueryOptions } from '#/queries/auth'
+import type { SentCode } from '#/telegram/auth'
+import { PhoneStep } from '#/features/auth/PhoneStep'
+import { CodeStep } from '#/features/auth/CodeStep'
+import { PasswordStep } from '#/features/auth/PasswordStep'
+import { DEFAULT_MATRIX_SEARCH } from '#/features/matrix/filters'
 import { m } from '#/paraglide/messages'
+import { FullPageSpinner } from '#/components/FullPageSpinner'
 
 export const Route = createFileRoute('/login')({ component: LoginPage })
 
-const phoneSchema = z
-  .string()
-  .trim()
-  .regex(/^\+?[1-9]\d{7,14}$/, m.auth_error_phone_invalid())
-
-const codeSchema = z.string().trim().min(1, m.auth_error_code_invalid())
-
-const passwordSchema = z.string().min(1, m.auth_error_password_invalid())
-
 type Step =
   | { name: 'phone' }
-  | { name: 'code'; phone: string; phoneCodeHash: string }
+  | { name: 'code'; phone: string; sentCode: SentCode }
   | { name: 'password'; phone: string }
 
 function LoginPage() {
   const navigate = useNavigate()
   const [step, setStep] = useState<Step>({ name: 'phone' })
+
+  // Already signed in (e.g. a bookmarked /login, or the future-auth-token
+  // "already logged in" case in sendCode) — go straight to the matrix
+  // instead of showing a login form there's nothing left to fill in.
+  const authState = useQuery({
+    ...authStateQueryOptions,
+    enabled: typeof window !== 'undefined',
+  })
+  useEffect(() => {
+    if (authState.data?.status === 'authorized') {
+      void navigate({ to: '/matrix', search: DEFAULT_MATRIX_SEARCH })
+    }
+  }, [authState.data, navigate])
 
   if (!isTelegramConfigured()) {
     return (
@@ -44,19 +43,25 @@ function LoginPage() {
     )
   }
 
+  // Until we know whether a session already exists, showing the form would
+  // just flash it at signed-in users before the redirect above kicks in.
+  if (authState.isPending || authState.data?.status === 'authorized') {
+    return <FullPageSpinner />
+  }
+
+  const goToMatrix = () =>
+    void navigate({ to: '/matrix', search: DEFAULT_MATRIX_SEARCH })
+
   if (step.name === 'code') {
     return (
       <LoginLayout>
         <CodeStep
           phone={step.phone}
-          phoneCodeHash={step.phoneCodeHash}
-          onCodeHashChange={(phoneCodeHash) =>
-            setStep({ name: 'code', phone: step.phone, phoneCodeHash })
-          }
+          initialSentCode={step.sentCode}
           onPasswordNeeded={() =>
             setStep({ name: 'password', phone: step.phone })
           }
-          onSignedIn={() => void navigate({ to: '/' })}
+          onSignedIn={goToMatrix}
           onChangeNumber={() => setStep({ name: 'phone' })}
         />
       </LoginLayout>
@@ -66,7 +71,10 @@ function LoginPage() {
   if (step.name === 'password') {
     return (
       <LoginLayout>
-        <PasswordStep onSignedIn={() => void navigate({ to: '/' })} />
+        <PasswordStep
+          onSignedIn={goToMatrix}
+          onBack={() => setStep({ name: 'phone' })}
+        />
       </LoginLayout>
     )
   }
@@ -74,8 +82,8 @@ function LoginPage() {
   return (
     <LoginLayout>
       <PhoneStep
-        onCodeSent={(phone, phoneCodeHash) =>
-          setStep({ name: 'code', phone, phoneCodeHash })
+        onCodeSent={(phone, sentCode) =>
+          setStep({ name: 'code', phone, sentCode })
         }
       />
     </LoginLayout>
@@ -90,265 +98,5 @@ function LoginLayout({ children }: { children: React.ReactNode }) {
         {m.login_disclaimer()}
       </p>
     </div>
-  )
-}
-
-function PhoneStep({
-  onCodeSent,
-}: {
-  onCodeSent: (phone: string, phoneCodeHash: string) => void
-}) {
-  const sendCode = useSendCode()
-
-  const form = useForm({
-    defaultValues: { phone: '' },
-    onSubmit: async ({ value }) => {
-      try {
-        const result = await sendCode.mutateAsync(value.phone)
-        onCodeSent(value.phone, result.phoneCodeHash)
-      } catch (error) {
-        toast.error(authErrorMessage(error))
-      }
-    },
-  })
-
-  return (
-    <form
-      className="flex flex-col gap-4"
-      onSubmit={(event) => {
-        event.preventDefault()
-        void form.handleSubmit()
-      }}
-    >
-      <h1 className="text-lg font-semibold">{m.login_phone_title()}</h1>
-
-      <form.Field name="phone" validators={{ onChange: phoneSchema }}>
-        {(field) => (
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={field.name}>{m.login_phone_label()}</Label>
-            <Input
-              id={field.name}
-              name={field.name}
-              type="tel"
-              autoComplete="tel"
-              placeholder={m.login_phone_placeholder()}
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-            />
-            {field.state.meta.errors.length > 0 && (
-              <p className="text-xs text-destructive">
-                {String(
-                  field.state.meta.errors[0]?.message ??
-                    field.state.meta.errors[0],
-                )}
-              </p>
-            )}
-          </div>
-        )}
-      </form.Field>
-
-      <form.Subscribe
-        selector={(state) => [state.canSubmit, state.isSubmitting] as const}
-      >
-        {([canSubmit, isSubmitting]) => (
-          <Button type="submit" disabled={!canSubmit || isSubmitting}>
-            {m.login_phone_submit()}
-          </Button>
-        )}
-      </form.Subscribe>
-    </form>
-  )
-}
-
-function CodeStep({
-  phone,
-  phoneCodeHash,
-  onCodeHashChange,
-  onPasswordNeeded,
-  onSignedIn,
-  onChangeNumber,
-}: {
-  phone: string
-  phoneCodeHash: string
-  onCodeHashChange: (phoneCodeHash: string) => void
-  onPasswordNeeded: () => void
-  onSignedIn: () => void
-  onChangeNumber: () => void
-}) {
-  const signIn = useSignIn()
-  const resendCode = useResendCode()
-
-  const form = useForm({
-    defaultValues: { code: '' },
-    onSubmit: async ({ value }) => {
-      try {
-        const result = await signIn.mutateAsync({
-          phone,
-          phoneCodeHash,
-          phoneCode: value.code,
-        })
-        if (result.status === 'password_needed') {
-          onPasswordNeeded()
-        } else {
-          onSignedIn()
-        }
-      } catch (error) {
-        toast.error(authErrorMessage(error))
-      }
-    },
-  })
-
-  return (
-    <form
-      className="flex flex-col gap-4"
-      onSubmit={(event) => {
-        event.preventDefault()
-        void form.handleSubmit()
-      }}
-    >
-      <div>
-        <h1 className="text-lg font-semibold">{m.login_code_title()}</h1>
-        <p className="text-sm text-muted-foreground">
-          {m.login_code_description({ phone })}
-        </p>
-      </div>
-
-      <form.Field name="code" validators={{ onChange: codeSchema }}>
-        {(field) => (
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={field.name}>{m.login_code_label()}</Label>
-            <Input
-              id={field.name}
-              name={field.name}
-              type="text"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              autoFocus
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-            />
-            {field.state.meta.errors.length > 0 && (
-              <p className="text-xs text-destructive">
-                {String(
-                  field.state.meta.errors[0]?.message ??
-                    field.state.meta.errors[0],
-                )}
-              </p>
-            )}
-          </div>
-        )}
-      </form.Field>
-
-      <form.Subscribe
-        selector={(state) => [state.canSubmit, state.isSubmitting] as const}
-      >
-        {([canSubmit, isSubmitting]) => (
-          <Button type="submit" disabled={!canSubmit || isSubmitting}>
-            {m.login_code_submit()}
-          </Button>
-        )}
-      </form.Subscribe>
-
-      <div className="flex items-center justify-between text-sm">
-        <Button
-          type="button"
-          variant="link"
-          size="sm"
-          className="px-0"
-          disabled={resendCode.isPending}
-          onClick={() => {
-            resendCode.mutate(
-              { phone, phoneCodeHash },
-              {
-                onSuccess: (result) => onCodeHashChange(result.phoneCodeHash),
-                onError: (error) => toast.error(authErrorMessage(error)),
-              },
-            )
-          }}
-        >
-          {m.login_code_resend()}
-        </Button>
-        <Button
-          type="button"
-          variant="link"
-          size="sm"
-          className="px-0"
-          onClick={onChangeNumber}
-        >
-          {m.login_code_change_number()}
-        </Button>
-      </div>
-    </form>
-  )
-}
-
-function PasswordStep({ onSignedIn }: { onSignedIn: () => void }) {
-  const checkPassword = useCheckPassword()
-
-  const form = useForm({
-    defaultValues: { password: '' },
-    onSubmit: async ({ value }) => {
-      try {
-        await checkPassword.mutateAsync(value.password)
-        onSignedIn()
-      } catch (error) {
-        toast.error(authErrorMessage(error))
-      }
-    },
-  })
-
-  return (
-    <form
-      className="flex flex-col gap-4"
-      onSubmit={(event) => {
-        event.preventDefault()
-        void form.handleSubmit()
-      }}
-    >
-      <div>
-        <h1 className="text-lg font-semibold">{m.login_password_title()}</h1>
-        <p className="text-sm text-muted-foreground">
-          {m.login_password_description()}
-        </p>
-      </div>
-
-      <form.Field name="password" validators={{ onChange: passwordSchema }}>
-        {(field) => (
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={field.name}>{m.login_password_label()}</Label>
-            <Input
-              id={field.name}
-              name={field.name}
-              type="password"
-              autoComplete="current-password"
-              autoFocus
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-            />
-            {field.state.meta.errors.length > 0 && (
-              <p className="text-xs text-destructive">
-                {String(
-                  field.state.meta.errors[0]?.message ??
-                    field.state.meta.errors[0],
-                )}
-              </p>
-            )}
-          </div>
-        )}
-      </form.Field>
-
-      <form.Subscribe
-        selector={(state) => [state.canSubmit, state.isSubmitting] as const}
-      >
-        {([canSubmit, isSubmitting]) => (
-          <Button type="submit" disabled={!canSubmit || isSubmitting}>
-            {m.login_password_submit()}
-          </Button>
-        )}
-      </form.Subscribe>
-    </form>
   )
 }

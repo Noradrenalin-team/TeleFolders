@@ -13,6 +13,7 @@ import { THEME_INIT_SCRIPT } from '#/stores/theme'
 import { AppHeader } from '#/components/AppHeader'
 import { AppErrorBoundary } from '#/components/AppErrorBoundary'
 import { AppToaster } from '#/components/AppToaster'
+import { NotFound } from '#/components/NotFound'
 import { m } from '#/paraglide/messages'
 
 import appCss from '../styles.css?url'
@@ -53,6 +54,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
   }),
   errorComponent: AppErrorBoundary,
+  notFoundComponent: NotFound,
   shellComponent: RootDocument,
 })
 
@@ -63,7 +65,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body className="flex h-screen flex-col overflow-hidden">
+      {/* Browser extensions (e.g. VS Code's) add classes to <body> before
+          hydration; that mismatch is harmless and not ours to fix. */}
+      <body
+        className="flex h-screen flex-col overflow-hidden"
+        suppressHydrationWarning
+      >
         <AppHeader />
         <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
         <AppToaster />

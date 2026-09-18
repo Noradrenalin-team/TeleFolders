@@ -22,11 +22,15 @@ const LABEL_BY_STATE: Record<CellState, () => string> = {
 export function MatrixCell({
   state,
   disabled = false,
+  /** Shown as a tooltip on the wrapper when `disabled` — see `FlagCell` for
+   * why it can't just be a `title` on the (disabled) button itself. */
+  disabledReason,
   pending = false,
   onClick,
 }: {
   state: CellState
   disabled?: boolean
+  disabledReason?: string
   pending?: boolean
   onClick?: () => void
 }) {
@@ -34,25 +38,30 @@ export function MatrixCell({
   const label = LABEL_BY_STATE[state]()
 
   return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      disabled={disabled || pending}
-      onClick={onClick}
-      className={cn(
-        'flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors',
-        'hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-40',
-        state === 'include' && 'text-foreground',
-        state === 'pinned' && 'text-primary',
-        state === 'exclude' && 'text-destructive',
-      )}
+    <span
+      className="inline-flex"
+      title={disabled && !pending ? disabledReason : undefined}
     >
-      {pending ? (
-        <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-      ) : (
-        <Icon className="size-4" aria-hidden="true" />
-      )}
-    </button>
+      <button
+        type="button"
+        aria-label={label}
+        title={disabled ? undefined : label}
+        disabled={disabled || pending}
+        onClick={onClick}
+        className={cn(
+          'flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors',
+          'hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-40',
+          state === 'include' && 'text-foreground',
+          state === 'pinned' && 'text-primary',
+          state === 'exclude' && 'text-destructive',
+        )}
+      >
+        {pending ? (
+          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+        ) : (
+          <Icon className="size-4" aria-hidden="true" />
+        )}
+      </button>
+    </span>
   )
 }

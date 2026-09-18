@@ -1,247 +1,91 @@
-Welcome to your new TanStack Start app!
+# TeleFolders
 
-# Getting Started
+A web app for managing your Telegram chats: log in with your own account and
+get a matrix of every chat × every folder — one click sorts, pins, excludes
+or archives a chat instead of the several taps the official client needs per
+chat per folder.
 
-To run this application:
+**Unofficial, browser-only.** MTProto runs entirely in your browser via
+[mtcute](https://mtcute.dev); the server only ever serves the static
+app shell. Your phone number, login code, 2FA password and session never
+reach anything but Telegram's own servers — see
+[docs/tz/ТЗ.md](./docs/tz/ТЗ.md) §2/§6 for the details.
+
+Full spec and work plan: [docs/tz/ТЗ.md](./docs/tz/ТЗ.md),
+[docs/tz/ПЛАН.md](./docs/tz/ПЛАН.md). Layer rules for contributors are in
+[AGENTS.md](./AGENTS.md).
+
+## Getting started
+
+You'll need your own Telegram API credentials — get `api_id`/`api_hash` at
+<https://my.telegram.org/apps> (see ТЗ §7 for why these are per-deployment,
+not baked into the app).
 
 ```bash
+cp .env.example .env
+# edit .env: VITE_TELEGRAM_API_ID=..., VITE_TELEGRAM_API_HASH=...
+
 pnpm install
 pnpm dev
 ```
 
-# Building For Production
+Then open the printed local URL and log in with a real Telegram account
+(phone number, code, 2FA password if you have one).
 
-To build this application for production:
-
-```bash
-pnpm build
-```
-
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
-
-## Linting & Formatting
-
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
+## Scripts
 
 ```bash
-pnpm lint
-pnpm format
-pnpm check
+pnpm dev              # dev server
+pnpm build             # production build
+pnpm preview           # preview a production build
+
+pnpm typecheck         # tsc --noEmit
+pnpm lint              # eslint
+pnpm check             # prettier --check
+pnpm format            # prettier --write + eslint --fix
+
+pnpm test              # vitest (unit tests + Storybook component tests)
+pnpm storybook         # Storybook dev server
+pnpm build-storybook   # static Storybook build
+
+pnpm generate-routes   # regenerate src/routeTree.gen.ts (do not hand-edit)
+pnpm generate-messages # regenerate src/paraglide/** from messages/*.json (do not hand-edit)
 ```
 
-# TanStack Chat Application
+CI runs `install → lint → prettier → tsc → vitest → build → build-storybook`;
+a red pipeline blocks merging.
 
-Am example chat application built with TanStack Start, TanStack Store, and Claude AI.
+## Project layout
 
-## .env Updates
-
-```env
-ANTHROPIC_API_KEY=your_anthropic_api_key
+```
+src/
+  routes/       index, login, matrix — file-based (TanStack Router)
+  telegram/     the ONLY place @mtcute/* is imported
+  queries/      TanStack Query options, mutations, cache keys
+  features/     matrix, chat-card, auth, folders — UI + feature logic
+  components/ui/  shadcn-style primitives
+  stores/       TanStack Store (theme, persisted settings)
 ```
 
-## ✨ Features
+**Layer rule** (see [AGENTS.md](./AGENTS.md)): a component never imports
+`@mtcute/*` directly. Component → hook in `queries/` → function in
+`telegram/`. This keeps components mockable in Storybook and tests.
 
-### AI Capabilities
+## Browsers
 
-- 🤖 Powered by Claude 3.5 Sonnet
-- 📝 Rich markdown formatting with syntax highlighting
-- 🎯 Customizable system prompts for tailored AI behavior
-- 🔄 Real-time message updates and streaming responses (coming soon)
+Last two versions of Chrome, Firefox, Safari, Edge — WebSocket, IndexedDB
+and WebCrypto are required. Clearing site data for this origin deletes the
+local session (a normal, expected re-login, not a bug).
 
-### User Experience
+## Localization
 
-- 🎨 Modern UI with Tailwind CSS and Lucide icons
-- 🔍 Conversation management and history
-- 🔐 Secure API key management
-- 📋 Markdown rendering with code highlighting
+Base locale is `ru`, with `en` as the second language. Source strings live
+in `messages/{locale}.json` (edit these, not the generated files) and are
+compiled by `pnpm generate-messages` into `src/paraglide/**`.
 
-### Technical Features
+## Legacy
 
-- 📦 Centralized state management with TanStack Store
-- 🔌 Extensible architecture for multiple AI providers
-- 🛠️ TypeScript for type safety
-
-## Architecture
-
-### Tech Stack
-
-- **Frontend Framework**: TanStack Start
-- **Routing**: TanStack Router
-- **State Management**: TanStack Store
-- **Styling**: Tailwind CSS
-- **AI Integration**: Anthropic's Claude API
-
-# Paraglide i18n
-
-This add-on wires up ParaglideJS for localized routing and message formatting.
-
-- Messages live in `project.inlang/messages`.
-- URLs are localized through the Paraglide Vite plugin and router `rewrite` hooks.
-- Run the dev server or build to regenerate the `src/paraglide` outputs.
-
-## Shadcn
-
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
-
-```bash
-pnpm dlx shadcn@latest add button
-```
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from '@tanstack/react-router'
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+The Python/Eel desktop client this project replaces was removed from the
+tree by the TanStack Start rewrite; it's still in the repository history
+(`git log -- telefolders/`) if you need to reference it, but it isn't
+maintained going forward.

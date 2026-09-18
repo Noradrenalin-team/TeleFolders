@@ -14,7 +14,13 @@ export const dialogsQueryOptions = queryOptions({
       dialogsLoadProgress.setState(() => loadedCount),
     )
   },
-  staleTime: 60_000,
+  // A full re-list is a complete `iterDialogs` pass over the account (up to
+  // 2000+ chats, ТЗ §6) — mutations patch this cache directly instead of
+  // invalidating it (see queries/folders.ts, queries/actions.ts), so a long
+  // staleTime here only affects the explicit "Обновить" button and window
+  // refocus, not day-to-day interaction (ТЗ §2: "большой staleTime").
+  staleTime: 10 * 60_000,
+  refetchOnWindowFocus: false,
 })
 
 function chatPhotoQueryOptions(peer: PeerRef) {
@@ -23,10 +29,11 @@ function chatPhotoQueryOptions(peer: PeerRef) {
     queryFn: () => dialogs.getChatPhoto(peer),
     staleTime: Infinity,
     gcTime: Infinity,
+    retry: false,
   })
 }
 
 /** Fetches (and caches) a chat's avatar only once its row actually renders. */
-export function useChatPhoto(peer: PeerRef) {
-  return useQuery(chatPhotoQueryOptions(peer))
+export function useChatPhoto(peer: PeerRef, enabled = true) {
+  return useQuery({ ...chatPhotoQueryOptions(peer), enabled })
 }

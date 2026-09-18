@@ -52,3 +52,31 @@ export function getClient(): TelegramClient {
 export function resetClient() {
   client = undefined
 }
+
+/**
+ * Drops the client and permanently deletes its local IndexedDB database.
+ * Used whenever the session must not be reused: explicit sign-out (F1.5) or
+ * the server reporting it's already invalid (`AUTH_REQUIRED`, ТЗ §3).
+ *
+ * The client is `destroy()`-ed (not just dropped) before the database is
+ * deleted: mtcute's `IdbStorageDriver` keeps an open `IDBDatabase` connection
+ * for as long as the client is alive, and `indexedDB.deleteDatabase` blocks
+ * forever waiting for every open connection to close first — so without this,
+ * the delete request would sit in `onblocked`, and a fresh `getClient()` call
+ * right after would open the very database that's still pending deletion.
+ */
+export async function wipeLocalSession(): Promise<void> {
+  const current = client
+  client = undefined
+
+  if (current) {
+    await current.destroy().catch(() => undefined)
+  }
+
+  await new Promise<void>((resolve) => {
+    const request = indexedDB.deleteDatabase(STORAGE_DB_NAME)
+    request.onsuccess = () => resolve()
+    request.onerror = () => resolve()
+    request.onblocked = () => resolve()
+  })
+}

@@ -51,6 +51,26 @@ export const NoFolders: Story = {
   },
 }
 
+export const NoResultsForFilter: Story = {
+  args: {
+    folders: FIXTURE_FOLDERS,
+    chats: [],
+    isLoading: false,
+    loadedCount: 0,
+    hasActiveFilters: true,
+  },
+}
+
+export const LoadError: Story = {
+  args: {
+    folders: [],
+    chats: [],
+    isLoading: false,
+    isError: true,
+    loadedCount: 0,
+  },
+}
+
 export const NoChats: Story = {
   args: {
     folders: FIXTURE_FOLDERS,

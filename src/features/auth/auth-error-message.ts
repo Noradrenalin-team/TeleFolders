@@ -17,6 +17,10 @@ export function authErrorMessage(error: unknown): string {
       return m.auth_error_code_expired()
     case 'PASSWORD_HASH_INVALID':
       return m.auth_error_password_invalid()
+    case 'SEND_CODE_UNAVAILABLE':
+      return m.auth_error_send_code_unavailable()
+    case 'PHONE_NUMBER_FLOOD':
+      return m.auth_error_phone_flood()
     default:
       return errorMessage(error)
   }
