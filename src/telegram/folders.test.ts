@@ -5,6 +5,7 @@ import {
   createFolder,
   reorderFolders,
   setChatRelation,
+  setChatsRelation,
 } from '#/telegram/folders'
 
 function textWithEntities(text: string): tl.RawTextWithEntities {
@@ -123,6 +124,39 @@ describe('setChatRelation', () => {
     // includeCount counts the union, so a purely-pinned peer still counts
     // once — but it must not have been duplicated into includePeers too.
     expect(result.pinnedCount).toBe(1)
+    expect(result.includeCount).toBe(1)
+  })
+})
+
+describe('setChatsRelation (F6.5)', () => {
+  beforeEach(() => {
+    fakeClient = createFakeClient([
+      {
+        _: 'dialogFilter',
+        id: 2,
+        title: textWithEntities('Work'),
+        pinnedPeers: [inputUser(5)],
+        includePeers: [inputUser(6)],
+        excludePeers: [inputUser(9)],
+      },
+    ])
+  })
+
+  it('adds many chats with a single filter write', async () => {
+    const peers = [1, 2, 3, 9].map((id) => ({ id, kind: 'user' as const }))
+    const result = await setChatsRelation(2, peers, 'include')
+
+    expect(fakeClient.calls.filter((c) => c === 'editFolder')).toHaveLength(1)
+    expect(result.includeCount).toBe(6) // 5 (pinned) + 6 + 1, 2, 3, 9
+    expect(result.excludeCount).toBe(0)
+  })
+
+  it('clears many chats at once, leaving the rest alone', async () => {
+    const peers = [5, 9].map((id) => ({ id, kind: 'user' as const }))
+    const result = await setChatsRelation(2, peers, null)
+
+    expect(result.pinnedCount).toBe(0)
+    expect(result.excludeCount).toBe(0)
     expect(result.includeCount).toBe(1)
   })
 })

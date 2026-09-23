@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Link2, Plus } from 'lucide-react'
 import type { Column } from '@tanstack/react-table'
 import { Button } from '#/components/ui/button'
+import { Checkbox } from '#/components/ui/checkbox'
 import type { Chat, Folder } from '#/telegram/types'
 import { m } from '#/paraglide/messages'
 import { gridTemplateColumns } from '#/features/matrix/layout'
@@ -17,6 +18,7 @@ export function MatrixHeader({
   onAddFolder,
   onSelectFolder,
   onReorderFolders,
+  selectAll,
 }: {
   /** Visible leaf columns, in the table's own order (F2.1/F4.4). */
   columns: Column<Chat, unknown>[]
@@ -25,6 +27,8 @@ export function MatrixHeader({
   /** Called with the full, reordered list of folder ids after a drag or a
    * keyboard move (F4.4). */
   onReorderFolders?: (folderIds: number[]) => void
+  /** "Select every chat matching the current filter" (F6.1). */
+  selectAll?: SelectAllState
 }) {
   const [draggingId, setDraggingId] = useState<number | null>(null)
   const folderIds = columns
@@ -68,6 +72,7 @@ export function MatrixHeader({
           <HeaderCell
             key={column.id}
             meta={meta}
+            selectAll={selectAll}
             draggingId={draggingId}
             onAddFolder={onAddFolder}
             onSelectFolder={onSelectFolder}
@@ -87,8 +92,14 @@ export function MatrixHeader({
   )
 }
 
+export type SelectAllState = {
+  checked: boolean | 'indeterminate'
+  onToggle: () => void
+}
+
 function HeaderCell({
   meta,
+  selectAll,
   draggingId,
   onAddFolder,
   onSelectFolder,
@@ -100,6 +111,7 @@ function HeaderCell({
   canMoveRight,
 }: {
   meta: MatrixColumnMeta
+  selectAll?: SelectAllState
   draggingId: number | null
   onAddFolder?: () => void
   onSelectFolder?: (folder: Folder) => void
@@ -114,8 +126,16 @@ function HeaderCell({
     return (
       <div
         role="columnheader"
-        className="sticky left-0 z-10 truncate bg-background px-3"
+        className="sticky left-0 z-10 flex items-center gap-2 truncate bg-background px-3"
       >
+        {selectAll && (
+          <Checkbox
+            checked={selectAll.checked}
+            onCheckedChange={selectAll.onToggle}
+            aria-label={m.bulk_select_all()}
+            title={m.bulk_select_all()}
+          />
+        )}
         {m.matrix_column_chat()}
       </div>
     )

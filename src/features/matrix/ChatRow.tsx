@@ -8,6 +8,7 @@ import { gridTemplateColumns } from '#/features/matrix/layout'
 import { wouldEmptyFolder } from '#/features/matrix/relation-cycle'
 import { chatDisplayTitle } from '#/features/matrix/filters'
 import { Button } from '#/components/ui/button'
+import { Checkbox } from '#/components/ui/checkbox'
 import { FlagCell } from '#/features/matrix/FlagCell'
 import { MatrixCell } from '#/features/matrix/MatrixCell'
 import {
@@ -24,6 +25,8 @@ export function ChatRow({
   onCycleRelation,
   onTogglePinned,
   onChatAction,
+  selected,
+  onToggleSelect,
   isBlocked = false,
   isBusy = false,
   isArchivePending,
@@ -43,6 +46,9 @@ export function ChatRow({
   ) => void
   onTogglePinned?: (chat: Chat, pinned: boolean) => void
   onChatAction?: (chat: Chat, action: ChatAction) => void
+  /** Row selection for bulk actions (F6.1); `shift` extends a range. */
+  selected?: boolean
+  onToggleSelect?: (chat: Chat, shift: boolean) => void
   isBlocked?: boolean
   /** A destructive action on this chat is in flight (F5). */
   isBusy?: boolean
@@ -61,6 +67,7 @@ export function ChatRow({
       className={cn(
         'group grid items-center border-b border-border last:border-b-0 hover:bg-accent/40',
         isBusy && 'pointer-events-none opacity-50',
+        selected && 'bg-accent/70 hover:bg-accent/70',
       )}
       style={{
         ...style,
@@ -78,8 +85,28 @@ export function ChatRow({
             <div
               key={column.id}
               role="rowheader"
-              className="sticky left-0 z-10 flex min-w-0 items-center gap-2 bg-background px-3 group-hover:bg-accent/40"
+              // Opaque mixes, not `bg-accent/NN`: this cell is sticky, and a
+              // translucent background would show the columns scrolling
+              // under it.
+              className={cn(
+                'sticky left-0 z-10 flex min-w-0 items-center gap-2 px-3',
+                selected
+                  ? 'bg-[color-mix(in_oklab,var(--color-accent)_70%,var(--color-background))]'
+                  : 'bg-background group-hover:bg-[color-mix(in_oklab,var(--color-accent)_40%,var(--color-background))]',
+              )}
             >
+              {onToggleSelect && (
+                <Checkbox
+                  checked={selected ?? false}
+                  aria-label={m.bulk_select_chat({ title: displayTitle })}
+                  // onClick, not onCheckedChange: only the click carries the
+                  // Shift modifier needed for range selection.
+                  onClick={(event) => {
+                    event.preventDefault()
+                    onToggleSelect(chat, event.shiftKey)
+                  }}
+                />
+              )}
               <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-medium text-muted-foreground">
                 {photo.data ? (
                   <img

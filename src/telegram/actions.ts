@@ -16,6 +16,18 @@ export async function setArchived(
   }
 }
 
+/** Archives many chats in one `folders.editPeerFolders` call (F6). */
+export async function setArchivedMany(
+  peers: ReadonlyArray<PeerRef>,
+  archived: boolean,
+): Promise<void> {
+  const client = getClient()
+  const ids = peers.map((peer) => peer.id)
+  await withFloodWaitRetry(() =>
+    archived ? client.archiveChats(ids) : client.unarchiveChats(ids),
+  )
+}
+
 /** Global chat pin, separate from per-folder pinning (F5.2/F4.5, `messages.toggleDialogPin`). */
 export async function setPinned(peer: PeerRef, pinned: boolean): Promise<void> {
   const client = getClient()

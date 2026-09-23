@@ -14,6 +14,7 @@ import { ROW_HEIGHT } from '#/features/matrix/layout'
 import { FOLDER_FLAGS } from '#/features/matrix/flags'
 import { buildMatrixColumns, CHAT_COLUMN_ID } from '#/features/matrix/columns'
 import { MatrixHeader } from '#/features/matrix/MatrixHeader'
+import type { SelectAllState } from '#/features/matrix/MatrixHeader'
 import { FlagRow } from '#/features/matrix/FlagRow'
 import { ChatRow } from '#/features/matrix/ChatRow'
 import type { ChatAction } from '#/features/chat-actions/chat-actions'
@@ -40,6 +41,7 @@ export function MatrixView({
   onOpenChat,
   onReorderFolders,
   onChatAction,
+  selection,
   isChatBlocked,
   isChatBusy,
   isArchivePending,
@@ -47,6 +49,7 @@ export function MatrixView({
   isRelationPending,
   isFlagPending,
   toolbar,
+  footer,
 }: {
   folders: Folder[]
   chats: Chat[]
@@ -76,6 +79,11 @@ export function MatrixView({
   onOpenChat?: (chat: Chat) => void
   onReorderFolders?: (folderIds: number[]) => void
   onChatAction?: (chat: Chat, action: ChatAction) => void
+  selection?: {
+    isSelected: (chatId: number) => boolean
+    onToggle: (chat: Chat, shift: boolean) => void
+    selectAll: SelectAllState
+  }
   isChatBlocked?: (chatId: number) => boolean
   isChatBusy?: (chatId: number) => boolean
   isArchivePending?: (chatId: number) => boolean
@@ -83,6 +91,8 @@ export function MatrixView({
   isRelationPending?: (chatId: number, folderId: number) => boolean
   isFlagPending?: (folderId: number, flag: FolderFlag) => boolean
   toolbar?: React.ReactNode
+  /** Pinned under the grid — the F6.2 bulk bar while chats are selected. */
+  footer?: React.ReactNode
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -191,6 +201,7 @@ export function MatrixView({
               onAddFolder={onAddFolder}
               onSelectFolder={onSelectFolder}
               onReorderFolders={onReorderFolders}
+              selectAll={selection?.selectAll}
             />
             {/* Flag rows toggle a category (contacts, groups, …) *within a
                 folder column* — with no folder columns there's nothing for
@@ -229,6 +240,8 @@ export function MatrixView({
                   onCycleRelation={onCycleRelation}
                   onTogglePinned={onTogglePinned}
                   onChatAction={onChatAction}
+                  selected={selection?.isSelected(chat.id)}
+                  onToggleSelect={selection?.onToggle}
                   isBlocked={isChatBlocked?.(chat.id)}
                   isBusy={isChatBusy?.(chat.id)}
                   isArchivePending={isArchivePending}
@@ -248,6 +261,8 @@ export function MatrixView({
           </div>
         </div>
       )}
+
+      {footer}
     </div>
   )
 }

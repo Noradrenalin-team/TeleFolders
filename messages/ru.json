@@ -214,5 +214,72 @@
   "blocked_retry": "Повторить",
   "blocked_unblock": "Разблокировать",
   "error_owner_cannot_leave": "Telegram не позволяет владельцу выйти из этого чата",
-  "blocked_loading": "Загружаем список заблокированных…"
+  "blocked_loading": "Загружаем список заблокированных…",
+  "bulk_select_all": "Выбрать все",
+  "bulk_select_chat": "Выбрать «{title}»",
+  "bulk_toolbar": "Массовые действия",
+  "bulk_selected_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Выбран {count} чат",
+        "countPlural=few": "Выбрано {count} чата",
+        "countPlural=many": "Выбрано {count} чатов",
+        "countPlural=other": "Выбрано {count} чата"
+      }
+    }
+  ],
+  "bulk_select_all_matching": "Выбрать все по фильтру ({count})",
+  "bulk_folders_menu": "Папки",
+  "bulk_actions_menu": "Действия",
+  "bulk_clear_selection": "Снять выделение",
+  "bulk_folder_include": "Добавить в папку",
+  "bulk_folder_exclude": "Исключить из папки",
+  "bulk_folder_clear": "Убрать из папки",
+  "bulk_folder_include_into": "Добавить в «{folder}»",
+  "bulk_folder_exclude_from": "Исключить из «{folder}»",
+  "bulk_folder_clear_from": "Убрать из «{folder}»",
+  "bulk_leave": "Покинуть",
+  "bulk_delete": "Удалить",
+  "bulk_confirm_title": [
+    {
+      "declarations": [
+        "input action",
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{action}: {count} чат?",
+        "countPlural=few": "{action}: {count} чата?",
+        "countPlural=many": "{action}: {count} чатов?",
+        "countPlural=other": "{action}: {count} чата?"
+      }
+    }
+  ],
+  "bulk_confirm_delete_description": "Переписки будут удалены у вас, а чаты пропадут из списка.",
+  "bulk_confirm_leave_description": "Вы выйдете из групп и отпишетесь от каналов — они пропадут из списка.",
+  "bulk_confirm_block_description": "Они больше не смогут вам писать. Разблокировать можно в разделе «Заблокированные».",
+  "bulk_confirm_more": "…и ещё {count}",
+  "bulk_skipped_note": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} выбранный чат пропущен: действие к нему неприменимо",
+        "countPlural=few": "{count} выбранных чата пропущено: действие к ним неприменимо",
+        "countPlural=many": "{count} выбранных чатов пропущено: действие к ним неприменимо",
+        "countPlural=other": "{count} выбранного чата пропущено: действие к ним неприменимо"
+      }
+    }
+  ],
+  "bulk_progress": "{done} из {total}",
+  "bulk_flood_pause": "Telegram просит подождать — продолжим через {seconds} с",
+  "bulk_cancel": "Отменить оставшиеся",
+  "bulk_cancelling": "Останавливаем…",
+  "bulk_report_title": "Итог",
+  "bulk_report_succeeded": "Успешно: {count}",
+  "bulk_report_cancelled": "Отменено: {count}",
+  "bulk_report_failed": "С ошибкой: {count} — {reason}"
 }

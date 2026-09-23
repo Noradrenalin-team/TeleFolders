@@ -1,5 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/tanstack-react'
+import { expect, fireEvent, fn, screen, userEvent } from 'storybook/test'
+import { BulkBar } from '#/features/bulk/BulkBar'
+import { toggleSelection } from '#/features/bulk/selection'
 import { MatrixView } from '#/features/matrix/MatrixView'
 import { FIXTURE_CHATS, FIXTURE_FOLDERS } from '#/features/matrix/fixtures'
 import {
@@ -149,4 +152,79 @@ export const Interactive: Story = {
     loadedCount: FIXTURE_CHATS.length,
   },
   render: () => <InteractiveMatrix />,
+}
+
+function SelectableMatrix() {
+  const [selected, setSelected] = useState<ReadonlySet<number>>(new Set())
+  const anchor = useRef<number | undefined>(undefined)
+  const ids = FIXTURE_CHATS.map((chat) => chat.id)
+
+  return (
+    <MatrixView
+      folders={FIXTURE_FOLDERS}
+      chats={FIXTURE_CHATS}
+      isLoading={false}
+      loadedCount={FIXTURE_CHATS.length}
+      selection={{
+        isSelected: (id) => selected.has(id),
+        onToggle: (chat, shift) => {
+          const next = toggleSelection(
+            selected,
+            ids,
+            chat.id,
+            anchor.current,
+            shift,
+          )
+          anchor.current = next.anchor
+          setSelected(next.selected)
+        },
+        selectAll: {
+          checked:
+            selected.size === 0
+              ? false
+              : selected.size === ids.length
+                ? true
+                : 'indeterminate',
+          onToggle: () =>
+            setSelected(
+              selected.size === ids.length ? new Set() : new Set(ids),
+            ),
+        },
+      }}
+      footer={
+        selected.size > 0 ? (
+          <BulkBar
+            selectedCount={selected.size}
+            matchingCount={ids.length}
+            folders={FIXTURE_FOLDERS}
+            applicableCount={() => selected.size}
+            onRun={fn()}
+            onSelectAllMatching={() => setSelected(new Set(ids))}
+            onClear={() => setSelected(new Set())}
+          />
+        ) : undefined
+      }
+    />
+  )
+}
+
+export const WithSelection: Story = {
+  args: Interactive.args,
+  render: () => <SelectableMatrix />,
+  play: async () => {
+    const boxes = await screen.findAllByRole('checkbox', { name: /выбрать «/i })
+    await userEvent.click(boxes[0])
+    fireEvent.click(boxes[2], { shiftKey: true })
+    await expect(await screen.findByText('Выбрано 3 чата')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }))
+    await expect(
+      await screen.findByText(`Выбрано ${FIXTURE_CHATS.length} чатов`),
+    ).toBeInTheDocument()
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /снять выделение/i }),
+    )
+    await expect(screen.queryByRole('toolbar')).toBeNull()
+  },
 }

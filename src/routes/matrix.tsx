@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   createFileRoute,
   stripSearchParams,
@@ -60,6 +60,17 @@ import { setShowArchived } from '#/stores/settings'
 import type { Chat, ChatFolderRelation, Folder } from '#/telegram/types'
 import { m } from '#/paraglide/messages'
 import { FullPageSpinner } from '#/components/FullPageSpinner'
+import { useBulkRun } from '#/queries/bulk'
+import { BulkBar } from '#/features/bulk/BulkBar'
+import { BulkConfirmDialog } from '#/features/bulk/BulkConfirmDialog'
+import { BulkProgressDialog } from '#/features/bulk/BulkProgressDialog'
+import {
+  appliesTo,
+  bulkWouldEmptyFolder,
+  isDestructiveBulk,
+} from '#/features/bulk/bulk-actions'
+import type { BulkAction } from '#/features/bulk/bulk-actions'
+import { toggleSelection } from '#/features/bulk/selection'
 
 export const Route = createFileRoute('/matrix')({
   validateSearch: matrixSearchSchema,
@@ -110,6 +121,15 @@ function MatrixRoute() {
   const blockedIds = new Set(blockedQuery.data?.map((peer) => peer.id))
   const pendingDestructive = usePendingDestructive()
 
+  const bulk = useBulkRun()
+  const [selectedIds, setSelectedIds] = useState<ReadonlySet<number>>(
+    () => new Set(),
+  )
+  const selectionAnchor = useRef<number | undefined>(undefined)
+  const [bulkConfirm, setBulkConfirm] = useState<
+    { action: BulkAction; chats: Chat[]; skipped: number } | undefined
+  >()
+
   const [confirm, setConfirm] = useState<
     { chat: Chat; action: DestructiveChatAction } | undefined
   >()
@@ -138,6 +158,42 @@ function MatrixRoute() {
   const chats = filterAndSortChats(allChats, search)
   const openChat = chats.find((chat) => chat.id === search.chat)
   const openChatIndex = openChat ? chats.indexOf(openChat) : -1
+
+  // Selection is by id and survives filtering, but actions only ever apply
+  // to chats that are still visible — a hidden selected chat is never hit
+  // by an action the user can't see it in (F6.1).
+  const selectedChats = chats.filter((chat) => selectedIds.has(chat.id))
+  const visibleIds = chats.map((chat) => chat.id)
+
+  function applicableChats(action: BulkAction): Chat[] {
+    return selectedChats.filter((chat) =>
+      appliesTo(action, chat, { isBlocked: blockedIds.has(chat.id) }),
+    )
+  }
+
+  function runBulk(action: BulkAction) {
+    const targets = applicableChats(action)
+    if (targets.length === 0) return
+    const skipped = selectedChats.length - targets.length
+    if (action.type === 'folder' && bulkWouldEmptyFolder(action, targets)) {
+      toast.error(m.error_folder_empty())
+      return
+    }
+    if (isDestructiveBulk(action)) {
+      setBulkConfirm({ action, chats: targets, skipped })
+      return
+    }
+    void bulk.run(action, targets, skipped)
+  }
+
+  // Leaves only the failed chats selected, ready for a retry.
+  function finishBulk() {
+    if (bulk.state.status === 'done') {
+      const failed = bulk.state.report.failures.flatMap((f) => f.chats)
+      setSelectedIds(new Set(failed.map((chat) => chat.id)))
+    }
+    bulk.reset()
+  }
 
   function updateSearch(patch: Partial<typeof search>) {
     void navigate({
@@ -288,6 +344,48 @@ function MatrixRoute() {
         onOpenChat={(chat) => updateSearch({ chat: chat.id })}
         onReorderFolders={(ids) => reorderFolders.mutate(ids)}
         onChatAction={runChatAction}
+        selection={{
+          isSelected: (chatId) => selectedIds.has(chatId),
+          onToggle: (chat, shift) => {
+            const next = toggleSelection(
+              selectedIds,
+              visibleIds,
+              chat.id,
+              selectionAnchor.current,
+              shift,
+            )
+            selectionAnchor.current = next.anchor
+            setSelectedIds(next.selected)
+          },
+          selectAll: {
+            checked:
+              selectedChats.length === 0
+                ? false
+                : selectedChats.length === chats.length
+                  ? true
+                  : 'indeterminate',
+            onToggle: () =>
+              setSelectedIds(
+                selectedChats.length === chats.length
+                  ? new Set()
+                  : new Set(visibleIds),
+              ),
+          },
+        }}
+        footer={
+          selectedChats.length > 0 ? (
+            <BulkBar
+              selectedCount={selectedChats.length}
+              matchingCount={chats.length}
+              folders={folders}
+              applicableCount={(action) => applicableChats(action).length}
+              disabled={bulk.state.status === 'running'}
+              onRun={runBulk}
+              onSelectAllMatching={() => setSelectedIds(new Set(visibleIds))}
+              onClear={() => setSelectedIds(new Set())}
+            />
+          ) : undefined
+        }
         isChatBlocked={(chatId) => blockedIds.has(chatId)}
         isChatBusy={(chatId) => pendingDestructive.includes(chatId)}
         isArchivePending={(chatId) =>
@@ -350,6 +448,25 @@ function MatrixRoute() {
             (v) => v.peer.id === chatId && v.folderId === folderId,
           )
         }
+      />
+
+      <BulkConfirmDialog
+        request={bulkConfirm}
+        onOpenChange={(open) => {
+          if (!open) setBulkConfirm(undefined)
+        }}
+        onConfirm={() => {
+          if (!bulkConfirm) return
+          const { action, chats: targets, skipped } = bulkConfirm
+          setBulkConfirm(undefined)
+          void bulk.run(action, targets, skipped)
+        }}
+      />
+
+      <BulkProgressDialog
+        state={bulk.state}
+        onCancel={bulk.cancel}
+        onClose={finishBulk}
       />
 
       <ConfirmChatActionDialog

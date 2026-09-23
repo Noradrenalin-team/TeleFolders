@@ -208,5 +208,66 @@
   "blocked_retry": "Retry",
   "blocked_unblock": "Unblock",
   "error_owner_cannot_leave": "Telegram doesn't allow the owner to leave this chat",
-  "blocked_loading": "Loading blocked users…"
+  "blocked_loading": "Loading blocked users…",
+  "bulk_select_all": "Select all",
+  "bulk_select_chat": "Select “{title}”",
+  "bulk_toolbar": "Bulk actions",
+  "bulk_selected_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} chat selected",
+        "countPlural=other": "{count} chats selected"
+      }
+    }
+  ],
+  "bulk_select_all_matching": "Select all matching ({count})",
+  "bulk_folders_menu": "Folders",
+  "bulk_actions_menu": "Actions",
+  "bulk_clear_selection": "Clear selection",
+  "bulk_folder_include": "Add to folder",
+  "bulk_folder_exclude": "Exclude from folder",
+  "bulk_folder_clear": "Remove from folder",
+  "bulk_folder_include_into": "Add to “{folder}”",
+  "bulk_folder_exclude_from": "Exclude from “{folder}”",
+  "bulk_folder_clear_from": "Remove from “{folder}”",
+  "bulk_leave": "Leave",
+  "bulk_delete": "Delete",
+  "bulk_confirm_title": [
+    {
+      "declarations": [
+        "input action",
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{action}: {count} chat?",
+        "countPlural=other": "{action}: {count} chats?"
+      }
+    }
+  ],
+  "bulk_confirm_delete_description": "The history will be deleted for you and the chats will disappear from the list.",
+  "bulk_confirm_leave_description": "You'll leave the groups and channels — they'll disappear from the list.",
+  "bulk_confirm_block_description": "They won't be able to message you anymore. You can unblock them under Blocked.",
+  "bulk_confirm_more": "…and {count} more",
+  "bulk_skipped_note": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} selected chat skipped: the action doesn't apply to it",
+        "countPlural=other": "{count} selected chats skipped: the action doesn't apply to them"
+      }
+    }
+  ],
+  "bulk_progress": "{done} of {total}",
+  "bulk_flood_pause": "Telegram asked us to wait — resuming in {seconds}s",
+  "bulk_cancel": "Cancel the rest",
+  "bulk_cancelling": "Stopping…",
+  "bulk_report_title": "Summary",
+  "bulk_report_succeeded": "Succeeded: {count}",
+  "bulk_report_cancelled": "Cancelled: {count}",
+  "bulk_report_failed": "Failed: {count} — {reason}"
 }

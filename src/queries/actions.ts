@@ -110,7 +110,7 @@ export function useSetPinned() {
   })
 }
 
-function patchChat(
+export function patchChat(
   queryClient: QueryClient,
   chatId: number,
   patch: Partial<Chat>,
@@ -120,7 +120,7 @@ function patchChat(
   )
 }
 
-function removeChat(queryClient: QueryClient, chatId: number): void {
+export function removeChat(queryClient: QueryClient, chatId: number): void {
   queryClient.setQueryData(dialogsQueryOptions.queryKey, (chats) =>
     chats?.filter((chat) => chat.id !== chatId),
   )

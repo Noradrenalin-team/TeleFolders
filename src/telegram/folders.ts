@@ -69,6 +69,18 @@ export async function setChatRelation(
   peer: PeerRef,
   relation: ChatFolderRelation | null,
 ): Promise<Folder> {
+  return setChatsRelation(folderId, [peer], relation)
+}
+
+/**
+ * Same as `setChatRelation`, for many chats in **one** filter write (F6.5):
+ * N separate writes would be N round-trips and N chances to hit FLOOD_WAIT.
+ */
+export async function setChatsRelation(
+  folderId: number,
+  peers: ReadonlyArray<PeerRef>,
+  relation: ChatFolderRelation | null,
+): Promise<Folder> {
   return enqueueFolderWrite(folderId, () =>
     withFloodWaitRetry(async () => {
       const client = getClient()
@@ -81,26 +93,24 @@ export async function setChatRelation(
         throw new Error(`Folder ${folderId} not found or not editable`)
       }
 
-      const inputPeer = await client.resolvePeer(peer.id)
       const selfId = client.storage.self.getCached()?.userId
-      const key = peerKey(inputPeer, selfId)
+      const inputPeers = await Promise.all(
+        peers.map((peer) => client.resolvePeer(peer.id)),
+      )
+      const keys = new Set(inputPeers.map((p) => peerKey(p, selfId)))
+      const untouched = (p: (typeof inputPeers)[number]) =>
+        !keys.has(peerKey(p, selfId))
 
-      const pinnedPeers = current.pinnedPeers.filter(
-        (p) => peerKey(p, selfId) !== key,
-      )
-      const includePeers = current.includePeers.filter(
-        (p) => peerKey(p, selfId) !== key,
-      )
-      const excludePeers = current.excludePeers.filter(
-        (p) => peerKey(p, selfId) !== key,
-      )
+      const pinnedPeers = current.pinnedPeers.filter(untouched)
+      const includePeers = current.includePeers.filter(untouched)
+      const excludePeers = current.excludePeers.filter(untouched)
 
       if (relation === 'pinned') {
-        pinnedPeers.push(inputPeer)
+        pinnedPeers.push(...inputPeers)
       } else if (relation === 'include') {
-        includePeers.push(inputPeer)
+        includePeers.push(...inputPeers)
       } else if (relation === 'exclude') {
-        excludePeers.push(inputPeer)
+        excludePeers.push(...inputPeers)
       }
 
       const updated = await client.editFolder({

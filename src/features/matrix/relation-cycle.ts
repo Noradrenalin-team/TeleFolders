@@ -8,7 +8,7 @@ const CATEGORY_FLAGS: ReadonlyArray<FolderFlag> = [
   'bots',
 ]
 
-function hasAnyCategoryFlag(folder: Folder): boolean {
+export function hasAnyCategoryFlag(folder: Folder): boolean {
   return CATEGORY_FLAGS.some((flag) => folder.flags[flag])
 }
 
