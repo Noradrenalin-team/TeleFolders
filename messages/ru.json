@@ -293,5 +293,6 @@
     }
   ],
   "dialog_close": "Закрыть",
-  "connection_lost": "Нет соединения с Telegram, переподключаемся…"
+  "connection_lost": "Нет соединения с Telegram, переподключаемся…",
+  "nav_sections": "Разделы"
 }

@@ -24,19 +24,40 @@ export function AppHeader() {
             {m.app_title()}
           </span>
           {isAuthorized && (
-            <nav className="flex items-center gap-3 text-sm">
+            // A segmented switch, so the current section reads at a glance.
+            // Colours live only in active/inactive props: combined with a
+            // base colour class, Tailwind's CSS order decided which won.
+            <nav
+              aria-label={m.nav_sections()}
+              className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5 text-sm"
+            >
               <Link
                 to="/matrix"
                 search={DEFAULT_MATRIX_SEARCH}
-                className="text-muted-foreground hover:text-foreground"
-                activeProps={{ className: 'text-foreground font-medium' }}
+                // Active on /matrix with any filters in the URL, not only
+                // with the default search this link points to.
+                activeOptions={{ includeSearch: false }}
+                className="rounded-md px-3 py-1 transition-colors"
+                activeProps={{
+                  className:
+                    'bg-background font-medium text-foreground shadow-sm',
+                }}
+                inactiveProps={{
+                  className: 'text-foreground/70 hover:text-foreground',
+                }}
               >
                 {m.nav_matrix()}
               </Link>
               <Link
                 to="/blocked"
-                className="text-muted-foreground hover:text-foreground"
-                activeProps={{ className: 'text-foreground font-medium' }}
+                className="rounded-md px-3 py-1 transition-colors"
+                activeProps={{
+                  className:
+                    'bg-background font-medium text-foreground shadow-sm',
+                }}
+                inactiveProps={{
+                  className: 'text-foreground/70 hover:text-foreground',
+                }}
               >
                 {m.nav_blocked()}
               </Link>
