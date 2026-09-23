@@ -19,6 +19,7 @@ import type { ChatAction } from '#/features/chat-actions/chat-actions'
 
 export function ChatRow({
   chat,
+  rowIndex,
   columns,
   onOpenChat,
   onSetArchived,
@@ -35,6 +36,8 @@ export function ChatRow({
   style,
 }: {
   chat: Chat
+  /** This row's index in the matrix keyboard grid (see `useGridKeyboard`). */
+  rowIndex: number
   /** Visible leaf columns, in the table's own order (F2.1). */
   columns: Column<Chat, unknown>[]
   onOpenChat?: (chat: Chat) => void
@@ -76,9 +79,10 @@ export function ChatRow({
         ),
       }}
     >
-      {columns.map((column) => {
+      {columns.map((column, colIndex) => {
         const meta = column.columnDef.meta?.matrix
         if (!meta) return null
+        const cell = { row: rowIndex, col: colIndex }
 
         if (meta.kind === 'chat') {
           return (
@@ -97,6 +101,9 @@ export function ChatRow({
             >
               {onToggleSelect && (
                 <Checkbox
+                  // Out of the Tab order like the rest of the row's extras:
+                  // Space on the chat cell selects (see MatrixView).
+                  tabIndex={-1}
                   checked={selected ?? false}
                   aria-label={m.bulk_select_chat({ title: displayTitle })}
                   // onClick, not onCheckedChange: only the click carries the
@@ -120,7 +127,9 @@ export function ChatRow({
               </span>
               <button
                 type="button"
-                className="min-w-0 truncate text-left text-sm enabled:hover:underline"
+                data-cell-row={cell.row}
+                data-cell-col={cell.col}
+                className="min-w-0 truncate rounded-sm text-left text-sm focus-visible:outline-2 focus-visible:outline-ring enabled:hover:underline"
                 disabled={!onOpenChat}
                 onClick={onOpenChat ? () => onOpenChat(chat) : undefined}
               >
@@ -131,6 +140,9 @@ export function ChatRow({
                   type="button"
                   variant="ghost"
                   size="icon-xs"
+                  // Pin/unpin is also in the row's menu, which the keyboard
+                  // reaches via the context-menu key.
+                  tabIndex={-1}
                   disabled={isPinnedPending?.(chat.id) ?? false}
                   className={cn(
                     'shrink-0',
@@ -176,6 +188,7 @@ export function ChatRow({
                 <ChatActionsDropdown
                   chat={chat}
                   isBlocked={isBlocked}
+                  tabIndex={-1}
                   onAction={onChatAction}
                   className="shrink-0 text-muted-foreground opacity-0 focus-visible:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100"
                 />
@@ -202,6 +215,7 @@ export function ChatRow({
               className="flex justify-center"
             >
               <FlagCell
+                cell={cell}
                 active={chat.isArchived}
                 label={
                   chat.isArchived
@@ -238,6 +252,7 @@ export function ChatRow({
             )}
           >
             <MatrixCell
+              cell={cell}
               state={current ?? 'none'}
               disabled={disabled}
               disabledReason={

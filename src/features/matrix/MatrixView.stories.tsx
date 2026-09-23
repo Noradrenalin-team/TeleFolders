@@ -3,12 +3,15 @@ import type { Meta, StoryObj } from '@storybook/tanstack-react'
 import { expect, fireEvent, fn, screen, userEvent } from 'storybook/test'
 import { BulkBar } from '#/features/bulk/BulkBar'
 import { toggleSelection } from '#/features/bulk/selection'
+import { FOLDER_FLAGS } from '#/features/matrix/flags'
 import { MatrixView } from '#/features/matrix/MatrixView'
 import { FIXTURE_CHATS, FIXTURE_FOLDERS } from '#/features/matrix/fixtures'
 import {
   nextRelation,
   wouldEmptyFolder,
 } from '#/features/matrix/relation-cycle'
+
+const FOLDER_ROWS = FOLDER_FLAGS.length
 
 const meta = {
   title: 'features/matrix/MatrixView',
@@ -165,6 +168,7 @@ function SelectableMatrix() {
       chats={FIXTURE_CHATS}
       isLoading={false}
       loadedCount={FIXTURE_CHATS.length}
+      onOpenChat={fn()}
       selection={{
         isSelected: (id) => selected.has(id),
         onToggle: (chat, shift) => {
@@ -228,5 +232,33 @@ export const WithSelection: Story = {
     await expect(
       screen.queryByRole('region', { name: /массовые действия/i }),
     ).toBeNull()
+  },
+}
+
+export const KeyboardNavigation: Story = {
+  args: Interactive.args,
+  render: () => <SelectableMatrix />,
+  play: async ({ canvasElement }) => {
+    const grid = canvasElement.querySelector<HTMLElement>('[role="grid"]')
+    await expect(grid).not.toBeNull()
+    // One Tab stop for the whole grid (roving tabindex).
+    await expect(grid?.querySelectorAll('[tabindex="0"]')).toHaveLength(1)
+
+    const first = await screen.findByRole('button', { name: 'Избранное' })
+    first.focus()
+    await userEvent.keyboard('{ArrowDown}')
+    await expect(document.activeElement).toHaveTextContent('Команда')
+
+    await userEvent.keyboard('{ArrowRight}')
+    await expect(document.activeElement).toHaveAccessibleName('Не в архиве')
+
+    await userEvent.keyboard('{ArrowLeft}')
+    await userEvent.keyboard(' ')
+    await expect(await screen.findByText('Выбран 1 чат')).toBeInTheDocument()
+
+    await userEvent.keyboard('{Control>}{End}{/Control}')
+    await expect(document.activeElement?.getAttribute('data-cell-row')).toBe(
+      String(FOLDER_ROWS + FIXTURE_CHATS.length - 1),
+    )
   },
 }

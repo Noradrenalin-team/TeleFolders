@@ -139,11 +139,13 @@ export function ChatActionsDropdown({
   isBlocked,
   onAction,
   className,
+  tabIndex,
 }: {
   chat: Chat
   isBlocked?: boolean
   onAction: (chat: Chat, action: ChatAction) => void
   className?: string
+  tabIndex?: number
 }) {
   return (
     <DropdownMenu>
@@ -153,6 +155,7 @@ export function ChatActionsDropdown({
           variant="ghost"
           size="icon-xs"
           className={className}
+          tabIndex={tabIndex}
           aria-label={m.chat_actions_menu({ title: chat.title })}
           title={m.chat_actions_menu({ title: chat.title })}
         >

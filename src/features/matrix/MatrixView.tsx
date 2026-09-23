@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useReactTable, getCoreRowModel } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { AlertCircle, RefreshCw } from 'lucide-react'
@@ -19,6 +19,7 @@ import { FlagRow } from '#/features/matrix/FlagRow'
 import { ChatRow } from '#/features/matrix/ChatRow'
 import type { ChatAction } from '#/features/chat-actions/chat-actions'
 import { MatrixSkeleton } from '#/features/matrix/MatrixSkeleton'
+import { useGridKeyboard } from '#/features/matrix/grid-keyboard'
 
 export function MatrixView({
   folders,
@@ -117,11 +118,56 @@ export function MatrixView({
   // scroll and detaches past that (ТЗ §5).
   const totalWidth = table.getTotalSize()
 
+  // The chat rows start below the sticky header + flag rows, inside the
+  // same scroll container. The virtualizer has to know that offset
+  // (scrollMargin) and that the sticky part covers the top of the viewport
+  // (scrollPaddingStart) — otherwise scrolling a row into view from below
+  // lands it past the bottom edge by exactly the header's height.
+  const headerRef = useRef<HTMLDivElement>(null)
+  const [headerHeight, setHeaderHeight] = useState(0)
+  useLayoutEffect(() => {
+    const header = headerRef.current
+    if (!header) return
+    const observer = new ResizeObserver(() =>
+      setHeaderHeight(header.offsetHeight),
+    )
+    observer.observe(header)
+    setHeaderHeight(header.offsetHeight)
+    return () => observer.disconnect()
+  }, [isLoading, isError, chats.length === 0])
+
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => ROW_HEIGHT,
     overscan: 12,
+    scrollMargin: headerHeight,
+    scrollPaddingStart: headerHeight,
+  })
+
+  const flagRowCount = folders.length > 0 ? FOLDER_FLAGS.length : 0
+  const chatColumnIndex = visibleColumns.findIndex(
+    (column) => column.id === CHAT_COLUMN_ID,
+  )
+  const keyboard = useGridKeyboard({
+    gridRef: scrollRef,
+    rowCount: flagRowCount + rows.length,
+    pageSize: () =>
+      Math.max(
+        1,
+        Math.floor(
+          ((scrollRef.current?.clientHeight ?? 0) - headerHeight) / ROW_HEIGHT,
+        ),
+      ),
+    scrollToRow: (row) => {
+      if (row >= flagRowCount) virtualizer.scrollToIndex(row - flagRowCount)
+    },
+    onSpace: (at, shift) => {
+      if (!selection || at.col !== chatColumnIndex || at.row < flagRowCount)
+        return false
+      selection.onToggle(rows[at.row - flagRowCount].original, shift)
+      return true
+    },
   })
 
   const showNoResults = !isLoading && !isError && chats.length === 0
@@ -188,11 +234,14 @@ export function MatrixView({
         <div
           ref={scrollRef}
           role="grid"
-          aria-rowcount={rows.length + 1 + FOLDER_FLAGS.length}
+          aria-rowcount={rows.length + 1 + flagRowCount}
           aria-colcount={visibleColumns.length}
           className="flex-1 overflow-auto"
+          onKeyDown={keyboard.onKeyDown}
+          onFocus={keyboard.onFocus}
         >
           <div
+            ref={headerRef}
             className="sticky top-0 z-20"
             style={{ width: totalWidth, minWidth: '100%' }}
           >
@@ -212,6 +261,7 @@ export function MatrixView({
               FOLDER_FLAGS.map(({ flag, label }) => (
                 <FlagRow
                   key={flag}
+                  rowIndex={FOLDER_FLAGS.findIndex((f) => f.flag === flag)}
                   flag={flag}
                   label={label()}
                   columns={visibleColumns}
@@ -234,6 +284,7 @@ export function MatrixView({
                 <ChatRow
                   key={chat.id}
                   chat={chat}
+                  rowIndex={flagRowCount + virtualRow.index}
                   columns={visibleColumns}
                   onOpenChat={onOpenChat}
                   onSetArchived={onSetArchived}
@@ -253,7 +304,7 @@ export function MatrixView({
                     left: 0,
                     width: '100%',
                     height: virtualRow.size,
-                    transform: `translateY(${virtualRow.start}px)`,
+                    transform: `translateY(${virtualRow.start - virtualizer.options.scrollMargin}px)`,
                   }}
                 />
               )

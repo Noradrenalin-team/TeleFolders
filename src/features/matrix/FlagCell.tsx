@@ -1,5 +1,6 @@
 import { Circle, CircleDot, Loader2 } from 'lucide-react'
 import { cn } from 'cn'
+import type { GridCell } from '#/features/matrix/grid-keyboard'
 
 export function FlagCell({
   active,
@@ -10,6 +11,7 @@ export function FlagCell({
    * `pointer-events: none` and don't receive hover events at all. */
   disabledReason,
   pending = false,
+  cell,
   onClick,
 }: {
   active: boolean
@@ -17,8 +19,14 @@ export function FlagCell({
   disabled?: boolean
   disabledReason?: string
   pending?: boolean
+  /** Position in the matrix's keyboard grid (see `useGridKeyboard`). */
+  cell?: GridCell
   onClick?: () => void
 }) {
+  // aria-disabled, not disabled: a disabled button can't take focus, so
+  // arrow-key navigation would silently skip it and the reason it's off
+  // would never be announced.
+  const inactive = disabled || pending
   const Icon = active ? CircleDot : Circle
 
   return (
@@ -31,11 +39,14 @@ export function FlagCell({
         aria-label={label}
         aria-pressed={active}
         title={disabled ? undefined : label}
-        disabled={disabled || pending}
-        onClick={onClick}
+        aria-disabled={inactive || undefined}
+        aria-busy={pending || undefined}
+        data-cell-row={cell?.row}
+        data-cell-col={cell?.col}
+        onClick={inactive ? undefined : onClick}
         className={cn(
           'flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors',
-          'hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-40',
+          'hover:bg-accent hover:text-accent-foreground aria-disabled:pointer-events-none aria-disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-ring',
           active && 'text-primary',
         )}
       >

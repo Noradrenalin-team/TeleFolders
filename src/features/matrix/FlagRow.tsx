@@ -6,12 +6,15 @@ import { wouldEmptyFolderByFlag } from '#/features/matrix/relation-cycle'
 import { m } from '#/paraglide/messages'
 
 export function FlagRow({
+  rowIndex,
   flag,
   label,
   columns,
   onToggle,
   isPending,
 }: {
+  /** This row's index in the matrix keyboard grid (see `useGridKeyboard`). */
+  rowIndex: number
   flag: FolderFlag
   label: string
   /** Visible leaf columns, in the table's own order — only `folder` columns
@@ -31,7 +34,7 @@ export function FlagRow({
         ),
       }}
     >
-      {columns.map((column) => {
+      {columns.map((column, colIndex) => {
         const meta = column.columnDef.meta?.matrix
         if (!meta) return null
 
@@ -64,6 +67,7 @@ export function FlagRow({
               <span className="size-8" />
             ) : (
               <FlagCell
+                cell={{ row: rowIndex, col: colIndex }}
                 active={folder.flags[flag]}
                 label={label}
                 disabled={disabled}
