@@ -171,6 +171,7 @@ function SelectableMatrix() {
       onOpenChat={fn()}
       selection={{
         isSelected: (id) => selected.has(id),
+        onClear: () => setSelected(new Set()),
         onToggle: (chat, shift) => {
           const next = toggleSelection(
             selected,
@@ -255,6 +256,9 @@ export const KeyboardNavigation: Story = {
     await userEvent.keyboard('{ArrowLeft}')
     await userEvent.keyboard(' ')
     await expect(await screen.findByText('Выбран 1 чат')).toBeInTheDocument()
+
+    await userEvent.keyboard('{Escape}')
+    await expect(screen.queryByText('Выбран 1 чат')).toBeNull()
 
     await userEvent.keyboard('{Control>}{End}{/Control}')
     await expect(document.activeElement?.getAttribute('data-cell-row')).toBe(

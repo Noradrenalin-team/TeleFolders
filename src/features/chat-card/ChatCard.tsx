@@ -110,6 +110,11 @@ export function ChatCard({
                 {chat.isMuted && (
                   <BellOff className="size-3 shrink-0" aria-hidden="true" />
                 )}
+                {chat.unreadCount > 0 && (
+                  <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none font-medium text-primary-foreground">
+                    {m.matrix_unread_count({ count: chat.unreadCount })}
+                  </span>
+                )}
               </DialogDescription>
             </div>
             {onChatAction && (

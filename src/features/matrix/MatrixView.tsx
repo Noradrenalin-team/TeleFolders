@@ -36,6 +36,7 @@ export function MatrixView({
   onAddFolder,
   onSetArchived,
   onCycleRelation,
+  onSetRelation,
   onToggleFlag,
   onSelectFolder,
   onTogglePinned,
@@ -74,6 +75,12 @@ export function MatrixView({
     folder: Folder,
     current: ChatFolderRelation | undefined,
   ) => void
+  onSetRelation?: (
+    chat: Chat,
+    folder: Folder,
+    current: ChatFolderRelation | undefined,
+    next: ChatFolderRelation | null,
+  ) => void
   onToggleFlag?: (folder: Folder, flag: FolderFlag, next: boolean) => void
   onSelectFolder?: (folder: Folder) => void
   onTogglePinned?: (chat: Chat, pinned: boolean) => void
@@ -83,6 +90,7 @@ export function MatrixView({
   selection?: {
     isSelected: (chatId: number) => boolean
     onToggle: (chat: Chat, shift: boolean) => void
+    onClear: () => void
     selectAll: SelectAllState
   }
   isChatBlocked?: (chatId: number) => boolean
@@ -174,7 +182,17 @@ export function MatrixView({
   const showNoFoldersHint = !isLoading && !isError && folders.length === 0
 
   return (
-    <div className="flex h-full flex-col">
+    <div
+      className="flex h-full flex-col"
+      // ТЗ §5: Esc clears the selection. A menu or dialog closing on the same
+      // Esc marks it defaultPrevented first (Radix handles it on document
+      // capture), so this only fires when nothing else consumed it.
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && !event.defaultPrevented) {
+          selection?.onClear()
+        }
+      }}
+    >
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <span className="text-sm text-muted-foreground">
           {isLoading
@@ -289,6 +307,7 @@ export function MatrixView({
                   onOpenChat={onOpenChat}
                   onSetArchived={onSetArchived}
                   onCycleRelation={onCycleRelation}
+                  onSetRelation={onSetRelation}
                   onTogglePinned={onTogglePinned}
                   onChatAction={onChatAction}
                   selected={selection?.isSelected(chat.id)}

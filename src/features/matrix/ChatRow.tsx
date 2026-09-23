@@ -5,7 +5,10 @@ import type { Chat, ChatFolderRelation, Folder } from '#/telegram/types'
 import { useChatPhoto } from '#/queries/dialogs'
 import { m } from '#/paraglide/messages'
 import { gridTemplateColumns } from '#/features/matrix/layout'
-import { wouldEmptyFolder } from '#/features/matrix/relation-cycle'
+import {
+  wouldEmptyFolder,
+  wouldEmptyFolderTo,
+} from '#/features/matrix/relation-cycle'
 import { chatDisplayTitle } from '#/features/matrix/filters'
 import { Button } from '#/components/ui/button'
 import { Checkbox } from '#/components/ui/checkbox'
@@ -24,6 +27,7 @@ export function ChatRow({
   onOpenChat,
   onSetArchived,
   onCycleRelation,
+  onSetRelation,
   onTogglePinned,
   onChatAction,
   selected,
@@ -46,6 +50,13 @@ export function ChatRow({
     chat: Chat,
     folder: Folder,
     current: ChatFolderRelation | undefined,
+  ) => void
+  /** Direct jump to a state, bypassing the cycle (Shift+click, cell menu). */
+  onSetRelation?: (
+    chat: Chat,
+    folder: Folder,
+    current: ChatFolderRelation | undefined,
+    next: ChatFolderRelation | null,
   ) => void
   onTogglePinned?: (chat: Chat, pinned: boolean) => void
   onChatAction?: (chat: Chat, action: ChatAction) => void
@@ -263,6 +274,14 @@ export function ChatRow({
                 onCycleRelation
                   ? () => onCycleRelation(chat, folder, current)
                   : undefined
+              }
+              onSelectState={
+                onSetRelation && !folder.readOnly
+                  ? (next) => onSetRelation(chat, folder, current, next)
+                  : undefined
+              }
+              canSelectState={(next) =>
+                !wouldEmptyFolderTo(folder, current, next)
               }
             />
           </div>

@@ -68,3 +68,23 @@ export function wouldEmptyFolderByFlag(
   )
   return !otherFlagActive
 }
+
+/**
+ * F2.7 for a direct jump (Shift+click → exclude, or picking a state from the
+ * cell's menu) rather than one step of the cycle: any move that takes the
+ * last included/pinned chat out of the folder would empty it.
+ */
+export function wouldEmptyFolderTo(
+  folder: Folder,
+  current: ChatFolderRelation | undefined,
+  next: ChatFolderRelation | null,
+): boolean {
+  const isIn = (r: ChatFolderRelation | null | undefined) =>
+    r === 'include' || r === 'pinned'
+  return (
+    isIn(current) &&
+    !isIn(next) &&
+    folder.includeCount <= 1 &&
+    !hasAnyCategoryFlag(folder)
+  )
+}

@@ -140,3 +140,16 @@ body {
     color: var(--foreground);
   }
 }
+
+/* ТЗ §5: honour the OS "reduce motion" setting — dialogs and menus appear
+   without their zoom/fade, and spinners/skeletons stop pulsing. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -3,6 +3,7 @@ import {
   nextRelation,
   wouldEmptyFolder,
   wouldEmptyFolderByFlag,
+  wouldEmptyFolderTo,
 } from '#/features/matrix/relation-cycle'
 import type { Folder } from '#/telegram/types'
 
@@ -88,5 +89,24 @@ describe('wouldEmptyFolderByFlag', () => {
   it('ignores exclude-rule flags (excludeMuted etc.) — they never populate a folder', () => {
     const f = folder({ flags: { ...folder().flags, excludeMuted: true } })
     expect(wouldEmptyFolderByFlag(f, 'excludeMuted', false)).toBe(false)
+  })
+})
+
+describe('wouldEmptyFolderTo', () => {
+  const lonely = folder({ includeCount: 1 })
+
+  it('blocks jumping the last included chat straight to exclude or none', () => {
+    expect(wouldEmptyFolderTo(lonely, 'include', 'exclude')).toBe(true)
+    expect(wouldEmptyFolderTo(lonely, 'pinned', null)).toBe(true)
+  })
+
+  it('allows moves that keep it in the folder', () => {
+    expect(wouldEmptyFolderTo(lonely, 'include', 'pinned')).toBe(false)
+  })
+
+  it('allows it when other chats remain', () => {
+    expect(
+      wouldEmptyFolderTo(folder({ includeCount: 2 }), 'include', 'exclude'),
+    ).toBe(false)
   })
 })

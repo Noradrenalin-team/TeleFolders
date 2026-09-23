@@ -49,6 +49,7 @@ import {
   nextRelation,
   wouldEmptyFolder,
   wouldEmptyFolderByFlag,
+  wouldEmptyFolderTo,
 } from '#/features/matrix/relation-cycle'
 import {
   DEFAULT_MATRIX_SEARCH,
@@ -220,6 +221,24 @@ function MatrixRoute() {
     })
   }
 
+  function setRelation(
+    chat: Pick<Chat, 'id' | 'kind'>,
+    folder: Folder,
+    current: ChatFolderRelation | undefined,
+    next: ChatFolderRelation | null,
+  ) {
+    if ((current ?? null) === next) return
+    if (wouldEmptyFolderTo(folder, current, next)) {
+      toast.error(m.error_folder_empty())
+      return
+    }
+    setChatRelation.mutate({
+      folderId: folder.id,
+      peer: { id: chat.id, kind: chat.kind },
+      relation: next,
+    })
+  }
+
   function runChatAction(chat: Chat, action: ChatAction) {
     if (isDestructive(action)) {
       setConfirm({ chat, action })
@@ -323,6 +342,7 @@ function MatrixRoute() {
           updateSearch({ ...DEFAULT_MATRIX_SEARCH, archived: search.archived })
         }
         onCycleRelation={cycleRelation}
+        onSetRelation={setRelation}
         onSetArchived={(chat, archived) => {
           setArchived.mutate({
             peer: { id: chat.id, kind: chat.kind },
@@ -346,6 +366,7 @@ function MatrixRoute() {
         onChatAction={runChatAction}
         selection={{
           isSelected: (chatId) => selectedIds.has(chatId),
+          onClear: () => setSelectedIds(new Set()),
           onToggle: (chat, shift) => {
             const next = toggleSelection(
               selectedIds,

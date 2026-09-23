@@ -1,7 +1,13 @@
-import { CirclePlus, Loader2, Minus, Pin, Plus } from 'lucide-react'
+import { Check, CirclePlus, Loader2, Minus, Pin, Plus } from 'lucide-react'
 import { cn } from 'cn'
 import type { GridCell } from '#/features/matrix/grid-keyboard'
 import type { ChatFolderRelation } from '#/telegram/types'
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '#/components/ui/context-menu'
 import { m } from '#/paraglide/messages'
 
 export type CellState = ChatFolderRelation | 'none'
@@ -29,6 +35,8 @@ export function MatrixCell({
   pending = false,
   cell,
   onClick,
+  onSelectState,
+  canSelectState,
 }: {
   state: CellState
   disabled?: boolean
@@ -37,6 +45,10 @@ export function MatrixCell({
   /** Position in the matrix's keyboard grid (see `useGridKeyboard`). */
   cell?: GridCell
   onClick?: () => void
+  /** Jump straight to a state (ТЗ §5): Shift+click → exclude; right-click
+   * or long-press → a menu of all four. */
+  onSelectState?: (next: ChatFolderRelation | null) => void
+  canSelectState?: (next: ChatFolderRelation | null) => boolean
 }) {
   // aria-disabled, not disabled: a disabled button can't take focus, so
   // arrow-key navigation would silently skip it and the reason it's off
@@ -45,7 +57,10 @@ export function MatrixCell({
   const Icon = ICON_BY_STATE[state]
   const label = LABEL_BY_STATE[state]()
 
-  return (
+  const canJumpTo = (next: ChatFolderRelation | null) =>
+    !pending && (canSelectState?.(next) ?? true)
+
+  const button = (
     <span
       className="inline-flex"
       title={disabled && !pending ? disabledReason : undefined}
@@ -58,7 +73,15 @@ export function MatrixCell({
         aria-busy={pending || undefined}
         data-cell-row={cell?.row}
         data-cell-col={cell?.col}
-        onClick={inactive ? undefined : onClick}
+        onClick={(event) => {
+          if (event.shiftKey && onSelectState) {
+            if (state !== 'exclude' && canJumpTo('exclude')) {
+              onSelectState('exclude')
+            }
+            return
+          }
+          if (!inactive) onClick?.()
+        }}
         className={cn(
           'flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors',
           'hover:bg-accent hover:text-accent-foreground aria-disabled:pointer-events-none aria-disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-ring',
@@ -75,4 +98,33 @@ export function MatrixCell({
       </button>
     </span>
   )
+
+  if (!onSelectState) return button
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>{button}</ContextMenuTrigger>
+      <ContextMenuContent>
+        {STATES.map((option) => {
+          const next = option === 'none' ? null : option
+          const OptionIcon = ICON_BY_STATE[option]
+          return (
+            <ContextMenuItem
+              key={option}
+              disabled={option === state || !canJumpTo(next)}
+              onSelect={() => onSelectState(next)}
+            >
+              <OptionIcon aria-hidden="true" />
+              {LABEL_BY_STATE[option]()}
+              {option === state && (
+                <Check className="ml-auto" aria-hidden="true" />
+              )}
+            </ContextMenuItem>
+          )
+        })}
+      </ContextMenuContent>
+    </ContextMenu>
+  )
 }
+
+const STATES: CellState[] = ['none', 'include', 'pinned', 'exclude']
