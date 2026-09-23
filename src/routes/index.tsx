@@ -22,7 +22,6 @@ function Home() {
   const authState = useQuery({
     ...authStateQueryOptions,
     enabled: configured,
-    retry: false,
   })
 
   useEffect(() => {
@@ -31,10 +30,10 @@ function Home() {
       void navigate({ to: '/login' })
       return
     }
-    if (authState.data?.status === 'unauthorized') {
-      void navigate({ to: '/login' })
-    } else if (authState.data?.status === 'authorized') {
+    if (authState.data?.status === 'authorized') {
       void navigate({ to: '/matrix', search: DEFAULT_MATRIX_SEARCH })
+    } else if (authState.data) {
+      void navigate({ to: '/login' })
     }
   }, [configured, authState.data, navigate])
 

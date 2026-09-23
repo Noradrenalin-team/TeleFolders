@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { isTelegramConfigured } from '#/telegram/client'
-import { authStateQueryOptions } from '#/queries/auth'
+import { authStateQueryOptions, useRestartSignIn } from '#/queries/auth'
 import type { SentCode } from '#/telegram/auth'
 import { PhoneStep } from '#/features/auth/PhoneStep'
 import { CodeStep } from '#/features/auth/CodeStep'
@@ -21,6 +21,7 @@ type Step =
 function LoginPage() {
   const navigate = useNavigate()
   const [step, setStep] = useState<Step>({ name: 'phone' })
+  const restartSignIn = useRestartSignIn()
 
   // Already signed in (e.g. a bookmarked /login, or the future-auth-token
   // "already logged in" case in sendCode) — go straight to the matrix
@@ -68,12 +69,21 @@ function LoginPage() {
     )
   }
 
-  if (step.name === 'password') {
+  // A sign-in left at the 2FA step (tab closed, reload) picks up there.
+  const resumingPassword =
+    step.name === 'phone' && authState.data?.status === 'password_needed'
+
+  if (step.name === 'password' || resumingPassword) {
     return (
       <LoginLayout>
         <PasswordStep
           onSignedIn={goToMatrix}
-          onBack={() => setStep({ name: 'phone' })}
+          onBack={() => {
+            // Back from the password step starts over on a clean session,
+            // not the one Telegram is holding at the 2FA step.
+            restartSignIn.mutate()
+            setStep({ name: 'phone' })
+          }}
         />
       </LoginLayout>
     )

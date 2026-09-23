@@ -16,7 +16,11 @@ export type AppError = {
   raw: string
 }
 
-const AUTH_REQUIRED_CODES = ['AUTH_KEY_UNREGISTERED', 'SESSION_REVOKED']
+// Any 401 means "this session isn't (or is no longer) signed in" — Telegram's
+// UNAUTHORIZED class: AUTH_KEY_UNREGISTERED, SESSION_REVOKED, SESSION_EXPIRED,
+// USER_DEACTIVATED, SESSION_PASSWORD_NEEDED (a sign-in stopped at the 2FA
+// step), … Matching two codes by name left the others as a generic error.
+const UNAUTHORIZED = 401
 const PERMISSION_DENIED_CODES = [
   'CHAT_ADMIN_REQUIRED',
   'USER_PRIVACY_RESTRICTED',
@@ -25,7 +29,7 @@ const PERMISSION_DENIED_CODES = [
 const LIMIT_CODES_SUFFIX = '_TOO_MUCH'
 
 export function isAuthRequiredError(error: unknown): boolean {
-  return tl.RpcError.is(error) && AUTH_REQUIRED_CODES.includes(error.text)
+  return tl.RpcError.is(error) && error.code === UNAUTHORIZED
 }
 
 export function normalizeError(error: unknown): AppError {
@@ -41,7 +45,7 @@ export function normalizeError(error: unknown): AppError {
     if (raw === 'FILTERS_TOO_MUCH' || raw.endsWith(LIMIT_CODES_SUFFIX)) {
       return { code: 'LIMIT_REACHED', raw }
     }
-    if (AUTH_REQUIRED_CODES.includes(raw)) {
+    if (error.code === UNAUTHORIZED) {
       return { code: 'AUTH_REQUIRED', raw }
     }
     if (PERMISSION_DENIED_CODES.includes(raw)) {

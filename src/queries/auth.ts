@@ -13,6 +13,9 @@ export const authStateQueryOptions = queryOptions({
   queryKey: ['auth', 'state'],
   queryFn: () => auth.getAuthState(),
   staleTime: Infinity,
+  // Set here, not per useQuery(): several components observe this query at
+  // once and whichever registers last decides the retry policy otherwise.
+  retry: 1,
 })
 
 function setAuthorized(queryClient: QueryClient, profile: Profile) {
@@ -109,6 +112,21 @@ export function useCheckPassword() {
  * if the sign-out RPC itself fails (network drop mid-request, session
  * already revoked server-side, …) — `auth.logOut()` always wipes locally in
  * its own `finally`, so all that's left here is resetting the app's cache. */
+/** Drops a half-finished sign-in (stopped at the 2FA step) so a new code
+ * goes out on a clean session instead of one Telegram still holds at the
+ * password step. */
+export function useRestartSignIn() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => auth.resetLocalSession(),
+    onSettled: () => {
+      const next: AuthState = { status: 'unauthorized' }
+      queryClient.setQueryData(authStateQueryOptions.queryKey, next)
+    },
+  })
+}
+
 export function useLogOut() {
   const queryClient = useQueryClient()
 

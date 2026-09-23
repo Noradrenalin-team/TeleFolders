@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { tl } from '@mtcute/web'
 import {
+  isAuthRequiredError,
   normalizeError,
   subscribeFloodWait,
   withFloodWaitRetry,
@@ -41,12 +42,23 @@ describe('normalizeError', () => {
     expect(normalized.raw).toBe('PINNED_DIALOGS_TOO_MUCH')
   })
 
-  it('maps AUTH_KEY_UNREGISTERED and SESSION_REVOKED to AUTH_REQUIRED', () => {
-    expect(normalizeError(rpcError('AUTH_KEY_UNREGISTERED')).code).toBe(
-      'AUTH_REQUIRED',
-    )
-    expect(normalizeError(rpcError('SESSION_REVOKED')).code).toBe(
-      'AUTH_REQUIRED',
+  it('maps every 401 (UNAUTHORIZED class) to AUTH_REQUIRED', () => {
+    for (const text of [
+      'AUTH_KEY_UNREGISTERED',
+      'SESSION_REVOKED',
+      'SESSION_EXPIRED',
+      'USER_DEACTIVATED',
+      'SESSION_PASSWORD_NEEDED',
+    ]) {
+      const error = new tl.RpcError(401, text)
+      expect(normalizeError(error).code).toBe('AUTH_REQUIRED')
+      expect(isAuthRequiredError(error)).toBe(true)
+    }
+  })
+
+  it('does not treat other classes as a lost session', () => {
+    expect(isAuthRequiredError(new tl.RpcError(400, 'PEER_ID_INVALID'))).toBe(
+      false,
     )
   })
 

@@ -25,7 +25,8 @@ function BlockedRoute() {
   })
 
   useEffect(() => {
-    if (authState.data?.status === 'unauthorized' || authState.isError) {
+    const signedOut = authState.data && authState.data.status !== 'authorized'
+    if (signedOut || authState.isError) {
       void navigate({ to: '/login' })
     }
   }, [authState.data, authState.isError, navigate])

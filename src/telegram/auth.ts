@@ -9,7 +9,11 @@ import { isAuthRequiredError } from '#/telegram/errors'
 import type { Profile } from '#/telegram/types'
 
 export type AuthState =
-  { status: 'unauthorized' } | { status: 'authorized'; profile: Profile }
+  | { status: 'unauthorized' }
+  /** A sign-in that got past the code but stopped at the 2FA password (the
+   * tab was closed, say): `/login` resumes at the password step. */
+  | { status: 'password_needed' }
+  | { status: 'authorized'; profile: Profile }
 
 export type SentCode = {
   phoneCodeHash: string
@@ -66,6 +70,9 @@ export async function getAuthState(): Promise<AuthState> {
     const me = await getClient().getMe()
     return { status: 'authorized', profile: toProfile(me) }
   } catch (error) {
+    if (tl.RpcError.is(error, 'SESSION_PASSWORD_NEEDED')) {
+      return { status: 'password_needed' }
+    }
     if (isAuthRequiredError(error)) return { status: 'unauthorized' }
     throw error
   }
