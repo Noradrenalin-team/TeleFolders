@@ -185,6 +185,11 @@ function SelectableMatrix() {
       selection={{
         isSelected: (id) => selected.has(id),
         onClear: () => setSelected(new Set()),
+        selected,
+        onReplace: (next, from) => {
+          anchor.current = from
+          setSelected(next)
+        },
         onToggle: (chat, shift) => {
           const next = toggleSelection(
             selected,
@@ -277,5 +282,34 @@ export const KeyboardNavigation: Story = {
     await expect(document.activeElement?.getAttribute('data-cell-row')).toBe(
       String(FOLDER_ROWS + FIXTURE_CHATS.length - 1),
     )
+  },
+}
+
+export const DragToSelect: Story = {
+  args: Interactive.args,
+  render: () => <SelectableMatrix />,
+  play: async () => {
+    const drag = async (from: number, to: number) => {
+      const boxes = await screen.findAllByRole('checkbox', {
+        name: /выбрать «/i,
+      })
+      fireEvent.pointerDown(boxes[from], { pointerType: 'mouse', button: 0 })
+      // Measure after the press: the bulk bar appears and moves rows up.
+      const rect = boxes[to].getBoundingClientRect()
+      fireEvent.pointerMove(document, {
+        pointerType: 'mouse',
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+      })
+      fireEvent.pointerUp(document, { pointerType: 'mouse' })
+      fireEvent.click(boxes[from])
+    }
+
+    await drag(0, 2)
+    await expect(await screen.findByText('Выбрано 3 чата')).toBeInTheDocument()
+
+    // Starting on a checked row clears the range instead.
+    await drag(2, 1)
+    await expect(await screen.findByText('Выбран 1 чат')).toBeInTheDocument()
   },
 }

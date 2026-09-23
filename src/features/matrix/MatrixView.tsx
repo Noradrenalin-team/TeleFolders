@@ -20,6 +20,7 @@ import { ChatRow } from '#/features/matrix/ChatRow'
 import type { ChatAction } from '#/features/chat-actions/chat-actions'
 import { MatrixSkeleton } from '#/features/matrix/MatrixSkeleton'
 import { useGridKeyboard } from '#/features/matrix/grid-keyboard'
+import { useDragSelect } from '#/features/bulk/drag-select'
 
 export function MatrixView({
   folders,
@@ -91,6 +92,9 @@ export function MatrixView({
     isSelected: (chatId: number) => boolean
     onToggle: (chat: Chat, shift: boolean) => void
     onClear: () => void
+    /** Current selection and a setter, for drag-selecting across rows. */
+    selected: ReadonlySet<number>
+    onReplace: (next: Set<number>, anchor: number) => void
     selectAll: SelectAllState
   }
   isChatBlocked?: (chatId: number) => boolean
@@ -151,6 +155,13 @@ export function MatrixView({
     overscan: 12,
     scrollMargin: headerHeight,
     scrollPaddingStart: headerHeight,
+  })
+
+  const dragSelect = useDragSelect({
+    scrollRef,
+    orderedIds: rows.map((row) => row.original.id),
+    selected: selection?.selected ?? new Set(),
+    onChange: (next, anchor) => selection?.onReplace(next, anchor),
   })
 
   const flagRowCount = folders.length > 0 ? FOLDER_FLAGS.length : 0
@@ -312,6 +323,11 @@ export function MatrixView({
                   onChatAction={onChatAction}
                   selected={selection?.isSelected(chat.id)}
                   onToggleSelect={selection?.onToggle}
+                  listIndex={virtualRow.index}
+                  onSelectDragStart={(event) =>
+                    dragSelect.start(virtualRow.index, event)
+                  }
+                  consumeSelectClick={dragSelect.consumeClick}
                   isBlocked={isChatBlocked?.(chat.id)}
                   isBusy={isChatBusy?.(chat.id)}
                   isArchivePending={isArchivePending}

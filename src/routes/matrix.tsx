@@ -368,6 +368,11 @@ function MatrixRoute() {
         selection={{
           isSelected: (chatId) => selectedIds.has(chatId),
           onClear: () => setSelectedIds(new Set()),
+          selected: selectedIds,
+          onReplace: (next, anchor) => {
+            selectionAnchor.current = anchor
+            setSelectedIds(next)
+          },
           onToggle: (chat, shift) => {
             const next = toggleSelection(
               selectedIds,

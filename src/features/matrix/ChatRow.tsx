@@ -32,6 +32,9 @@ export function ChatRow({
   onChatAction,
   selected,
   onToggleSelect,
+  listIndex,
+  onSelectDragStart,
+  consumeSelectClick,
   isBlocked = false,
   isBusy = false,
   isArchivePending,
@@ -63,6 +66,11 @@ export function ChatRow({
   /** Row selection for bulk actions (F6.1); `shift` extends a range. */
   selected?: boolean
   onToggleSelect?: (chat: Chat, shift: boolean) => void
+  /** Position in the current list, for drag-selecting across rows. */
+  listIndex?: number
+  onSelectDragStart?: (event: React.PointerEvent) => void
+  /** True when the checkbox click only ends a drag and mustn't toggle. */
+  consumeSelectClick?: () => boolean
   isBlocked?: boolean
   /** A destructive action on this chat is in flight (F5). */
   isBusy?: boolean
@@ -77,6 +85,7 @@ export function ChatRow({
   const row = (
     <div
       role="row"
+      data-row-index={listIndex}
       aria-busy={isBusy || undefined}
       className={cn(
         'group grid items-center border-b border-border last:border-b-0 hover:bg-accent/40',
@@ -119,8 +128,10 @@ export function ChatRow({
                   aria-label={m.bulk_select_chat({ title: displayTitle })}
                   // onClick, not onCheckedChange: only the click carries the
                   // Shift modifier needed for range selection.
+                  onPointerDown={onSelectDragStart}
                   onClick={(event) => {
                     event.preventDefault()
+                    if (consumeSelectClick?.()) return
                     onToggleSelect(chat, event.shiftKey)
                   }}
                 />
