@@ -12,8 +12,6 @@ export type QueueResult<T> = {
   cancelled: T[]
 }
 
-const MAX_FLOOD_RETRIES = 3
-
 function sleep(ms: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve) => {
     if (signal.aborted) return resolve()
@@ -61,14 +59,16 @@ export async function runQueue<T>(
       break
     }
 
-    for (let attempt = 0; ; attempt++) {
+    for (;;) {
       try {
         await worker(item)
         result.succeeded.push(item)
         break
       } catch (error) {
         const wait = retryAfterSec(error)
-        if (wait === undefined || attempt >= MAX_FLOOD_RETRIES) {
+        // FLOOD_WAIT never fails an item (F6.3: "пауза и продолжение, не
+        // падение") — however long Telegram asks for, the user can cancel.
+        if (wait === undefined) {
           result.failed.push({ item, error })
           break
         }

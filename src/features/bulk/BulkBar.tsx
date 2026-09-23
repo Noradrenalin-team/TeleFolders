@@ -119,7 +119,7 @@ export function BulkBar({
 
   return (
     <div
-      role="toolbar"
+      role="region"
       aria-label={m.bulk_toolbar()}
       className="flex flex-wrap items-center gap-2 border-t border-border bg-background px-3 py-2 text-sm"
     >

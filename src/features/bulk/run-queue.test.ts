@@ -77,18 +77,20 @@ describe('runQueue', () => {
     expect(waits).toEqual([2, 1])
   })
 
-  it('gives up on an item after repeated FLOOD_WAITs', async () => {
+  it('keeps waiting through repeated FLOOD_WAITs instead of failing', async () => {
+    let calls = 0
     const run = runQueue(
       ['a'],
       async () => {
-        throw new Flood(1)
+        calls++
+        if (calls <= 5) throw new Flood(1)
       },
       { signal: new AbortController().signal, retryAfterSec },
     )
     await vi.runAllTimersAsync()
 
-    const result = await run
-    expect(result.failed).toHaveLength(1)
+    expect(await run).toEqual({ succeeded: ['a'], failed: [], cancelled: [] })
+    expect(calls).toBe(6)
   })
 
   it('stops before the next item when cancelled', async () => {

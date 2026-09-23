@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import { tl } from '@mtcute/web'
-import { normalizeError, withFloodWaitRetry } from '#/telegram/errors'
+import {
+  normalizeError,
+  subscribeFloodWait,
+  withFloodWaitRetry,
+} from '#/telegram/errors'
 
 function rpcError(text: string, extra: Record<string, unknown> = {}) {
   const error = new tl.RpcError(420, text)
@@ -72,6 +76,24 @@ describe('withFloodWaitRetry', () => {
 
     await expect(promise).resolves.toBe('ok')
     expect(fn).toHaveBeenCalledTimes(2)
+    vi.useRealTimers()
+  })
+
+  it('reports the countdown of a silent wait to subscribers', async () => {
+    vi.useFakeTimers()
+    const seen: (number | undefined)[] = []
+    const unsubscribe = subscribeFloodWait((left) => seen.push(left))
+    let attempt = 0
+    const promise = withFloodWaitRetry(async () => {
+      attempt += 1
+      if (attempt === 1) throw rpcError('FLOOD_WAIT_%d', { seconds: 3 })
+      return 'ok'
+    })
+    await vi.advanceTimersByTimeAsync(3000)
+
+    await expect(promise).resolves.toBe('ok')
+    expect(seen).toEqual([3, 2, 1, undefined])
+    unsubscribe()
     vi.useRealTimers()
   })
 

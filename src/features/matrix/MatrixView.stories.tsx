@@ -225,6 +225,8 @@ export const WithSelection: Story = {
     await userEvent.click(
       screen.getByRole('button', { name: /снять выделение/i }),
     )
-    await expect(screen.queryByRole('toolbar')).toBeNull()
+    await expect(
+      screen.queryByRole('region', { name: /массовые действия/i }),
+    ).toBeNull()
   },
 }
