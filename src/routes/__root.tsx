@@ -11,6 +11,7 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import { getLocale } from '#/paraglide/runtime'
 import { THEME_INIT_SCRIPT } from '#/stores/theme'
 import { AppHeader } from '#/components/AppHeader'
+import { TelegramSync } from '#/components/TelegramSync'
 import { AppErrorBoundary } from '#/components/AppErrorBoundary'
 import { AppToaster } from '#/components/AppToaster'
 import { NotFound } from '#/components/NotFound'
@@ -72,6 +73,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         suppressHydrationWarning
       >
         <AppHeader />
+        <TelegramSync />
         <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
         <AppToaster />
         <TanStackDevtools

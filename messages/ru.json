@@ -292,5 +292,6 @@
       }
     }
   ],
-  "dialog_close": "Закрыть"
+  "dialog_close": "Закрыть",
+  "connection_lost": "Нет соединения с Telegram, переподключаемся…"
 }

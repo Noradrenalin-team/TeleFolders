@@ -278,5 +278,6 @@
       }
     }
   ],
-  "dialog_close": "Close"
+  "dialog_close": "Close",
+  "connection_lost": "No connection to Telegram, reconnecting…"
 }
