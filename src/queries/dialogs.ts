@@ -26,7 +26,9 @@ export const dialogsQueryOptions = queryOptions({
 function chatPhotoQueryOptions(peer: PeerRef) {
   return queryOptions({
     queryKey: ['dialogs', 'photo', peer.kind, peer.id],
-    queryFn: () => dialogs.getChatPhoto(peer),
+    // React Query rejects `undefined` as data; "no avatar" is a real,
+    // cacheable answer, so it's stored as null.
+    queryFn: async () => (await dialogs.getChatPhoto(peer)) ?? null,
     staleTime: Infinity,
     gcTime: Infinity,
     retry: false,

@@ -432,7 +432,7 @@ function MatrixRoute() {
       />
 
       <FolderDialog
-        key={folderDialog.open ? (folderDialog.folder?.id ?? 'new') : 'closed'}
+        key={`folder:${folderDialog.open ? (folderDialog.folder?.id ?? 'new') : 'closed'}`}
         open={folderDialog.open}
         folder={folderDialog.open ? folderDialog.folder : undefined}
         onOpenChange={(open) =>
@@ -497,7 +497,7 @@ function MatrixRoute() {
       />
 
       <ConfirmChatActionDialog
-        key={confirm ? `${confirm.chat.id}:${confirm.action}` : 'closed'}
+        key={`confirm:${confirm ? `${confirm.chat.id}:${confirm.action}` : 'closed'}`}
         request={confirm}
         pending={confirmPending}
         onConfirm={confirmChatAction}
