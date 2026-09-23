@@ -58,6 +58,7 @@ export function BulkProgressDialog({
           ) : (
             <div
               role="progressbar"
+              aria-label={title}
               aria-valuemin={0}
               aria-valuemax={state.total}
               aria-valuenow={state.done}
@@ -97,7 +98,9 @@ export function BulkProgressDialog({
   const { report } = state
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      {/* The footer's "Close" is the one way out; a second, identically
+          named X would just be announced twice. */}
+      <DialogContent className="sm:max-w-md" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{m.bulk_report_title()}</DialogDescription>
@@ -133,7 +136,7 @@ export function BulkProgressDialog({
         )}
         <DialogFooter>
           <Button type="button" onClick={onClose}>
-            {m.chat_card_close()}
+            {m.dialog_close()}
           </Button>
         </DialogFooter>
       </DialogContent>

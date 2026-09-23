@@ -44,9 +44,7 @@
         "input seconds",
         "local secondsPlural = seconds: plural"
       ],
-      "selectors": [
-        "secondsPlural"
-      ],
+      "selectors": ["secondsPlural"],
       "match": {
         "secondsPlural=one": "Слишком много попыток. Повторите через {seconds} секунду.",
         "secondsPlural=few": "Слишком много попыток. Повторите через {seconds} секунды.",
@@ -69,13 +67,8 @@
   "matrix_refresh": "Обновить",
   "matrix_loading_progress": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Загружен {count} чат",
         "countPlural=few": "Загружено {count} чата",
@@ -93,13 +86,8 @@
   "matrix_no_folders_hint": "Пока нет ни одной папки. Нажмите «+», чтобы создать первую.",
   "matrix_unread_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} непрочитанное сообщение",
         "countPlural=few": "{count} непрочитанных сообщения",
@@ -173,7 +161,6 @@
   "chat_card_no_folders": "Нет доступных папок",
   "chat_card_prev": "Предыдущий чат",
   "chat_card_next": "Следующий чат",
-  "chat_card_close": "Закрыть",
   "not_found_title": "Страница не найдена",
   "not_found_home": "На главную",
   "loading_connecting": "Подключаемся к Telegram…",
@@ -231,13 +218,8 @@
   "bulk_toolbar": "Массовые действия",
   "bulk_selected_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Выбран {count} чат",
         "countPlural=few": "Выбрано {count} чата",
@@ -265,9 +247,7 @@
         "input count",
         "local countPlural = count: plural"
       ],
-      "selectors": [
-        "countPlural"
-      ],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{action}: {count} чат?",
         "countPlural=few": "{action}: {count} чата?",
@@ -282,13 +262,8 @@
   "bulk_confirm_more": "…и ещё {count}",
   "bulk_skipped_note": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} выбранный чат пропущен: действие к нему неприменимо",
         "countPlural=few": "{count} выбранных чата пропущено: действие к ним неприменимо",
@@ -307,13 +282,8 @@
   "bulk_report_failed": "С ошибкой: {count} — {reason}",
   "bulk_progress_single": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Отправляем изменения для {count} чата одним запросом…",
         "countPlural=few": "Отправляем изменения для {count} чатов одним запросом…",

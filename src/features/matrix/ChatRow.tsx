@@ -196,7 +196,11 @@ export function ChatRow({
 
         if (meta.kind === 'archive') {
           return (
-            <div key={column.id} className="flex justify-center">
+            <div
+              key={column.id}
+              role="gridcell"
+              className="flex justify-center"
+            >
               <FlagCell
                 active={chat.isArchived}
                 label={
@@ -216,7 +220,7 @@ export function ChatRow({
         }
 
         if (meta.kind !== 'folder') {
-          return <div key={column.id} />
+          return <div key={column.id} role="gridcell" />
         }
 
         const folder = meta.folder
@@ -227,6 +231,7 @@ export function ChatRow({
         return (
           <div
             key={column.id}
+            role="gridcell"
             className={cn(
               'flex justify-center',
               folder.readOnly && 'opacity-60',

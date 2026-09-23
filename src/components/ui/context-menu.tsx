@@ -7,10 +7,18 @@ import {
   MENU_SEPARATOR_CLASS,
 } from '#/components/ui/dropdown-menu'
 
-function ContextMenu(
-  props: React.ComponentProps<typeof ContextMenuPrimitive.Root>,
-) {
-  return <ContextMenuPrimitive.Root data-slot="context-menu" {...props} />
+// Non-modal for the same reason as DropdownMenu.
+function ContextMenu({
+  modal = false,
+  ...props
+}: React.ComponentProps<typeof ContextMenuPrimitive.Root>) {
+  return (
+    <ContextMenuPrimitive.Root
+      data-slot="context-menu"
+      modal={modal}
+      {...props}
+    />
+  )
 }
 
 function ContextMenuTrigger(

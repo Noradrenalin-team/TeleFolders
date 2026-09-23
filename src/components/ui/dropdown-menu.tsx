@@ -10,10 +10,20 @@ export const MENU_ITEM_CLASS =
 
 export const MENU_SEPARATOR_CLASS = '-mx-1 my-1 h-px bg-border'
 
-function DropdownMenu(
-  props: React.ComponentProps<typeof DropdownMenuPrimitive.Root>,
-) {
-  return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />
+// Non-modal by default: a modal menu aria-hides everything else on the
+// page, including focusable controls, which axe flags (aria-hidden-focus),
+// and nothing here needs the rest of the page locked while a menu is open.
+function DropdownMenu({
+  modal = false,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
+  return (
+    <DropdownMenuPrimitive.Root
+      data-slot="dropdown-menu"
+      modal={modal}
+      {...props}
+    />
+  )
 }
 
 function DropdownMenuTrigger(

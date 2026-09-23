@@ -44,9 +44,7 @@
         "input seconds",
         "local secondsPlural = seconds: plural"
       ],
-      "selectors": [
-        "secondsPlural"
-      ],
+      "selectors": ["secondsPlural"],
       "match": {
         "secondsPlural=one": "Too many attempts. Try again in {seconds} second.",
         "secondsPlural=other": "Too many attempts. Try again in {seconds} seconds."
@@ -67,13 +65,8 @@
   "matrix_refresh": "Refresh",
   "matrix_loading_progress": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Loaded {count} chat",
         "countPlural=other": "Loaded {count} chats"
@@ -89,13 +82,8 @@
   "matrix_no_folders_hint": "No folders yet. Click “+” to create your first one.",
   "matrix_unread_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} unread message",
         "countPlural=other": "{count} unread messages"
@@ -167,7 +155,6 @@
   "chat_card_no_folders": "No folders available",
   "chat_card_prev": "Previous chat",
   "chat_card_next": "Next chat",
-  "chat_card_close": "Close",
   "not_found_title": "Page not found",
   "not_found_home": "Go home",
   "loading_connecting": "Connecting to Telegram…",
@@ -225,13 +212,8 @@
   "bulk_toolbar": "Bulk actions",
   "bulk_selected_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} chat selected",
         "countPlural=other": "{count} chats selected"
@@ -257,9 +239,7 @@
         "input count",
         "local countPlural = count: plural"
       ],
-      "selectors": [
-        "countPlural"
-      ],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{action}: {count} chat?",
         "countPlural=other": "{action}: {count} chats?"
@@ -272,13 +252,8 @@
   "bulk_confirm_more": "…and {count} more",
   "bulk_skipped_note": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} selected chat skipped: the action doesn't apply to it",
         "countPlural=other": "{count} selected chats skipped: the action doesn't apply to them"
@@ -295,13 +270,8 @@
   "bulk_report_failed": "Failed: {count} — {reason}",
   "bulk_progress_single": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Sending the change for {count} chat in one request…",
         "countPlural=other": "Sending the change for {count} chats in one request…"

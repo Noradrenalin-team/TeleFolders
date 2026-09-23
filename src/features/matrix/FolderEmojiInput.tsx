@@ -65,6 +65,9 @@ export function FolderEmojiInput({
             maxLength={4}
             autoComplete="off"
             className="text-center"
+            // A text field that opens a picker: the ARIA combobox pattern,
+            // which is also what allows aria-expanded on an <input>.
+            role="combobox"
             aria-haspopup="dialog"
             aria-expanded={open}
             onFocus={() => setOpen(true)}

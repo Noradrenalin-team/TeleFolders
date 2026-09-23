@@ -40,7 +40,9 @@ export function FlagRow({
             <div
               key={column.id}
               role="rowheader"
-              className="sticky left-0 z-10 truncate bg-muted px-3 text-xs text-muted-foreground"
+              // text-foreground/80, not muted-foreground: on bg-muted the
+              // latter is 4.39:1, under WCAG AA's 4.5:1 for 12px text.
+              className="sticky left-0 z-10 truncate bg-muted px-3 text-xs text-foreground/80"
             >
               {label}
             </div>
@@ -48,7 +50,7 @@ export function FlagRow({
         }
 
         if (meta.kind !== 'folder') {
-          return <div key={column.id} />
+          return <div key={column.id} role="gridcell" />
         }
 
         const folder = meta.folder
@@ -57,7 +59,7 @@ export function FlagRow({
           folder.readOnly || wouldEmptyFolderByFlag(folder, flag, nextValue)
 
         return (
-          <div key={column.id} className="flex justify-center">
+          <div key={column.id} role="gridcell" className="flex justify-center">
             {folder.readOnly ? (
               <span className="size-8" />
             ) : (
