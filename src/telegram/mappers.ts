@@ -121,6 +121,7 @@ export function mapDialogToChat(
     isMuted: dialog.isMuted ?? false,
     unreadCount: dialog.unreadCount,
     isSelf: kind === 'saved',
+    isOwner: peer.type === 'chat' && peer.isCreator,
     folders: computeChatFolders(peer.id, filters, selfId),
     ...computeCapabilities(kind),
   }

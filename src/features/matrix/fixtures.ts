@@ -74,6 +74,7 @@ export const FIXTURE_CHATS: Chat[] = [
     canDelete: true,
     canLeave: false,
     canBlock: false,
+    isOwner: false,
     folders: {},
   },
   {
@@ -90,6 +91,7 @@ export const FIXTURE_CHATS: Chat[] = [
     canDelete: true,
     canLeave: false,
     canBlock: true,
+    isOwner: false,
     folders: { 2: 'pinned' },
   },
   {
@@ -105,6 +107,7 @@ export const FIXTURE_CHATS: Chat[] = [
     canDelete: false,
     canLeave: true,
     canBlock: false,
+    isOwner: true,
     folders: { 2: 'include' },
   },
   {
@@ -121,6 +124,7 @@ export const FIXTURE_CHATS: Chat[] = [
     canDelete: false,
     canLeave: true,
     canBlock: false,
+    isOwner: false,
     folders: { 3: 'include', 4: 'include' },
   },
   {
@@ -137,6 +141,7 @@ export const FIXTURE_CHATS: Chat[] = [
     canDelete: true,
     canLeave: false,
     canBlock: true,
+    isOwner: false,
     folders: { 2: 'exclude' },
   },
   {
@@ -152,6 +157,7 @@ export const FIXTURE_CHATS: Chat[] = [
     canDelete: false,
     canLeave: true,
     canBlock: false,
+    isOwner: false,
     folders: {},
   },
 ]

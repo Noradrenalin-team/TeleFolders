@@ -18,15 +18,31 @@ import {
 } from '#/queries/folders'
 import { dialogsLoadProgress, dialogsQueryOptions } from '#/queries/dialogs'
 import {
+  useBlockUser,
+  useDeleteChat,
+  useLeaveChat,
+  useMarkRead,
   usePendingArchive,
+  usePendingDestructive,
   usePendingPinned,
   useSetArchived,
+  useSetMuted,
   useSetPinned,
 } from '#/queries/actions'
 import { MatrixView } from '#/features/matrix/MatrixView'
 import { MatrixToolbar } from '#/features/matrix/MatrixToolbar'
 import { FolderDialog } from '#/features/matrix/FolderDialog'
 import { ChatCard } from '#/features/chat-card/ChatCard'
+import { ConfirmChatActionDialog } from '#/features/chat-actions/ConfirmChatActionDialog'
+import type { ConfirmOptions } from '#/features/chat-actions/ConfirmChatActionDialog'
+import {
+  isDestructive,
+  telegramLink,
+} from '#/features/chat-actions/chat-actions'
+import type {
+  ChatAction,
+  DestructiveChatAction,
+} from '#/features/chat-actions/chat-actions'
 import {
   nextRelation,
   wouldEmptyFolder,
@@ -78,6 +94,16 @@ function MatrixRoute() {
   const setArchived = useSetArchived()
   const setPinned = useSetPinned()
   const reorderFolders = useReorderFolders()
+  const setMuted = useSetMuted()
+  const markRead = useMarkRead()
+  const deleteChat = useDeleteChat()
+  const leaveChat = useLeaveChat()
+  const blockUser = useBlockUser()
+  const pendingDestructive = usePendingDestructive()
+
+  const [confirm, setConfirm] = useState<
+    { chat: Chat; action: DestructiveChatAction } | undefined
+  >()
 
   const pendingRelations = usePendingChatRelations()
   const pendingFlags = usePendingFolderFlags()
@@ -128,6 +154,66 @@ function MatrixRoute() {
       relation: next,
     })
   }
+
+  function runChatAction(chat: Chat, action: ChatAction) {
+    if (isDestructive(action)) {
+      setConfirm({ chat, action })
+      return
+    }
+    const peer = { id: chat.id, kind: chat.kind }
+    switch (action) {
+      case 'pin':
+      case 'unpin':
+        setPinned.mutate({ peer, pinned: action === 'pin' })
+        break
+      case 'archive':
+      case 'unarchive':
+        setArchived.mutate({ peer, archived: action === 'archive' })
+        break
+      case 'mute':
+      case 'unmute':
+        setMuted.mutate({ chat, muted: action === 'mute' })
+        break
+      case 'markRead':
+        markRead.mutate({ chat })
+        break
+      case 'openInTelegram': {
+        const link = telegramLink(chat)
+        if (link) window.open(link, '_blank', 'noopener,noreferrer')
+        break
+      }
+    }
+  }
+
+  function confirmChatAction(options: ConfirmOptions) {
+    if (!confirm) return
+    const { chat, action } = confirm
+    const removesChat = action === 'delete' || action === 'leave'
+    const close = {
+      onSuccess: () => {
+        // The card would otherwise point at a chat that no longer exists.
+        if (removesChat && search.chat === chat.id) {
+          updateSearch({ chat: undefined })
+        }
+      },
+      onSettled: () => setConfirm(undefined),
+    }
+    switch (action) {
+      case 'delete':
+      case 'clearHistory':
+        deleteChat.mutate({ chat, ...options }, close)
+        break
+      case 'leave':
+        leaveChat.mutate({ chat }, close)
+        break
+      case 'block':
+        blockUser.mutate({ chat }, close)
+        break
+    }
+  }
+
+  const confirmPending =
+    confirm !== undefined && pendingDestructive.includes(confirm.chat.id)
 
   return (
     <>
@@ -189,6 +275,8 @@ function MatrixRoute() {
         onAddFolder={() => setFolderDialog({ open: true })}
         onOpenChat={(chat) => updateSearch({ chat: chat.id })}
         onReorderFolders={(ids) => reorderFolders.mutate(ids)}
+        onChatAction={runChatAction}
+        isChatBusy={(chatId) => pendingDestructive.includes(chatId)}
         isArchivePending={(chatId) =>
           pendingArchive.some((v) => v.peer.id === chatId)
         }
@@ -242,11 +330,22 @@ function MatrixRoute() {
           setPinned.mutate({ peer: { id: chat.id, kind: chat.kind }, pinned })
         }}
         onCycleRelation={cycleRelation}
+        onChatAction={runChatAction}
         isRelationPending={(chatId, folderId) =>
           pendingRelations.some(
             (v) => v.peer.id === chatId && v.folderId === folderId,
           )
         }
+      />
+
+      <ConfirmChatActionDialog
+        key={confirm ? `${confirm.chat.id}:${confirm.action}` : 'closed'}
+        request={confirm}
+        pending={confirmPending}
+        onConfirm={confirmChatAction}
+        onOpenChange={(open) => {
+          if (!open) setConfirm(undefined)
+        }}
       />
     </>
   )

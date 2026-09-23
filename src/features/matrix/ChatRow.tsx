@@ -10,6 +10,11 @@ import { chatDisplayTitle } from '#/features/matrix/filters'
 import { Button } from '#/components/ui/button'
 import { FlagCell } from '#/features/matrix/FlagCell'
 import { MatrixCell } from '#/features/matrix/MatrixCell'
+import {
+  ChatActionsContextMenu,
+  ChatActionsDropdown,
+} from '#/features/chat-actions/ChatActionsMenu'
+import type { ChatAction } from '#/features/chat-actions/chat-actions'
 
 export function ChatRow({
   chat,
@@ -18,6 +23,8 @@ export function ChatRow({
   onSetArchived,
   onCycleRelation,
   onTogglePinned,
+  onChatAction,
+  isBusy = false,
   isArchivePending,
   isPinnedPending,
   isRelationPending,
@@ -34,6 +41,9 @@ export function ChatRow({
     current: ChatFolderRelation | undefined,
   ) => void
   onTogglePinned?: (chat: Chat, pinned: boolean) => void
+  onChatAction?: (chat: Chat, action: ChatAction) => void
+  /** A destructive action on this chat is in flight (F5). */
+  isBusy?: boolean
   isArchivePending?: (chatId: number) => boolean
   isPinnedPending?: (chatId: number) => boolean
   isRelationPending?: (chatId: number, folderId: number) => boolean
@@ -42,10 +52,14 @@ export function ChatRow({
   const photo = useChatPhoto({ id: chat.id, kind: chat.kind })
   const displayTitle = chatDisplayTitle(chat)
 
-  return (
+  const row = (
     <div
       role="row"
-      className="group grid items-center border-b border-border last:border-b-0 hover:bg-accent/40"
+      aria-busy={isBusy || undefined}
+      className={cn(
+        'group grid items-center border-b border-border last:border-b-0 hover:bg-accent/40',
+        isBusy && 'pointer-events-none opacity-50',
+      )}
       style={{
         ...style,
         gridTemplateColumns: gridTemplateColumns(
@@ -129,6 +143,13 @@ export function ChatRow({
                   aria-hidden="true"
                 />
               )}
+              {onChatAction && (
+                <ChatActionsDropdown
+                  chat={chat}
+                  onAction={onChatAction}
+                  className="shrink-0 text-muted-foreground opacity-0 focus-visible:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100"
+                />
+              )}
               {chat.unreadCount > 0 && (
                 <span
                   className="ml-auto shrink-0 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary-foreground"
@@ -198,5 +219,13 @@ export function ChatRow({
         )
       })}
     </div>
+  )
+
+  return onChatAction ? (
+    <ChatActionsContextMenu chat={chat} onAction={onChatAction}>
+      {row}
+    </ChatActionsContextMenu>
+  ) : (
+    row
   )
 }

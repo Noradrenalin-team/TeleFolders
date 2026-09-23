@@ -13,6 +13,8 @@ import { MatrixCell } from '#/features/matrix/MatrixCell'
 import { wouldEmptyFolder } from '#/features/matrix/relation-cycle'
 import { chatDisplayTitle } from '#/features/matrix/filters'
 import { useChatPhoto } from '#/queries/dialogs'
+import { ChatActionsDropdown } from '#/features/chat-actions/ChatActionsMenu'
+import type { ChatAction } from '#/features/chat-actions/chat-actions'
 import type {
   Chat,
   ChatFolderRelation,
@@ -46,6 +48,7 @@ export function ChatCard({
   onSetArchived,
   onTogglePinned,
   onCycleRelation,
+  onChatAction,
   isRelationPending,
 }: {
   chat: Chat | undefined
@@ -63,6 +66,7 @@ export function ChatCard({
     folder: Folder,
     current: ChatFolderRelation | undefined,
   ) => void
+  onChatAction?: (chat: Chat, action: ChatAction) => void
   isRelationPending?: (chatId: number, folderId: number) => boolean
 }) {
   const photo = useChatPhoto(
@@ -96,7 +100,7 @@ export function ChatCard({
                 title.charAt(0).toUpperCase()
               )}
             </span>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <DialogTitle className="truncate">{title}</DialogTitle>
               <DialogDescription className="flex items-center gap-1.5 truncate">
                 {chat.username && <span>@{chat.username}</span>}
@@ -106,6 +110,13 @@ export function ChatCard({
                 )}
               </DialogDescription>
             </div>
+            {onChatAction && (
+              <ChatActionsDropdown
+                chat={chat}
+                onAction={onChatAction}
+                className="mr-6 shrink-0"
+              />
+            )}
           </div>
         </DialogHeader>
 

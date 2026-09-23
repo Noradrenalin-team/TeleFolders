@@ -29,8 +29,18 @@ export type Chat = {
   canDelete: boolean
   canLeave: boolean
   canBlock: boolean
+  /** I created this group/channel — leaving keeps it alive without me (F5.4). */
+  isOwner: boolean
   /** Keyed by folder id; a missing key means "not in this folder". */
   folders: Partial<Record<number, ChatFolderRelation>>
+}
+
+/** Entry of the "Blocked" list (F5.5); not necessarily a dialog we have. */
+export type BlockedPeer = {
+  id: number
+  kind: PeerKind
+  title: string
+  username?: string
 }
 
 export type FolderFlag =

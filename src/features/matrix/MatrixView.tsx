@@ -16,6 +16,7 @@ import { buildMatrixColumns, CHAT_COLUMN_ID } from '#/features/matrix/columns'
 import { MatrixHeader } from '#/features/matrix/MatrixHeader'
 import { FlagRow } from '#/features/matrix/FlagRow'
 import { ChatRow } from '#/features/matrix/ChatRow'
+import type { ChatAction } from '#/features/chat-actions/chat-actions'
 import { MatrixSkeleton } from '#/features/matrix/MatrixSkeleton'
 
 export function MatrixView({
@@ -38,6 +39,8 @@ export function MatrixView({
   onTogglePinned,
   onOpenChat,
   onReorderFolders,
+  onChatAction,
+  isChatBusy,
   isArchivePending,
   isPinnedPending,
   isRelationPending,
@@ -71,6 +74,8 @@ export function MatrixView({
   onTogglePinned?: (chat: Chat, pinned: boolean) => void
   onOpenChat?: (chat: Chat) => void
   onReorderFolders?: (folderIds: number[]) => void
+  onChatAction?: (chat: Chat, action: ChatAction) => void
+  isChatBusy?: (chatId: number) => boolean
   isArchivePending?: (chatId: number) => boolean
   isPinnedPending?: (chatId: number) => boolean
   isRelationPending?: (chatId: number, folderId: number) => boolean
@@ -221,6 +226,8 @@ export function MatrixView({
                   onSetArchived={onSetArchived}
                   onCycleRelation={onCycleRelation}
                   onTogglePinned={onTogglePinned}
+                  onChatAction={onChatAction}
+                  isBusy={isChatBusy?.(chat.id)}
                   isArchivePending={isArchivePending}
                   isPinnedPending={isPinnedPending}
                   isRelationPending={isRelationPending}

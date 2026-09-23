@@ -20,6 +20,7 @@ function chat(overrides: Partial<Chat> = {}): Chat {
     canDelete: true,
     canLeave: false,
     canBlock: true,
+    isOwner: false,
     folders: {},
     ...overrides,
   }
