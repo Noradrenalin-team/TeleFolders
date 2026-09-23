@@ -136,7 +136,10 @@ export function useSetMuted() {
   return useMutation({
     mutationFn: ({ chat, muted }: { chat: Chat; muted: boolean }) =>
       actions.setMuted(peerOf(chat), muted),
-    onMutate: ({ chat, muted }) => {
+    onMutate: async ({ chat, muted }) => {
+      await queryClient.cancelQueries({
+        queryKey: dialogsQueryOptions.queryKey,
+      })
       patchChat(queryClient, chat.id, { isMuted: muted })
       return { previous: chat.isMuted }
     },
@@ -153,7 +156,10 @@ export function useMarkRead() {
 
   return useMutation({
     mutationFn: ({ chat }: { chat: Chat }) => actions.markRead(peerOf(chat)),
-    onMutate: ({ chat }) => {
+    onMutate: async ({ chat }) => {
+      await queryClient.cancelQueries({
+        queryKey: dialogsQueryOptions.queryKey,
+      })
       patchChat(queryClient, chat.id, { unreadCount: 0 })
       return { previous: chat.unreadCount }
     },
@@ -212,10 +218,7 @@ export function useDeleteChat() {
       block?: boolean
     }) => actions.deleteChat(peerOf(chat), { revoke, block }),
     (queryClient, { chat }) => {
-      if (chat.kind === 'saved') {
-        patchChat(queryClient, chat.id, { unreadCount: 0 })
-        return m.chat_action_done_cleared()
-      }
+      if (chat.kind === 'saved') return m.chat_action_done_cleared()
       removeChat(queryClient, chat.id)
       return m.chat_action_done_deleted({ title: chat.title })
     },

@@ -40,6 +40,28 @@ describe('chatActionsFor', () => {
     expect(chatActionsFor(group).destructive).toEqual(['leave'])
   })
 
+  it('does not offer leaving a channel I own (Telegram refuses it)', () => {
+    const owned = chat({
+      kind: 'channel',
+      canDelete: false,
+      canLeave: true,
+      canBlock: false,
+      isOwner: true,
+    })
+    expect(chatActionsFor(owned).destructive).toEqual([])
+  })
+
+  it('still offers leaving a group I own', () => {
+    const owned = chat({
+      kind: 'supergroup',
+      canDelete: false,
+      canLeave: true,
+      canBlock: false,
+      isOwner: true,
+    })
+    expect(chatActionsFor(owned).destructive).toEqual(['leave'])
+  })
+
   it('offers only clearing history for Saved Messages', () => {
     const saved = chat({ kind: 'saved', isSelf: true, canBlock: false })
     expect(chatActionsFor(saved).destructive).toEqual(['clearHistory'])

@@ -26,6 +26,7 @@ export function errorMessage(error: unknown): string {
     case 'NETWORK':
       return m.error_network()
     default:
+      if (normalized.raw === 'USER_CREATOR') return m.error_owner_cannot_leave()
       return m.error_unknown()
   }
 }

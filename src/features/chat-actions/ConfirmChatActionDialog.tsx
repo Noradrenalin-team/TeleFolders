@@ -109,9 +109,7 @@ export function ConfirmChatActionDialog({
               className="mt-0.5 size-4 shrink-0 text-destructive"
               aria-hidden="true"
             />
-            {chat.kind === 'channel'
-              ? m.confirm_leave_owner_warning_channel()
-              : m.confirm_leave_owner_warning_group()}
+            {m.confirm_leave_owner_warning_group()}
           </p>
         )}
 

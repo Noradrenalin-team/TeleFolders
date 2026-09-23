@@ -72,7 +72,7 @@ export function BlockedList({
         <div className="flex justify-center py-10">
           <Loader2
             className="size-5 animate-spin text-muted-foreground"
-            aria-label={m.loading_connecting()}
+            aria-label={m.blocked_loading()}
           />
         </div>
       ) : isError ? (

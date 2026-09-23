@@ -54,7 +54,10 @@ export function chatActionsFor(chat: Chat): {
     destructive.push('clearHistory')
   } else {
     if (chat.canDelete) destructive.push('delete')
-    if (chat.canLeave) destructive.push('leave')
+    // Telegram refuses to let a channel's creator leave it (`USER_CREATOR`);
+    // the official client only offers deleting the channel, which is F5.8.
+    const ownsChannel = chat.kind === 'channel' && chat.isOwner
+    if (chat.canLeave && !ownsChannel) destructive.push('leave')
     if (chat.canBlock) destructive.push('block')
   }
 

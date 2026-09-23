@@ -195,8 +195,7 @@
   "confirm_leave_title": "Leave group “{title}”?",
   "confirm_unsubscribe_title": "Leave channel “{title}”?",
   "confirm_leave_description": "The chat will disappear from the list. You can come back via an invite link, or via search if it is public.",
-  "confirm_leave_owner_warning_group": "You own this group. It will not be deleted: it keeps existing after you leave.",
-  "confirm_leave_owner_warning_channel": "You own this channel. It will not be deleted: it keeps existing after you leave.",
+  "confirm_leave_owner_warning_group": "You own this group. It won't be deleted and will keep existing without you. If Telegram doesn't let the owner leave, nothing will happen.",
   "confirm_block_title": "Block “{title}”?",
   "confirm_block_description": "They will no longer be able to message or call you. You can unblock them under Blocked.",
   "confirm_irreversible": "This cannot be undone.",
@@ -207,5 +206,7 @@
   "blocked_empty": "You haven't blocked anyone",
   "blocked_error": "Couldn't load the list",
   "blocked_retry": "Retry",
-  "blocked_unblock": "Unblock"
+  "blocked_unblock": "Unblock",
+  "error_owner_cannot_leave": "Telegram doesn't allow the owner to leave this chat",
+  "blocked_loading": "Loading blocked users…"
 }

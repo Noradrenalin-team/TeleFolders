@@ -3,11 +3,27 @@ import type { tl } from '@mtcute/web'
 import { deleteChat, leaveChat, mapBlocked } from '#/telegram/actions'
 
 const calls: unknown[][] = []
+/** Offsets `messages.deleteHistory` returns, one per call (0 = done). */
+let deleteOffsets: number[] = []
+
+function deleteCalls() {
+  return calls.filter((c) => c[0] === 'deleteHistory')
+}
 
 const fakeClient = {
-  deleteHistory: (...args: unknown[]) => {
-    calls.push(['deleteHistory', ...args])
-    return Promise.resolve()
+  resolvePeer: (id: number) => Promise.resolve({ _: 'fakePeer', id }),
+  call: (req: {
+    _: string
+    peer: unknown
+    justClear: boolean
+    revoke: boolean
+  }) => {
+    calls.push([
+      'deleteHistory',
+      req.peer,
+      { justClear: req.justClear, revoke: req.revoke },
+    ])
+    return Promise.resolve({ offset: deleteOffsets.shift() ?? 0 })
   },
   blockUser: (...args: unknown[]) => {
     calls.push(['blockUser', ...args])
@@ -25,30 +41,44 @@ vi.mock('#/telegram/client', () => ({
 
 beforeEach(() => {
   calls.length = 0
+  deleteOffsets = []
 })
+
+const peer = (id: number) => ({ _: 'fakePeer', id })
+const DELETE = { justClear: false, revoke: false }
 
 describe('deleteChat (ТЗ §3 semantics)', () => {
   it('deletes a DM only for me by default', async () => {
     await deleteChat({ id: 1, kind: 'user' })
-    expect(calls).toEqual([['deleteHistory', 1, { mode: 'delete' }]])
+    expect(calls).toEqual([['deleteHistory', peer(1), DELETE]])
   })
 
   it('revokes a DM for both sides when asked', async () => {
     await deleteChat({ id: 1, kind: 'user' }, { revoke: true })
-    expect(calls).toEqual([['deleteHistory', 1, { mode: 'revoke' }]])
+    expect(calls).toEqual([
+      ['deleteHistory', peer(1), { justClear: false, revoke: true }],
+    ])
+  })
+
+  it('repeats the call while Telegram reports a positive offset', async () => {
+    deleteOffsets = [300, 100, 0]
+    await deleteChat({ id: 1, kind: 'user' })
+    expect(deleteCalls()).toHaveLength(3)
   })
 
   it('never revokes for a bot, but blocks it first when asked', async () => {
     await deleteChat({ id: 2, kind: 'bot' }, { revoke: true, block: true })
     expect(calls).toEqual([
       ['blockUser', 2],
-      ['deleteHistory', 2, { mode: 'delete' }],
+      ['deleteHistory', peer(2), DELETE],
     ])
   })
 
   it('only clears Saved Messages', async () => {
     await deleteChat({ id: 3, kind: 'saved' }, { revoke: true })
-    expect(calls).toEqual([['deleteHistory', 3, { mode: 'clear' }]])
+    expect(calls).toEqual([
+      ['deleteHistory', peer(3), { justClear: true, revoke: false }],
+    ])
   })
 
   it('refuses to "delete" a group or channel', async () => {
@@ -58,14 +88,16 @@ describe('deleteChat (ТЗ §3 semantics)', () => {
 })
 
 describe('leaveChat', () => {
-  it('clears history when leaving a legacy group', async () => {
+  it('leaves a legacy group and then deletes its history in full', async () => {
+    deleteOffsets = [50, 0]
     await leaveChat({ id: -5, kind: 'group' })
-    expect(calls).toEqual([['leaveChat', -5, { clear: true }]])
+    expect(calls[0]).toEqual(['leaveChat', -5])
+    expect(deleteCalls()).toHaveLength(2)
   })
 
   it('just leaves a channel', async () => {
     await leaveChat({ id: -1005, kind: 'channel' })
-    expect(calls).toEqual([['leaveChat', -1005, { clear: false }]])
+    expect(calls).toEqual([['leaveChat', -1005]])
   })
 
   it('refuses to leave a DM', async () => {

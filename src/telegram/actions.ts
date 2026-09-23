@@ -64,9 +64,7 @@ export async function deleteChat(
   const client = getClient()
 
   if (peer.kind === 'saved') {
-    await withFloodWaitRetry(() =>
-      client.deleteHistory(peer.id, { mode: 'clear' }),
-    )
+    await deleteHistoryFully(peer, 'clear')
     return
   }
   if (peer.kind !== 'user' && peer.kind !== 'bot') {
@@ -77,7 +75,32 @@ export async function deleteChat(
     await withFloodWaitRetry(() => client.blockUser(peer.id))
   }
   const mode = peer.kind === 'user' && options.revoke ? 'revoke' : 'delete'
-  await withFloodWaitRetry(() => client.deleteHistory(peer.id, { mode }))
+  await deleteHistoryFully(peer, mode)
+}
+
+/**
+ * `messages.deleteHistory` works in batches: a positive `offset` in the
+ * result means "call again" (mtcute's `deleteHistory` makes only one call,
+ * which leaves a long chat half-deleted).
+ */
+async function deleteHistoryFully(
+  peer: PeerRef,
+  mode: 'delete' | 'clear' | 'revoke',
+): Promise<void> {
+  const client = getClient()
+  const inputPeer = await client.resolvePeer(peer.id)
+  for (;;) {
+    const res = await withFloodWaitRetry(() =>
+      client.call({
+        _: 'messages.deleteHistory',
+        peer: inputPeer,
+        maxId: 0,
+        justClear: mode === 'clear',
+        revoke: mode === 'revoke',
+      }),
+    )
+    if (res.offset <= 0) return
+  }
 }
 
 /** Leave a group/supergroup or unsubscribe from a channel. For a legacy
@@ -91,9 +114,8 @@ export async function leaveChat(peer: PeerRef): Promise<void> {
   ) {
     throw new Error(`leaveChat: unsupported peer kind "${peer.kind}"`)
   }
-  await withFloodWaitRetry(() =>
-    getClient().leaveChat(peer.id, { clear: peer.kind === 'group' }),
-  )
+  await withFloodWaitRetry(() => getClient().leaveChat(peer.id))
+  if (peer.kind === 'group') await deleteHistoryFully(peer, 'delete')
 }
 
 export async function blockUser(peer: Pick<PeerRef, 'id'>): Promise<void> {
