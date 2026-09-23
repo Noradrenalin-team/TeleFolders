@@ -281,5 +281,17 @@
   "bulk_report_title": "Итог",
   "bulk_report_succeeded": "Успешно: {count}",
   "bulk_report_cancelled": "Отменено: {count}",
-  "bulk_report_failed": "С ошибкой: {count} — {reason}"
+  "bulk_report_failed": "С ошибкой: {count} — {reason}",
+  "bulk_progress_single": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Отправляем изменения для {count} чата одним запросом…",
+        "countPlural=few": "Отправляем изменения для {count} чатов одним запросом…",
+        "countPlural=many": "Отправляем изменения для {count} чатов одним запросом…",
+        "countPlural=other": "Отправляем изменения для {count} чата одним запросом…"
+      }
+    }
+  ]
 }

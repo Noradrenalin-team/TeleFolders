@@ -46,6 +46,21 @@ export const FloodWaitPause: Story = {
   },
 }
 
+export const SingleRequest: Story = {
+  args: {
+    state: {
+      status: 'running',
+      action: { type: 'archive' },
+      done: 0,
+      total: 25,
+      cancelling: false,
+    },
+  },
+  play: async () => {
+    await expect(await screen.findByText(/одним запросом/)).toBeInTheDocument()
+  },
+}
+
 export const Cancelling: Story = {
   args: {
     state: {

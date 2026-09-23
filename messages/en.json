@@ -269,5 +269,15 @@
   "bulk_report_title": "Summary",
   "bulk_report_succeeded": "Succeeded: {count}",
   "bulk_report_cancelled": "Cancelled: {count}",
-  "bulk_report_failed": "Failed: {count} — {reason}"
+  "bulk_report_failed": "Failed: {count} — {reason}",
+  "bulk_progress_single": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Sending the change for {count} chat in one request…",
+        "countPlural=other": "Sending the change for {count} chats in one request…"
+      }
+    }
+  ]
 }

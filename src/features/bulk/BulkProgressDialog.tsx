@@ -28,6 +28,12 @@ export function BulkProgressDialog({
 
   if (state.status === 'running') {
     const percent = state.total ? (state.done / state.total) * 100 : 0
+    // Folder changes and archiving are one request for all chats (F6.5):
+    // there's no per-chat progress to count, only "sent" and "done".
+    const single =
+      state.action.type === 'folder' ||
+      state.action.type === 'archive' ||
+      state.action.type === 'unarchive'
     return (
       <Dialog open>
         <DialogContent
@@ -39,39 +45,50 @@ export function BulkProgressDialog({
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription aria-live="polite">
-              {m.bulk_progress({ done: state.done, total: state.total })}
+              {single
+                ? m.bulk_progress_single({ count: state.total })
+                : m.bulk_progress({ done: state.done, total: state.total })}
             </DialogDescription>
           </DialogHeader>
-          <div
-            role="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={state.total}
-            aria-valuenow={state.done}
-            className="h-2 overflow-hidden rounded-full bg-muted"
-          >
-            <div
-              className="h-full bg-primary transition-[width]"
-              style={{ width: `${percent}%` }}
+          {single ? (
+            <Loader2
+              className="mx-auto size-5 animate-spin text-muted-foreground"
+              aria-hidden="true"
             />
-          </div>
+          ) : (
+            <div
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={state.total}
+              aria-valuenow={state.done}
+              className="h-2 overflow-hidden rounded-full bg-muted"
+            >
+              <div
+                className="h-full bg-primary transition-[width]"
+                style={{ width: `${percent}%` }}
+              />
+            </div>
+          )}
           {state.waitingSec !== undefined && (
             <p className="text-sm text-muted-foreground" aria-live="polite">
               {m.bulk_flood_pause({ seconds: state.waitingSec })}
             </p>
           )}
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={state.cancelling}
-              onClick={onCancel}
-            >
-              {state.cancelling && (
-                <Loader2 className="animate-spin" aria-hidden="true" />
-              )}
-              {state.cancelling ? m.bulk_cancelling() : m.bulk_cancel()}
-            </Button>
-          </DialogFooter>
+          {!single && (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={state.cancelling}
+                onClick={onCancel}
+              >
+                {state.cancelling && (
+                  <Loader2 className="animate-spin" aria-hidden="true" />
+                )}
+                {state.cancelling ? m.bulk_cancelling() : m.bulk_cancel()}
+              </Button>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
     )
