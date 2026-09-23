@@ -39,6 +39,19 @@ export const Default: Story = {
   },
 }
 
+export const LongFolderNames: Story = {
+  args: {
+    folders: [
+      { ...FIXTURE_FOLDERS[0], title: 'lapochka', emoticon: '🐱' },
+      { ...FIXTURE_FOLDERS[1], title: 'Работа и все рабочие чаты команды' },
+      ...FIXTURE_FOLDERS.slice(2),
+    ],
+    chats: FIXTURE_CHATS,
+    isLoading: false,
+    loadedCount: FIXTURE_CHATS.length,
+  },
+}
+
 export const Loading: Story = {
   args: {
     folders: [],

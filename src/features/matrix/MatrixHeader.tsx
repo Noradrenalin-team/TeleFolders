@@ -174,7 +174,9 @@ function HeaderCell({
   return (
     <div
       role="columnheader"
-      className="group/folder-header flex min-w-0 items-center justify-center gap-0.5 px-0.5"
+      // relative: the reorder arrows overlay the title on hover/focus instead
+      // of permanently taking 48 of the column's pixels away from it.
+      className="group/folder-header relative flex min-w-0 items-center justify-center px-1"
       onDragOver={(event) => {
         if (folder.readOnly) return
         event.preventDefault()
@@ -190,7 +192,7 @@ function HeaderCell({
           type="button"
           variant="ghost"
           size="icon-xs"
-          className="shrink-0 opacity-0 focus-visible:opacity-100 group-hover/folder-header:opacity-100"
+          className="absolute left-0 z-10 bg-background opacity-0 group-hover/folder-header:opacity-100 focus-visible:opacity-100 disabled:hidden"
           aria-label={m.matrix_folder_move_left()}
           disabled={!canMoveLeft(folder.id)}
           onClick={() => onMoveByOffset(folder.id, -1)}
@@ -207,14 +209,20 @@ function HeaderCell({
         onDragEnd={onDragEnd}
         onClick={onSelectFolder ? () => onSelectFolder(folder) : undefined}
         className={
-          'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 truncate rounded-sm py-1 text-xs enabled:hover:bg-accent disabled:cursor-default' +
+          'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-sm py-1 text-xs enabled:hover:bg-accent disabled:cursor-default' +
           (draggingId === folder.id ? ' opacity-50' : '')
         }
         title={folder.title}
       >
-        <span className="flex min-w-0 items-center gap-1 truncate">
-          {folder.emoticon && <span aria-hidden="true">{folder.emoticon}</span>}
-          <span className="truncate">{folder.title}</span>
+        <span className="flex min-w-0 max-w-full items-center gap-1">
+          {folder.emoticon && (
+            <span className="shrink-0" aria-hidden="true">
+              {folder.emoticon}
+            </span>
+          )}
+          <span className="line-clamp-2 min-w-0 text-center leading-tight break-words">
+            {folder.title}
+          </span>
           {folder.readOnly && (
             <Link2
               className="size-3 shrink-0 text-muted-foreground"
@@ -241,7 +249,7 @@ function HeaderCell({
           type="button"
           variant="ghost"
           size="icon-xs"
-          className="shrink-0 opacity-0 focus-visible:opacity-100 group-hover/folder-header:opacity-100"
+          className="absolute right-0 z-10 bg-background opacity-0 group-hover/folder-header:opacity-100 focus-visible:opacity-100 disabled:hidden"
           aria-label={m.matrix_folder_move_right()}
           disabled={!canMoveRight(folder.id)}
           onClick={() => onMoveByOffset(folder.id, 1)}

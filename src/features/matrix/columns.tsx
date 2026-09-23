@@ -4,7 +4,7 @@ import {
   ADD_COLUMN_WIDTH,
   ARCHIVE_COLUMN_WIDTH,
   CHAT_COLUMN_WIDTH,
-  FOLDER_COLUMN_WIDTH,
+  folderColumnWidth,
 } from '#/features/matrix/layout'
 
 export type MatrixColumnMeta =
@@ -53,7 +53,7 @@ export function buildMatrixColumns(folders: Folder[]): ColumnDef<Chat>[] {
     },
     ...folders.map((folder): ColumnDef<Chat> => ({
       id: folderColumnId(folder.id),
-      size: FOLDER_COLUMN_WIDTH,
+      size: folderColumnWidth(folder.title, folder.emoticon),
       meta: { matrix: { kind: 'folder', folder } },
     })),
     {
