@@ -1,9 +1,11 @@
 import {
+  mutationOptions,
   queryOptions,
   useMutation,
   useMutationState,
   useQueryClient,
 } from '@tanstack/react-query'
+import type { QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import * as folders from '#/telegram/folders'
 import { errorMessage } from '#/telegram/error-message'
@@ -37,10 +39,8 @@ export function usePendingFolderFlags() {
   })
 }
 
-export function useSetFolderFlag() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+export function setFolderFlagMutation(queryClient: QueryClient) {
+  return mutationOptions({
     mutationKey: SET_FLAG_KEY,
     mutationFn: ({ folderId, flag, value }: SetFolderFlagVars) =>
       folders.setFolderFlag(folderId, flag, value),
@@ -90,6 +90,10 @@ export function useSetFolderFlag() {
   })
 }
 
+export function useSetFolderFlag() {
+  return useMutation(setFolderFlagMutation(useQueryClient()))
+}
+
 type SetChatRelationVars = {
   folderId: number
   peer: PeerRef
@@ -107,10 +111,8 @@ export function usePendingChatRelations() {
 
 /** Sets or clears a chat's relation to a folder, with an optimistic update
  * to both caches (F2.6). */
-export function useSetChatRelation() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+export function setChatRelationMutation(queryClient: QueryClient) {
+  return mutationOptions({
     mutationKey: SET_CHAT_RELATION_KEY,
     mutationFn: ({ folderId, peer, relation }: SetChatRelationVars) =>
       folders.setChatRelation(folderId, peer, relation),
@@ -232,12 +234,14 @@ export function useSetChatRelation() {
   })
 }
 
+export function useSetChatRelation() {
+  return useMutation(setChatRelationMutation(useQueryClient()))
+}
+
 /** Folder creation/rename/delete/reorder change the folder list's shape, so
  * these just invalidate rather than trying to optimistically patch it. */
-export function useCreateFolder() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+export function createFolderMutation(queryClient: QueryClient) {
+  return mutationOptions({
     mutationFn: ({
       title,
       includePeers,
@@ -257,10 +261,12 @@ export function useCreateFolder() {
   })
 }
 
-export function useRenameFolder() {
-  const queryClient = useQueryClient()
+export function useCreateFolder() {
+  return useMutation(createFolderMutation(useQueryClient()))
+}
 
-  return useMutation({
+export function renameFolderMutation(queryClient: QueryClient) {
+  return mutationOptions({
     mutationFn: ({
       folderId,
       title,
@@ -280,10 +286,12 @@ export function useRenameFolder() {
   })
 }
 
-export function useDeleteFolder() {
-  const queryClient = useQueryClient()
+export function useRenameFolder() {
+  return useMutation(renameFolderMutation(useQueryClient()))
+}
 
-  return useMutation({
+export function deleteFolderMutation(queryClient: QueryClient) {
+  return mutationOptions({
     mutationFn: (folderId: number) => folders.deleteFolder(folderId),
     onError: (error) => toast.error(errorMessage(error)),
     onSuccess: () => {
@@ -295,10 +303,12 @@ export function useDeleteFolder() {
   })
 }
 
-export function useReorderFolders() {
-  const queryClient = useQueryClient()
+export function useDeleteFolder() {
+  return useMutation(deleteFolderMutation(useQueryClient()))
+}
 
-  return useMutation({
+export function reorderFoldersMutation(queryClient: QueryClient) {
+  return mutationOptions({
     mutationFn: (ids: number[]) => folders.reorderFolders(ids),
     onMutate: async (ids) => {
       await queryClient.cancelQueries({
@@ -327,4 +337,8 @@ export function useReorderFolders() {
       })
     },
   })
+}
+
+export function useReorderFolders() {
+  return useMutation(reorderFoldersMutation(useQueryClient()))
 }

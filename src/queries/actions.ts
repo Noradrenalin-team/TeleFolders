@@ -1,4 +1,5 @@
 import {
+  mutationOptions,
   queryOptions,
   useMutation,
   useMutationState,
@@ -26,10 +27,8 @@ export function usePendingArchive() {
   })
 }
 
-export function useSetArchived() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+export function setArchivedMutation(queryClient: QueryClient) {
+  return mutationOptions({
     mutationKey: SET_ARCHIVED_KEY,
     mutationFn: ({ peer, archived }: SetArchivedVars) =>
       actions.setArchived(peer, archived),
@@ -63,6 +62,10 @@ export function useSetArchived() {
   })
 }
 
+export function useSetArchived() {
+  return useMutation(setArchivedMutation(useQueryClient()))
+}
+
 type SetPinnedVars = { peer: PeerRef; pinned: boolean }
 const SET_PINNED_KEY = ['dialogs', 'setPinned']
 
@@ -73,10 +76,8 @@ export function usePendingPinned() {
   })
 }
 
-export function useSetPinned() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+export function setPinnedMutation(queryClient: QueryClient) {
+  return mutationOptions({
     mutationKey: SET_PINNED_KEY,
     mutationFn: ({ peer, pinned }: SetPinnedVars) =>
       actions.setPinned(peer, pinned),
@@ -110,6 +111,10 @@ export function useSetPinned() {
   })
 }
 
+export function useSetPinned() {
+  return useMutation(setPinnedMutation(useQueryClient()))
+}
+
 export function patchChat(
   queryClient: QueryClient,
   chatId: number,
@@ -130,10 +135,8 @@ function peerOf(chat: Pick<Chat, 'id' | 'kind'>): PeerRef {
   return { id: chat.id, kind: chat.kind }
 }
 
-export function useSetMuted() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+export function setMutedMutation(queryClient: QueryClient) {
+  return mutationOptions({
     mutationFn: ({ chat, muted }: { chat: Chat; muted: boolean }) =>
       actions.setMuted(peerOf(chat), muted),
     onMutate: async ({ chat, muted }) => {
@@ -151,10 +154,12 @@ export function useSetMuted() {
   })
 }
 
-export function useMarkRead() {
-  const queryClient = useQueryClient()
+export function useSetMuted() {
+  return useMutation(setMutedMutation(useQueryClient()))
+}
 
-  return useMutation({
+export function markReadMutation(queryClient: QueryClient) {
+  return mutationOptions({
     mutationFn: ({ chat }: { chat: Chat }) => actions.markRead(peerOf(chat)),
     onMutate: async ({ chat }) => {
       await queryClient.cancelQueries({
@@ -172,23 +177,26 @@ export function useMarkRead() {
   })
 }
 
+export function useMarkRead() {
+  return useMutation(markReadMutation(useQueryClient()))
+}
+
 /**
  * Destructive actions aren't optimistic: they can't be rolled back on the
  * server, so the chat only leaves the cache once Telegram confirms it
  * (F5.7: every one of them ends in a result toast either way). Folder
  * counters change along with the chat, hence the `folders` invalidation.
  */
-function useDestructiveAction<TVars extends { chat: Chat }>(
+function destructiveMutation<TVars extends { chat: Chat }>(
+  queryClient: QueryClient,
   mutationFn: (vars: TVars) => Promise<void>,
-  onDone: (queryClient: QueryClient, vars: TVars) => string,
+  onDone: (vars: TVars) => string,
 ) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+  return mutationOptions({
     mutationKey: DESTRUCTIVE_KEY,
     mutationFn,
     onSuccess: (_data, vars) => {
-      toast.success(onDone(queryClient, vars))
+      toast.success(onDone(vars))
       void queryClient.invalidateQueries({
         queryKey: foldersQueryOptions.queryKey,
       })
@@ -206,8 +214,9 @@ export function usePendingDestructive() {
   })
 }
 
-export function useDeleteChat() {
-  return useDestructiveAction(
+export function deleteChatMutation(queryClient: QueryClient) {
+  return destructiveMutation(
+    queryClient,
     ({
       chat,
       revoke,
@@ -217,7 +226,7 @@ export function useDeleteChat() {
       revoke?: boolean
       block?: boolean
     }) => actions.deleteChat(peerOf(chat), { revoke, block }),
-    (queryClient, { chat, block }) => {
+    ({ chat, block }) => {
       if (chat.kind === 'saved') return m.chat_action_done_cleared()
       if (block) {
         void queryClient.invalidateQueries({
@@ -230,10 +239,11 @@ export function useDeleteChat() {
   )
 }
 
-export function useLeaveChat() {
-  return useDestructiveAction(
+export function leaveChatMutation(queryClient: QueryClient) {
+  return destructiveMutation(
+    queryClient,
     ({ chat }: { chat: Chat }) => actions.leaveChat(peerOf(chat)),
-    (queryClient, { chat }) => {
+    ({ chat }) => {
       removeChat(queryClient, chat.id)
       return chat.kind === 'channel'
         ? m.chat_action_done_unsubscribed({ title: chat.title })
@@ -242,10 +252,11 @@ export function useLeaveChat() {
   )
 }
 
-export function useBlockUser() {
-  return useDestructiveAction(
+export function blockUserMutation(queryClient: QueryClient) {
+  return destructiveMutation(
+    queryClient,
     ({ chat }: { chat: Chat }) => actions.blockUser(peerOf(chat)),
-    (queryClient, { chat }) => {
+    ({ chat }) => {
       void queryClient.invalidateQueries({
         queryKey: blockedQueryOptions.queryKey,
       })
@@ -254,16 +265,26 @@ export function useBlockUser() {
   )
 }
 
+export function useDeleteChat() {
+  return useMutation(deleteChatMutation(useQueryClient()))
+}
+
+export function useLeaveChat() {
+  return useMutation(leaveChatMutation(useQueryClient()))
+}
+
+export function useBlockUser() {
+  return useMutation(blockUserMutation(useQueryClient()))
+}
+
 export const blockedQueryOptions = queryOptions({
   queryKey: ['blocked'],
   queryFn: () => actions.listBlocked(),
   staleTime: 60_000,
 })
 
-export function useUnblockUser() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
+export function unblockUserMutation(queryClient: QueryClient) {
+  return mutationOptions({
     mutationKey: ['blocked', 'unblock'],
     mutationFn: (peer: BlockedPeer) => actions.unblockUser(peer),
     onSuccess: (_data, peer) => {
@@ -274,4 +295,8 @@ export function useUnblockUser() {
     },
     onError: (error) => toast.error(errorMessage(error)),
   })
+}
+
+export function useUnblockUser() {
+  return useMutation(unblockUserMutation(useQueryClient()))
 }
