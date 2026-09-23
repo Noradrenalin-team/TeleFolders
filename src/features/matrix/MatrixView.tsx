@@ -40,6 +40,7 @@ export function MatrixView({
   onOpenChat,
   onReorderFolders,
   onChatAction,
+  isChatBlocked,
   isChatBusy,
   isArchivePending,
   isPinnedPending,
@@ -75,6 +76,7 @@ export function MatrixView({
   onOpenChat?: (chat: Chat) => void
   onReorderFolders?: (folderIds: number[]) => void
   onChatAction?: (chat: Chat, action: ChatAction) => void
+  isChatBlocked?: (chatId: number) => boolean
   isChatBusy?: (chatId: number) => boolean
   isArchivePending?: (chatId: number) => boolean
   isPinnedPending?: (chatId: number) => boolean
@@ -227,6 +229,7 @@ export function MatrixView({
                   onCycleRelation={onCycleRelation}
                   onTogglePinned={onTogglePinned}
                   onChatAction={onChatAction}
+                  isBlocked={isChatBlocked?.(chat.id)}
                   isBusy={isChatBusy?.(chat.id)}
                   isArchivePending={isArchivePending}
                   isPinnedPending={isPinnedPending}

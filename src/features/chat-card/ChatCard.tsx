@@ -49,6 +49,7 @@ export function ChatCard({
   onTogglePinned,
   onCycleRelation,
   onChatAction,
+  isBlocked = false,
   isRelationPending,
 }: {
   chat: Chat | undefined
@@ -67,6 +68,7 @@ export function ChatCard({
     current: ChatFolderRelation | undefined,
   ) => void
   onChatAction?: (chat: Chat, action: ChatAction) => void
+  isBlocked?: boolean
   isRelationPending?: (chatId: number, folderId: number) => boolean
 }) {
   const photo = useChatPhoto(
@@ -113,6 +115,7 @@ export function ChatCard({
             {onChatAction && (
               <ChatActionsDropdown
                 chat={chat}
+                isBlocked={isBlocked}
                 onAction={onChatAction}
                 className="mr-6 shrink-0"
               />

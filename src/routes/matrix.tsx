@@ -18,6 +18,7 @@ import {
 } from '#/queries/folders'
 import { dialogsLoadProgress, dialogsQueryOptions } from '#/queries/dialogs'
 import {
+  blockedQueryOptions,
   useBlockUser,
   useDeleteChat,
   useLeaveChat,
@@ -28,6 +29,7 @@ import {
   useSetArchived,
   useSetMuted,
   useSetPinned,
+  useUnblockUser,
 } from '#/queries/actions'
 import { MatrixView } from '#/features/matrix/MatrixView'
 import { MatrixToolbar } from '#/features/matrix/MatrixToolbar'
@@ -99,6 +101,13 @@ function MatrixRoute() {
   const deleteChat = useDeleteChat()
   const leaveChat = useLeaveChat()
   const blockUser = useBlockUser()
+  const unblockUser = useUnblockUser()
+  // Dialogs don't say whether a user is blocked; one cheap call does.
+  const blockedQuery = useQuery({
+    ...blockedQueryOptions,
+    enabled: isAuthorized,
+  })
+  const blockedIds = new Set(blockedQuery.data?.map((peer) => peer.id))
   const pendingDestructive = usePendingDestructive()
 
   const [confirm, setConfirm] = useState<
@@ -176,6 +185,9 @@ function MatrixRoute() {
         break
       case 'markRead':
         markRead.mutate({ chat })
+        break
+      case 'unblock':
+        unblockUser.mutate({ id: chat.id, kind: chat.kind, title: chat.title })
         break
       case 'openInTelegram': {
         const link = telegramLink(chat)
@@ -276,6 +288,7 @@ function MatrixRoute() {
         onOpenChat={(chat) => updateSearch({ chat: chat.id })}
         onReorderFolders={(ids) => reorderFolders.mutate(ids)}
         onChatAction={runChatAction}
+        isChatBlocked={(chatId) => blockedIds.has(chatId)}
         isChatBusy={(chatId) => pendingDestructive.includes(chatId)}
         isArchivePending={(chatId) =>
           pendingArchive.some((v) => v.peer.id === chatId)
@@ -331,6 +344,7 @@ function MatrixRoute() {
         }}
         onCycleRelation={cycleRelation}
         onChatAction={runChatAction}
+        isBlocked={openChat !== undefined && blockedIds.has(openChat.id)}
         isRelationPending={(chatId, folderId) =>
           pendingRelations.some(
             (v) => v.peer.id === chatId && v.folderId === folderId,

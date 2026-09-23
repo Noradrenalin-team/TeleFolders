@@ -2,6 +2,7 @@ import {
   Archive,
   ArchiveRestore,
   Ban,
+  CircleCheck,
   Bell,
   BellOff,
   CheckCheck,
@@ -47,6 +48,7 @@ const ICONS: Record<ChatAction, LucideIcon> = {
   clearHistory: Eraser,
   leave: LogOut,
   block: Ban,
+  unblock: CircleCheck,
 }
 
 export function chatActionLabel(action: ChatAction, chat: Chat): string {
@@ -81,6 +83,8 @@ export function chatActionLabel(action: ChatAction, chat: Chat): string {
       return chat.kind === 'bot'
         ? m.chat_action_block_bot()
         : m.chat_action_block()
+    case 'unblock':
+      return m.blocked_unblock()
   }
 }
 
@@ -90,16 +94,18 @@ type SeparatorComponent =
 
 function ChatActionItems({
   chat,
+  isBlocked,
   onAction,
   Item,
   Separator,
 }: {
   chat: Chat
+  isBlocked?: boolean
   onAction: (chat: Chat, action: ChatAction) => void
   Item: ItemComponent
   Separator: SeparatorComponent
 }) {
-  const { safe, destructive } = chatActionsFor(chat)
+  const { safe, destructive } = chatActionsFor(chat, { isBlocked })
 
   const renderItem = (
     action: ChatAction,
@@ -130,10 +136,12 @@ function ChatActionItems({
 /** "⋯" button with the F5.1 chat menu. */
 export function ChatActionsDropdown({
   chat,
+  isBlocked,
   onAction,
   className,
 }: {
   chat: Chat
+  isBlocked?: boolean
   onAction: (chat: Chat, action: ChatAction) => void
   className?: string
 }) {
@@ -154,6 +162,7 @@ export function ChatActionsDropdown({
       <DropdownMenuContent align="end">
         <ChatActionItems
           chat={chat}
+          isBlocked={isBlocked}
           onAction={onAction}
           Item={DropdownMenuItem}
           Separator={DropdownMenuSeparator}
@@ -166,10 +175,12 @@ export function ChatActionsDropdown({
 /** Same menu on right-click anywhere in `children` (a matrix row). */
 export function ChatActionsContextMenu({
   chat,
+  isBlocked,
   onAction,
   children,
 }: {
   chat: Chat
+  isBlocked?: boolean
   onAction: (chat: Chat, action: ChatAction) => void
   children: React.ReactNode
 }) {
@@ -179,6 +190,7 @@ export function ChatActionsContextMenu({
       <ContextMenuContent>
         <ChatActionItems
           chat={chat}
+          isBlocked={isBlocked}
           onAction={onAction}
           Item={ContextMenuItem}
           Separator={ContextMenuSeparator}

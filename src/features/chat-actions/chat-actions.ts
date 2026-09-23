@@ -13,6 +13,7 @@ export type ChatAction =
   | 'clearHistory'
   | 'leave'
   | 'block'
+  | 'unblock'
 
 /** Actions that need a confirmation dialog before anything is sent (F5.3). */
 export type DestructiveChatAction = Extract<
@@ -37,7 +38,10 @@ export function isDestructive(
  * entries exist follows the ТЗ §3 table: Saved Messages can only be
  * cleared, DMs/bots are deleted, groups/channels are left.
  */
-export function chatActionsFor(chat: Chat): {
+export function chatActionsFor(
+  chat: Chat,
+  { isBlocked = false }: { isBlocked?: boolean } = {},
+): {
   safe: ChatAction[]
   destructive: DestructiveChatAction[]
 } {
@@ -48,17 +52,19 @@ export function chatActionsFor(chat: Chat): {
   ]
   if (chat.unreadCount > 0) safe.push('markRead')
   if (telegramLink(chat)) safe.push('openInTelegram')
+  if (chat.canBlock && isBlocked) safe.push('unblock')
 
   const destructive: DestructiveChatAction[] = []
   if (chat.isSelf) {
     destructive.push('clearHistory')
   } else {
     if (chat.canDelete) destructive.push('delete')
-    // Telegram refuses to let a channel's creator leave it (`USER_CREATOR`);
-    // the official client only offers deleting the channel, which is F5.8.
-    const ownsChannel = chat.kind === 'channel' && chat.isOwner
+    // `channels.leaveChannel` refuses a creator (`USER_CREATOR`) for both
+    // channels and supergroups; only deleting them would work, which is F5.8.
+    // A legacy group's creator can leave (`messages.deleteChatUser`).
+    const ownsChannel = chat.isOwner && chat.kind !== 'group'
     if (chat.canLeave && !ownsChannel) destructive.push('leave')
-    if (chat.canBlock) destructive.push('block')
+    if (chat.canBlock && !isBlocked) destructive.push('block')
   }
 
   return { safe, destructive }

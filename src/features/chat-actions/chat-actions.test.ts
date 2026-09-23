@@ -51,9 +51,20 @@ describe('chatActionsFor', () => {
     expect(chatActionsFor(owned).destructive).toEqual([])
   })
 
-  it('still offers leaving a group I own', () => {
+  it('does not offer leaving a supergroup I own either', () => {
     const owned = chat({
       kind: 'supergroup',
+      canDelete: false,
+      canLeave: true,
+      canBlock: false,
+      isOwner: true,
+    })
+    expect(chatActionsFor(owned).destructive).toEqual([])
+  })
+
+  it('still offers leaving a legacy group I own', () => {
+    const owned = chat({
+      kind: 'group',
       canDelete: false,
       canLeave: true,
       canBlock: false,
@@ -78,6 +89,12 @@ describe('chatActionsFor', () => {
       'markRead',
       'openInTelegram',
     ])
+  })
+
+  it('swaps block for unblock when the user is blocked', () => {
+    const actions = chatActionsFor(chat(), { isBlocked: true })
+    expect(actions.safe).toContain('unblock')
+    expect(actions.destructive).toEqual(['delete'])
   })
 
   it('hides markRead when nothing is unread', () => {

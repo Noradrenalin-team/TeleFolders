@@ -24,6 +24,7 @@ export function ChatRow({
   onCycleRelation,
   onTogglePinned,
   onChatAction,
+  isBlocked = false,
   isBusy = false,
   isArchivePending,
   isPinnedPending,
@@ -42,6 +43,7 @@ export function ChatRow({
   ) => void
   onTogglePinned?: (chat: Chat, pinned: boolean) => void
   onChatAction?: (chat: Chat, action: ChatAction) => void
+  isBlocked?: boolean
   /** A destructive action on this chat is in flight (F5). */
   isBusy?: boolean
   isArchivePending?: (chatId: number) => boolean
@@ -146,6 +148,7 @@ export function ChatRow({
               {onChatAction && (
                 <ChatActionsDropdown
                   chat={chat}
+                  isBlocked={isBlocked}
                   onAction={onChatAction}
                   className="shrink-0 text-muted-foreground opacity-0 focus-visible:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100"
                 />
@@ -222,7 +225,11 @@ export function ChatRow({
   )
 
   return onChatAction ? (
-    <ChatActionsContextMenu chat={chat} onAction={onChatAction}>
+    <ChatActionsContextMenu
+      chat={chat}
+      isBlocked={isBlocked}
+      onAction={onChatAction}
+    >
       {row}
     </ChatActionsContextMenu>
   ) : (

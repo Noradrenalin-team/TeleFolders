@@ -217,8 +217,13 @@ export function useDeleteChat() {
       revoke?: boolean
       block?: boolean
     }) => actions.deleteChat(peerOf(chat), { revoke, block }),
-    (queryClient, { chat }) => {
+    (queryClient, { chat, block }) => {
       if (chat.kind === 'saved') return m.chat_action_done_cleared()
+      if (block) {
+        void queryClient.invalidateQueries({
+          queryKey: blockedQueryOptions.queryKey,
+        })
+      }
       removeChat(queryClient, chat.id)
       return m.chat_action_done_deleted({ title: chat.title })
     },
