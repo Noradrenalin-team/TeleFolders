@@ -27,17 +27,20 @@ function Home() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
+    // `replace` throughout: "/" only forwards, and leaving it in history
+    // made Back from the next page land here and bounce straight forward.
     if (!configured) {
-      void navigate({ to: '/login' })
+      void navigate({ to: '/login', replace: true })
       return
     }
     if (authState.data?.status === 'authorized') {
       void navigate({
         to: '/matrix',
         search: matrixEntrySearch(readPersistedShowArchived()),
+        replace: true,
       })
     } else if (authState.data) {
-      void navigate({ to: '/login' })
+      void navigate({ to: '/login', replace: true })
     }
   }, [configured, authState.data, navigate])
 
