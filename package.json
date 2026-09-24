@@ -1,5 +1,6 @@
 {
   "name": "telefolders",
+  "version": "1.0.0-beta.1",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.34.4",

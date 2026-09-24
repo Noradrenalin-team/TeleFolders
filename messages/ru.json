@@ -294,5 +294,16 @@
   ],
   "dialog_close": "Закрыть",
   "connection_lost": "Нет соединения с Telegram, переподключаемся…",
-  "nav_sections": "Разделы"
+  "nav_sections": "Разделы",
+  "settings_title": "Настройки",
+  "settings_section_interface": "Интерфейс",
+  "settings_section_account": "Аккаунт",
+  "settings_show_archived": "Показывать архивные чаты при открытии",
+  "about_title": "О программе",
+  "about_version": "Версия",
+  "about_repository": "Исходный код на GitHub",
+  "about_unofficial": "Приложение не связано с Telegram и не одобрено им.",
+  "nav_settings": "Настройки",
+  "nav_refresh": "Обновить данные",
+  "profile_menu": "Меню профиля"
 }

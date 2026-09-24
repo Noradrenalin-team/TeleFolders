@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import type { Meta, StoryObj } from '@storybook/tanstack-react'
-import { expect, screen } from 'storybook/test'
+import { expect, screen, userEvent } from 'storybook/test'
 import { AppHeader } from '#/components/AppHeader'
 import { authStateQueryOptions } from '#/queries/auth'
 import type { AuthState } from '#/telegram/auth'
@@ -40,6 +40,19 @@ export const OnMatrix: Story = {
     await expect(
       screen.getByRole('link', { name: 'Заблокированные' }),
     ).not.toHaveAttribute('aria-current')
+  },
+}
+
+export const ProfileMenuOpen: Story = {
+  parameters: { tanstack: { router: { route: { path: '/matrix' } } } },
+  play: async () => {
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Меню профиля' }),
+    )
+    await expect(await screen.findByText('@vasiliy')).toBeInTheDocument()
+    await expect(
+      screen.getByRole('menuitem', { name: 'Выйти' }),
+    ).toBeInTheDocument()
   },
 }
 

@@ -3,7 +3,8 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { authStateQueryOptions } from '#/queries/auth'
 import { isTelegramConfigured } from '#/telegram/client'
-import { DEFAULT_MATRIX_SEARCH } from '#/features/matrix/filters'
+import { matrixEntrySearch } from '#/features/matrix/filters'
+import { readPersistedShowArchived } from '#/stores/settings'
 import { Button } from '#/components/ui/button'
 import { FullPageSpinner } from '#/components/FullPageSpinner'
 import { m } from '#/paraglide/messages'
@@ -31,7 +32,10 @@ function Home() {
       return
     }
     if (authState.data?.status === 'authorized') {
-      void navigate({ to: '/matrix', search: DEFAULT_MATRIX_SEARCH })
+      void navigate({
+        to: '/matrix',
+        search: matrixEntrySearch(readPersistedShowArchived()),
+      })
     } else if (authState.data) {
       void navigate({ to: '/login' })
     }

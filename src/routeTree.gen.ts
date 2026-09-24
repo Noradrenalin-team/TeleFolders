@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlockedRouteImport } from './routes/blocked'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MatrixRouteImport } from './routes/matrix'
+import { Route as SettingsRouteImport } from './routes/settings'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const MatrixRoute = MatrixRouteImport.update({
   path: '/matrix',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/blocked': typeof BlockedRoute
   '/login': typeof LoginRoute
   '/matrix': typeof MatrixRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/blocked': typeof BlockedRoute
   '/login': typeof LoginRoute
   '/matrix': typeof MatrixRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,14 @@ export interface FileRoutesById {
   '/blocked': typeof BlockedRoute
   '/login': typeof LoginRoute
   '/matrix': typeof MatrixRoute
+  '/settings': typeof SettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/blocked' | '/login' | '/matrix'
+  fullPaths: '/' | '/blocked' | '/login' | '/matrix' | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/blocked' | '/login' | '/matrix'
-  id: '__root__' | '/' | '/blocked' | '/login' | '/matrix'
+  to: '/' | '/blocked' | '/login' | '/matrix' | '/settings'
+  id: '__root__' | '/' | '/blocked' | '/login' | '/matrix' | '/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +76,7 @@ export interface RootRouteChildren {
   BlockedRoute: typeof BlockedRoute
   LoginRoute: typeof LoginRoute
   MatrixRoute: typeof MatrixRoute
+  SettingsRoute: typeof SettingsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MatrixRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlockedRoute: BlockedRoute,
   LoginRoute: LoginRoute,
   MatrixRoute: MatrixRoute,
+  SettingsRoute: SettingsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

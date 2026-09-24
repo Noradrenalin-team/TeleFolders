@@ -7,6 +7,7 @@ import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
 
@@ -15,8 +16,15 @@ const dirname =
     ? __dirname
     : path.dirname(fileURLToPath(import.meta.url))
 
+const { version } = JSON.parse(
+  readFileSync(path.join(dirname, 'package.json'), 'utf8'),
+) as { version: string }
+
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 const config = defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
+  },
   resolve: {
     tsconfigPaths: true,
   },

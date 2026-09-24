@@ -280,5 +280,16 @@
   ],
   "dialog_close": "Close",
   "connection_lost": "No connection to Telegram, reconnecting…",
-  "nav_sections": "Sections"
+  "nav_sections": "Sections",
+  "settings_title": "Settings",
+  "settings_section_interface": "Interface",
+  "settings_section_account": "Account",
+  "settings_show_archived": "Show archived chats on open",
+  "about_title": "About",
+  "about_version": "Version",
+  "about_repository": "Source code on GitHub",
+  "about_unofficial": "The app is not affiliated with or endorsed by Telegram.",
+  "nav_settings": "Settings",
+  "nav_refresh": "Refresh data",
+  "profile_menu": "Profile menu"
 }

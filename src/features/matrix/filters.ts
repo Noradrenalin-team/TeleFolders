@@ -27,6 +27,12 @@ export const DEFAULT_MATRIX_SEARCH: MatrixSearch = {
   chat: undefined,
 }
 
+/** Search to open the matrix with: defaults, but with the persisted
+ * "show archived" preference (F3.3) instead of always starting hidden. */
+export function matrixEntrySearch(showArchived: boolean): MatrixSearch {
+  return { ...DEFAULT_MATRIX_SEARCH, archived: showArchived }
+}
+
 const TYPE_KINDS: Record<
   Exclude<MatrixSearch['type'], 'all'>,
   ReadonlyArray<PeerKind>

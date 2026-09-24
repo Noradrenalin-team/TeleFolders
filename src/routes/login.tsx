@@ -7,7 +7,8 @@ import type { SentCode } from '#/telegram/auth'
 import { PhoneStep } from '#/features/auth/PhoneStep'
 import { CodeStep } from '#/features/auth/CodeStep'
 import { PasswordStep } from '#/features/auth/PasswordStep'
-import { DEFAULT_MATRIX_SEARCH } from '#/features/matrix/filters'
+import { matrixEntrySearch } from '#/features/matrix/filters'
+import { readPersistedShowArchived } from '#/stores/settings'
 import { m } from '#/paraglide/messages'
 import { FullPageSpinner } from '#/components/FullPageSpinner'
 
@@ -32,7 +33,10 @@ function LoginPage() {
   })
   useEffect(() => {
     if (authState.data?.status === 'authorized') {
-      void navigate({ to: '/matrix', search: DEFAULT_MATRIX_SEARCH })
+      void navigate({
+        to: '/matrix',
+        search: matrixEntrySearch(readPersistedShowArchived()),
+      })
     }
   }, [authState.data, navigate])
 
@@ -51,7 +55,10 @@ function LoginPage() {
   }
 
   const goToMatrix = () =>
-    void navigate({ to: '/matrix', search: DEFAULT_MATRIX_SEARCH })
+    void navigate({
+      to: '/matrix',
+      search: matrixEntrySearch(readPersistedShowArchived()),
+    })
 
   if (step.name === 'code') {
     return (
