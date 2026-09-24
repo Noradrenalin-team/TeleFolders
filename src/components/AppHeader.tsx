@@ -75,7 +75,14 @@ export function AppHeader() {
     <header className="border-b border-border bg-background">
       <div className="flex h-14 items-center justify-between gap-2 px-2 sm:gap-4 sm:px-4">
         <div className="flex min-w-0 items-center gap-4">
-          <span className="hidden text-sm font-semibold tracking-tight sm:inline">
+          <span
+            className={
+              // On a phone the section tabs need the room once signed in.
+              profile
+                ? 'hidden text-sm font-semibold tracking-tight sm:inline'
+                : 'text-sm font-semibold tracking-tight'
+            }
+          >
             {m.app_title()}
           </span>
           {profile && (
