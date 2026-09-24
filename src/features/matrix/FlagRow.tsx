@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { Column } from '@tanstack/react-table'
 import type { Chat, Folder, FolderFlag } from '#/telegram/types'
 import { gridTemplateColumns } from '#/features/matrix/layout'
@@ -5,7 +6,8 @@ import { FlagCell } from '#/features/matrix/FlagCell'
 import { wouldEmptyFolderByFlag } from '#/features/matrix/relation-cycle'
 import { m } from '#/paraglide/messages'
 
-export function FlagRow({
+/** Memoized like ChatRow: the list re-renders on every scroll frame. */
+export const FlagRow = memo(function FlagRow({
   rowIndex,
   flag,
   label,
@@ -83,4 +85,4 @@ export function FlagRow({
       })}
     </div>
   )
-}
+})

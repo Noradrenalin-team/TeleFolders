@@ -22,6 +22,7 @@ import { MatrixSkeleton } from '#/features/matrix/MatrixSkeleton'
 import { useGridKeyboard } from '#/features/matrix/grid-keyboard'
 import { useDragSelect } from '#/features/bulk/drag-select'
 import { ChatList } from '#/features/matrix/ChatList'
+import { MatrixContextMenu } from '#/features/matrix/MatrixContextMenu'
 import { COMPACT_QUERY, useMediaQuery } from '#/hooks/use-media-query'
 
 export function MatrixView({
@@ -113,6 +114,14 @@ export function MatrixView({
   const compact = useMediaQuery(COMPACT_QUERY)
 
   const columns = useMemo(() => buildMatrixColumns(folders), [folders])
+  const chatsById = useMemo(
+    () => new Map(chats.map((chat) => [chat.id, chat])),
+    [chats],
+  )
+  const foldersById = useMemo(
+    () => new Map(folders.map((folder) => [folder.id, folder])),
+    [folders],
+  )
 
   // Column identity/order/width lives on the table (F2.1) — everything else
   // (filtering, sorting) stays outside it, done up front by
@@ -291,92 +300,92 @@ export function MatrixView({
           isChatBlocked={isChatBlocked}
         />
       ) : (
-        <div
-          ref={scrollRef}
-          role="grid"
-          aria-rowcount={rows.length + 1 + flagRowCount}
-          aria-colcount={visibleColumns.length}
-          className="flex-1 overflow-auto"
-          onKeyDown={keyboard.onKeyDown}
-          onFocus={keyboard.onFocus}
+        <MatrixContextMenu
+          chatsById={chatsById}
+          foldersById={foldersById}
+          onChatAction={onChatAction}
+          onSetRelation={onSetRelation}
+          isChatBlocked={isChatBlocked}
         >
           <div
-            ref={headerRef}
-            className="sticky top-0 z-20"
-            style={{ width: totalWidth, minWidth: '100%' }}
+            ref={scrollRef}
+            role="grid"
+            aria-rowcount={rows.length + 1 + flagRowCount}
+            aria-colcount={visibleColumns.length}
+            className="flex-1 overflow-auto"
+            onKeyDown={keyboard.onKeyDown}
+            onFocus={keyboard.onFocus}
           >
-            <MatrixHeader
-              columns={visibleColumns}
-              onAddFolder={onAddFolder}
-              onSelectFolder={onSelectFolder}
-              onReorderFolders={onReorderFolders}
-              selectAll={selection?.selectAll}
-            />
-            {/* Flag rows toggle a category (contacts, groups, …) *within a
+            <div
+              ref={headerRef}
+              className="sticky top-0 z-20"
+              style={{ width: totalWidth, minWidth: '100%' }}
+            >
+              <MatrixHeader
+                columns={visibleColumns}
+                onAddFolder={onAddFolder}
+                onSelectFolder={onSelectFolder}
+                onReorderFolders={onReorderFolders}
+                selectAll={selection?.selectAll}
+              />
+              {/* Flag rows toggle a category (contacts, groups, …) *within a
                 folder column* — with no folder columns there's nothing for
                 them to act on, so they'd just be a list of unclickable
                 labels (F2.2 only makes sense once F4.1 has created a
                 folder). */}
-            {folders.length > 0 &&
-              FOLDER_FLAGS.map(({ flag, label }) => (
-                <FlagRow
-                  key={flag}
-                  rowIndex={FOLDER_FLAGS.findIndex((f) => f.flag === flag)}
-                  flag={flag}
-                  label={label()}
-                  columns={visibleColumns}
-                  onToggle={onToggleFlag}
-                  isPending={isFlagPending}
-                />
-              ))}
+              {folders.length > 0 &&
+                FOLDER_FLAGS.map(({ flag, label }) => (
+                  <FlagRow
+                    key={flag}
+                    rowIndex={FOLDER_FLAGS.findIndex((f) => f.flag === flag)}
+                    flag={flag}
+                    label={label()}
+                    columns={visibleColumns}
+                    onToggle={onToggleFlag}
+                    isPending={isFlagPending}
+                  />
+                ))}
+            </div>
+            <div
+              style={{
+                height: virtualizer.getTotalSize(),
+                width: totalWidth,
+                minWidth: '100%',
+                position: 'relative',
+              }}
+            >
+              {virtualizer.getVirtualItems().map((virtualRow) => {
+                const chat = rows[virtualRow.index].original
+                return (
+                  <ChatRow
+                    key={chat.id}
+                    chat={chat}
+                    rowIndex={flagRowCount + virtualRow.index}
+                    columns={visibleColumns}
+                    onOpenChat={onOpenChat}
+                    onSetArchived={onSetArchived}
+                    onCycleRelation={onCycleRelation}
+                    onSetRelation={onSetRelation}
+                    onTogglePinned={onTogglePinned}
+                    onChatAction={onChatAction}
+                    selected={selection?.isSelected(chat.id)}
+                    onToggleSelect={selection?.onToggle}
+                    listIndex={virtualRow.index}
+                    onSelectDragStart={dragSelect.start}
+                    consumeSelectClick={dragSelect.consumeClick}
+                    isBlocked={isChatBlocked?.(chat.id)}
+                    isBusy={isChatBusy?.(chat.id)}
+                    isArchivePending={isArchivePending}
+                    isPinnedPending={isPinnedPending}
+                    isRelationPending={isRelationPending}
+                    top={virtualRow.start - virtualizer.options.scrollMargin}
+                    height={virtualRow.size}
+                  />
+                )
+              })}
+            </div>
           </div>
-          <div
-            style={{
-              height: virtualizer.getTotalSize(),
-              width: totalWidth,
-              minWidth: '100%',
-              position: 'relative',
-            }}
-          >
-            {virtualizer.getVirtualItems().map((virtualRow) => {
-              const chat = rows[virtualRow.index].original
-              return (
-                <ChatRow
-                  key={chat.id}
-                  chat={chat}
-                  rowIndex={flagRowCount + virtualRow.index}
-                  columns={visibleColumns}
-                  onOpenChat={onOpenChat}
-                  onSetArchived={onSetArchived}
-                  onCycleRelation={onCycleRelation}
-                  onSetRelation={onSetRelation}
-                  onTogglePinned={onTogglePinned}
-                  onChatAction={onChatAction}
-                  selected={selection?.isSelected(chat.id)}
-                  onToggleSelect={selection?.onToggle}
-                  listIndex={virtualRow.index}
-                  onSelectDragStart={(event) =>
-                    dragSelect.start(virtualRow.index, event)
-                  }
-                  consumeSelectClick={dragSelect.consumeClick}
-                  isBlocked={isChatBlocked?.(chat.id)}
-                  isBusy={isChatBusy?.(chat.id)}
-                  isArchivePending={isArchivePending}
-                  isPinnedPending={isPinnedPending}
-                  isRelationPending={isRelationPending}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: virtualRow.size,
-                    transform: `translateY(${virtualRow.start - virtualizer.options.scrollMargin}px)`,
-                  }}
-                />
-              )
-            })}
-          </div>
-        </div>
+        </MatrixContextMenu>
       )}
 
       {footer}

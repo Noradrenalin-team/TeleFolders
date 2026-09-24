@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { ChevronLeft, ChevronRight, Link2, Plus } from 'lucide-react'
 import type { Column } from '@tanstack/react-table'
 import { Button } from '#/components/ui/button'
@@ -13,7 +13,8 @@ function folderOf(column: Column<Chat, unknown>): Folder | undefined {
   return meta?.kind === 'folder' ? meta.folder : undefined
 }
 
-export function MatrixHeader({
+/** Memoized like ChatRow: the list re-renders on every scroll frame. */
+export const MatrixHeader = memo(function MatrixHeader({
   columns,
   onAddFolder,
   onSelectFolder,
@@ -90,7 +91,7 @@ export function MatrixHeader({
       })}
     </div>
   )
-}
+})
 
 export type SelectAllState = {
   checked: boolean | 'indeterminate'

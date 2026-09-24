@@ -12,7 +12,11 @@ import { BulkBar } from '#/features/bulk/BulkBar'
 import { toggleSelection } from '#/features/bulk/selection'
 import { FOLDER_FLAGS } from '#/features/matrix/flags'
 import { MatrixView } from '#/features/matrix/MatrixView'
-import { FIXTURE_CHATS, FIXTURE_FOLDERS } from '#/features/matrix/fixtures'
+import {
+  FIXTURE_CHATS,
+  FIXTURE_FOLDERS,
+  largeFixture,
+} from '#/features/matrix/fixtures'
 import {
   nextRelation,
   wouldEmptyFolder,
@@ -391,5 +395,96 @@ export const DragToSelect: Story = {
     // Starting on a checked row clears the range instead.
     await drag(2, 1)
     await expect(await screen.findByText('Выбран 1 чат')).toBeInTheDocument()
+  },
+}
+
+const large = largeFixture()
+
+/** ТЗ §6 performance target: 2000 chats × 20 folders. Wired like the real
+ * route (menus, selection, keyboard), so it costs what the app costs. */
+function LargeMatrix() {
+  const [selected, setSelected] = useState<ReadonlySet<number>>(new Set())
+  const anchor = useRef<number | undefined>(undefined)
+  const ids = large.chats.map((chat) => chat.id)
+  return (
+    <MatrixView
+      folders={large.folders}
+      chats={large.chats}
+      isLoading={false}
+      loadedCount={large.chats.length}
+      onOpenChat={fn()}
+      onCycleRelation={fn()}
+      onSetRelation={fn()}
+      onSetArchived={fn()}
+      onTogglePinned={fn()}
+      onChatAction={fn()}
+      onToggleFlag={fn()}
+      selection={{
+        isSelected: (id) => selected.has(id),
+        onClear: () => setSelected(new Set()),
+        selected,
+        onReplace: (next, from) => {
+          anchor.current = from
+          setSelected(next)
+        },
+        onToggle: (chat, shift) => {
+          const next = toggleSelection(
+            selected,
+            ids,
+            chat.id,
+            anchor.current,
+            shift,
+          )
+          anchor.current = next.anchor
+          setSelected(next.selected)
+        },
+        selectAll: {
+          checked: selected.size === 0 ? false : 'indeterminate',
+          onToggle: () => setSelected(new Set(ids)),
+        },
+      }}
+    />
+  )
+}
+
+export const LargeAccount: Story = {
+  args: Interactive.args,
+  render: () => <LargeMatrix />,
+}
+
+export const ContextMenus: Story = {
+  args: {
+    ...Interactive.args,
+    onOpenChat: fn(),
+    onSetRelation: fn(),
+    onChatAction: fn(),
+  },
+  play: async ({ args, canvasElement }) => {
+    // Right-click a folder cell: the four states, current one disabled.
+    const cell = canvasElement.querySelector(
+      `[data-chat-id="${FIXTURE_CHATS[1].id}"] [data-folder-id="${FIXTURE_FOLDERS[0].id}"] button`,
+    )
+    await userEvent.pointer({ keys: '[MouseRight]', target: cell! })
+    await expect(await screen.findAllByRole('menuitem')).toHaveLength(4)
+    await userEvent.click(screen.getByRole('menuitem', { name: /^входит/i }))
+    await expect(args.onSetRelation).toHaveBeenCalledWith(
+      FIXTURE_CHATS[1],
+      FIXTURE_FOLDERS[0],
+      'pinned',
+      'include',
+    )
+
+    // Right-click the chat itself: its F5.1 actions.
+    await userEvent.pointer({
+      keys: '[MouseRight]',
+      target: screen.getByRole('button', { name: 'Команда' }),
+    })
+    await userEvent.click(
+      await screen.findByRole('menuitem', { name: /удалить чат/i }),
+    )
+    await expect(args.onChatAction).toHaveBeenCalledWith(
+      FIXTURE_CHATS[1],
+      'delete',
+    )
   },
 }

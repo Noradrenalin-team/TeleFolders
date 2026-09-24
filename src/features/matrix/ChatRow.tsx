@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { BellOff, Loader2, Pin } from 'lucide-react'
 import { cn } from 'cn'
 import type { Column } from '@tanstack/react-table'
@@ -14,13 +15,20 @@ import { Button } from '#/components/ui/button'
 import { Checkbox } from '#/components/ui/checkbox'
 import { FlagCell } from '#/features/matrix/FlagCell'
 import { MatrixCell } from '#/features/matrix/MatrixCell'
+import { ChatActionsDropdown } from '#/features/chat-actions/ChatActionsMenu'
 import {
-  ChatActionsContextMenu,
-  ChatActionsDropdown,
-} from '#/features/chat-actions/ChatActionsMenu'
+  CHAT_ID_ATTR,
+  FOLDER_ID_ATTR,
+} from '#/features/matrix/MatrixContextMenu'
 import type { ChatAction } from '#/features/chat-actions/chat-actions'
 
-export function ChatRow({
+/**
+ * One chat row of the matrix. Memoized, and every prop is either data or a
+ * callback that stays the same across scroll frames — virtualization
+ * re-renders the list on every frame, and without this all ~50 visible rows
+ * × 20 cells re-rendered with it (ТЗ §6: 2000 × 20 at ≥ 50 fps).
+ */
+export const ChatRow = memo(function ChatRow({
   chat,
   rowIndex,
   columns,
@@ -40,7 +48,8 @@ export function ChatRow({
   isArchivePending,
   isPinnedPending,
   isRelationPending,
-  style,
+  top,
+  height,
 }: {
   chat: Chat
   /** This row's index in the matrix keyboard grid (see `useGridKeyboard`). */
@@ -68,7 +77,7 @@ export function ChatRow({
   onToggleSelect?: (chat: Chat, shift: boolean) => void
   /** Position in the current list, for drag-selecting across rows. */
   listIndex?: number
-  onSelectDragStart?: (event: React.PointerEvent) => void
+  onSelectDragStart?: (listIndex: number, event: React.PointerEvent) => void
   /** True when the checkbox click only ends a drag and mustn't toggle. */
   consumeSelectClick?: () => boolean
   isBlocked?: boolean
@@ -77,14 +86,17 @@ export function ChatRow({
   isArchivePending?: (chatId: number) => boolean
   isPinnedPending?: (chatId: number) => boolean
   isRelationPending?: (chatId: number, folderId: number) => boolean
-  style?: React.CSSProperties
+  /** Position within the virtualized list, in px. */
+  top: number
+  height: number
 }) {
   const photo = useChatPhoto({ id: chat.id, kind: chat.kind })
   const displayTitle = chatDisplayTitle(chat)
 
-  const row = (
+  return (
     <div
       role="row"
+      {...{ [CHAT_ID_ATTR]: chat.id }}
       data-row-index={listIndex}
       aria-busy={isBusy || undefined}
       className={cn(
@@ -93,7 +105,12 @@ export function ChatRow({
         selected && 'bg-accent/70 hover:bg-accent/70',
       )}
       style={{
-        ...style,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height,
+        transform: `translateY(${top}px)`,
         gridTemplateColumns: gridTemplateColumns(
           columns.map((c) => c.getSize()),
         ),
@@ -128,7 +145,11 @@ export function ChatRow({
                   aria-label={m.bulk_select_chat({ title: displayTitle })}
                   // onClick, not onCheckedChange: only the click carries the
                   // Shift modifier needed for range selection.
-                  onPointerDown={onSelectDragStart}
+                  onPointerDown={
+                    onSelectDragStart && listIndex !== undefined
+                      ? (event) => onSelectDragStart(listIndex, event)
+                      : undefined
+                  }
                   onClick={(event) => {
                     event.preventDefault()
                     if (consumeSelectClick?.()) return
@@ -268,6 +289,7 @@ export function ChatRow({
           <div
             key={column.id}
             role="gridcell"
+            {...{ [FOLDER_ID_ATTR]: folder.id }}
             className={cn(
               'flex justify-center',
               folder.readOnly && 'opacity-60',
@@ -300,16 +322,4 @@ export function ChatRow({
       })}
     </div>
   )
-
-  return onChatAction ? (
-    <ChatActionsContextMenu
-      chat={chat}
-      isBlocked={isBlocked}
-      onAction={onChatAction}
-    >
-      {row}
-    </ChatActionsContextMenu>
-  ) : (
-    row
-  )
-}
+})

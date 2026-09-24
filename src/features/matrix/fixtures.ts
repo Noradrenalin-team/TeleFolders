@@ -161,3 +161,50 @@ export const FIXTURE_CHATS: Chat[] = [
     folders: {},
   },
 ]
+
+const KINDS: Chat['kind'][] = ['user', 'group', 'supergroup', 'channel', 'bot']
+
+/**
+ * A large, deterministic account for performance checks (ТЗ §6: 2000 chats
+ * × 20 folders must scroll at ≥ 50 fps). Every chat sits in a few folders
+ * with mixed relations, so every cell state gets rendered.
+ */
+export function largeFixture(
+  chatCount = 2000,
+  folderCount = 20,
+): { chats: Chat[]; folders: Folder[] } {
+  const folders: Folder[] = Array.from({ length: folderCount }, (_, i) => ({
+    ...FIXTURE_FOLDERS[0],
+    id: 100 + i,
+    title: `Папка ${i + 1}`,
+    emoticon: undefined,
+    includeCount: 50,
+    excludeCount: 5,
+    pinnedCount: 1,
+  }))
+  const relations = ['include', 'pinned', 'exclude'] as const
+  const chats: Chat[] = Array.from({ length: chatCount }, (_, i) => {
+    const kind = KINDS[i % KINDS.length]
+    const chatFolders: Chat['folders'] = {}
+    for (let f = 0; f < folderCount; f++) {
+      if ((i + f) % 4 === 0) chatFolders[100 + f] = relations[(i + f) % 3]
+    }
+    return {
+      id: 10_000 + i,
+      peerId: 10_000 + i,
+      kind,
+      title: `Чат номер ${i + 1}`,
+      isPinned: i % 50 === 0,
+      isArchived: i % 7 === 0,
+      isMuted: i % 5 === 0,
+      unreadCount: i % 3 === 0 ? i % 40 : 0,
+      isSelf: false,
+      canDelete: kind === 'user' || kind === 'bot',
+      canLeave: kind !== 'user' && kind !== 'bot',
+      canBlock: kind === 'user' || kind === 'bot',
+      isOwner: false,
+      folders: chatFolders,
+    }
+  })
+  return { chats, folders }
+}

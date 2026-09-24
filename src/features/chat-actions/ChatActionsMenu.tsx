@@ -15,12 +15,9 @@ import {
   Trash2,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import {
-  ContextMenu,
-  ContextMenuContent,
+import type {
   ContextMenuItem,
   ContextMenuSeparator,
-  ContextMenuTrigger,
 } from '#/components/ui/context-menu'
 import {
   DropdownMenu,
@@ -92,7 +89,8 @@ type ItemComponent = typeof DropdownMenuItem | typeof ContextMenuItem
 type SeparatorComponent =
   typeof DropdownMenuSeparator | typeof ContextMenuSeparator
 
-function ChatActionItems({
+/** The F5.1 items for one chat; rendered inside either menu kind. */
+export function ChatActionItems({
   chat,
   isBlocked,
   onAction,
@@ -172,33 +170,5 @@ export function ChatActionsDropdown({
         />
       </DropdownMenuContent>
     </DropdownMenu>
-  )
-}
-
-/** Same menu on right-click anywhere in `children` (a matrix row). */
-export function ChatActionsContextMenu({
-  chat,
-  isBlocked,
-  onAction,
-  children,
-}: {
-  chat: Chat
-  isBlocked?: boolean
-  onAction: (chat: Chat, action: ChatAction) => void
-  children: React.ReactNode
-}) {
-  return (
-    <ContextMenu>
-      <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
-      <ContextMenuContent>
-        <ChatActionItems
-          chat={chat}
-          isBlocked={isBlocked}
-          onAction={onAction}
-          Item={ContextMenuItem}
-          Separator={ContextMenuSeparator}
-        />
-      </ContextMenuContent>
-    </ContextMenu>
   )
 }

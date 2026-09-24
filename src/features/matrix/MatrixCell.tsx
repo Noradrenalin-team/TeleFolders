@@ -2,12 +2,7 @@ import { Check, CirclePlus, Loader2, Minus, Pin, Plus } from 'lucide-react'
 import { cn } from 'cn'
 import type { GridCell } from '#/features/matrix/grid-keyboard'
 import type { ChatFolderRelation } from '#/telegram/types'
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from '#/components/ui/context-menu'
+import { ContextMenuItem } from '#/components/ui/context-menu'
 import { m } from '#/paraglide/messages'
 
 export type CellState = ChatFolderRelation | 'none'
@@ -45,8 +40,9 @@ export function MatrixCell({
   /** Position in the matrix's keyboard grid (see `useGridKeyboard`). */
   cell?: GridCell
   onClick?: () => void
-  /** Jump straight to a state (ТЗ §5): Shift+click → exclude; right-click
-   * or long-press → a menu of all four. */
+  /** Jump straight to a state (ТЗ §5): Shift+click → exclude. The right-
+   * click menu of all four is one grid-level menu (see MatrixContextMenu),
+   * not one per cell. */
   onSelectState?: (next: ChatFolderRelation | null) => void
   canSelectState?: (next: ChatFolderRelation | null) => boolean
 }) {
@@ -60,7 +56,7 @@ export function MatrixCell({
   const canJumpTo = (next: ChatFolderRelation | null) =>
     !pending && (canSelectState?.(next) ?? true)
 
-  const button = (
+  return (
     <span
       className="inline-flex"
       title={disabled && !pending ? disabledReason : undefined}
@@ -98,33 +94,33 @@ export function MatrixCell({
       </button>
     </span>
   )
-
-  if (!onSelectState) return button
-
-  return (
-    <ContextMenu>
-      <ContextMenuTrigger asChild>{button}</ContextMenuTrigger>
-      <ContextMenuContent>
-        {STATES.map((option) => {
-          const next = option === 'none' ? null : option
-          const OptionIcon = ICON_BY_STATE[option]
-          return (
-            <ContextMenuItem
-              key={option}
-              disabled={option === state || !canJumpTo(next)}
-              onSelect={() => onSelectState(next)}
-            >
-              <OptionIcon aria-hidden="true" />
-              {LABEL_BY_STATE[option]()}
-              {option === state && (
-                <Check className="ml-auto" aria-hidden="true" />
-              )}
-            </ContextMenuItem>
-          )
-        })}
-      </ContextMenuContent>
-    </ContextMenu>
-  )
 }
 
 const STATES: CellState[] = ['none', 'include', 'pinned', 'exclude']
+
+/** The four states as context-menu items (the grid-level cell menu). */
+export function CellStateMenuItems({
+  state,
+  canSelect,
+  onSelect,
+}: {
+  state: CellState
+  canSelect: (next: ChatFolderRelation | null) => boolean
+  onSelect: (next: ChatFolderRelation | null) => void
+}) {
+  return STATES.map((option) => {
+    const next = option === 'none' ? null : option
+    const OptionIcon = ICON_BY_STATE[option]
+    return (
+      <ContextMenuItem
+        key={option}
+        disabled={option === state || !canSelect(next)}
+        onSelect={() => onSelect(next)}
+      >
+        <OptionIcon aria-hidden="true" />
+        {LABEL_BY_STATE[option]()}
+        {option === state && <Check className="ml-auto" aria-hidden="true" />}
+      </ContextMenuItem>
+    )
+  })
+}

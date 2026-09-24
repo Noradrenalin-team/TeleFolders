@@ -107,7 +107,15 @@ export function useGridKeyboard({
     const inRow = closestInRow(cells, coordsOf, active.row, active.col)
     const tabStop =
       inRow ?? cells.find((el) => coordsOf(el).col === active.col) ?? cells[0]
-    for (const el of cells) el.tabIndex = el === tabStop ? 0 : -1
+    for (const el of cells) {
+      const tabIndex = el === tabStop ? '0' : '-1'
+      // Only real changes: writing ~1,000 unchanged attributes on every
+      // scroll frame still invalidates style for all of them. Compared as
+      // the attribute — a button's tabIndex *property* is 0 by default.
+      if (el.getAttribute('tabindex') !== tabIndex) {
+        el.setAttribute('tabindex', tabIndex)
+      }
+    }
     if (pendingFocus.current && inRow) {
       pendingFocus.current = false
       inRow.focus()
