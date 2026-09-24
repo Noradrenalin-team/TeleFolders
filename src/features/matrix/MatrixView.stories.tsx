@@ -403,17 +403,30 @@ const large = largeFixture()
 /** ТЗ §6 performance target: 2000 chats × 20 folders. Wired like the real
  * route (menus, selection, keyboard), so it costs what the app costs. */
 function LargeMatrix() {
+  const [chats, setChats] = useState(large.chats)
   const [selected, setSelected] = useState<ReadonlySet<number>>(new Set())
   const anchor = useRef<number | undefined>(undefined)
   const ids = large.chats.map((chat) => chat.id)
   return (
     <MatrixView
       folders={large.folders}
-      chats={large.chats}
+      chats={chats}
       isLoading={false}
-      loadedCount={large.chats.length}
+      loadedCount={chats.length}
       onOpenChat={fn()}
-      onCycleRelation={fn()}
+      // Inline, like the route's: a new function on every parent render.
+      onCycleRelation={(chat, folder, current) => {
+        const next = nextRelation(current)
+        setChats((prev) =>
+          prev.map((c) => {
+            if (c.id !== chat.id) return c
+            const folders = { ...c.folders }
+            if (next) folders[folder.id] = next
+            else delete folders[folder.id]
+            return { ...c, folders }
+          }),
+        )
+      }}
       onSetRelation={fn()}
       onSetArchived={fn()}
       onTogglePinned={fn()}

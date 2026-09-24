@@ -45,9 +45,9 @@ export const ChatRow = memo(function ChatRow({
   consumeSelectClick,
   isBlocked = false,
   isBusy = false,
-  isArchivePending,
-  isPinnedPending,
-  isRelationPending,
+  archivePending = false,
+  pinnedPending = false,
+  pendingFolderIds = '',
   top,
   height,
 }: {
@@ -83,15 +83,21 @@ export const ChatRow = memo(function ChatRow({
   isBlocked?: boolean
   /** A destructive action on this chat is in flight (F5). */
   isBusy?: boolean
-  isArchivePending?: (chatId: number) => boolean
-  isPinnedPending?: (chatId: number) => boolean
-  isRelationPending?: (chatId: number, folderId: number) => boolean
+  // Plain values, not predicates: a predicate is a new function whenever
+  // the parent renders, which would defeat the memo on every row.
+  archivePending?: boolean
+  pinnedPending?: boolean
+  /** Comma-separated ids of folders with a write in flight for this chat. */
+  pendingFolderIds?: string
   /** Position within the virtualized list, in px. */
   top: number
   height: number
 }) {
   const photo = useChatPhoto({ id: chat.id, kind: chat.kind })
   const displayTitle = chatDisplayTitle(chat)
+  const pendingFolders = new Set(
+    pendingFolderIds ? pendingFolderIds.split(',').map(Number) : [],
+  )
 
   return (
     <div
@@ -186,7 +192,7 @@ export const ChatRow = memo(function ChatRow({
                   // Pin/unpin is also in the row's menu, which the keyboard
                   // reaches via the context-menu key.
                   tabIndex={-1}
-                  disabled={isPinnedPending?.(chat.id) ?? false}
+                  disabled={pinnedPending}
                   className={cn(
                     'shrink-0',
                     !chat.isPinned &&
@@ -205,7 +211,7 @@ export const ChatRow = memo(function ChatRow({
                   }
                   onClick={() => onTogglePinned(chat, !chat.isPinned)}
                 >
-                  {isPinnedPending?.(chat.id) ? (
+                  {pinnedPending ? (
                     <Loader2
                       className="size-3 animate-spin"
                       aria-hidden="true"
@@ -265,7 +271,7 @@ export const ChatRow = memo(function ChatRow({
                     ? m.matrix_cell_archived()
                     : m.matrix_cell_not_archived()
                 }
-                pending={isArchivePending?.(chat.id) ?? false}
+                pending={archivePending}
                 onClick={
                   onSetArchived
                     ? () => onSetArchived(chat, !chat.isArchived)
@@ -282,7 +288,7 @@ export const ChatRow = memo(function ChatRow({
 
         const folder = meta.folder
         const current = chat.folders[folder.id]
-        const pending = isRelationPending?.(chat.id, folder.id) ?? false
+        const pending = pendingFolders.has(folder.id)
         const disabled = folder.readOnly || wouldEmptyFolder(folder, current)
 
         return (

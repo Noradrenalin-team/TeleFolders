@@ -24,6 +24,7 @@ import { useDragSelect } from '#/features/bulk/drag-select'
 import { ChatList } from '#/features/matrix/ChatList'
 import { MatrixContextMenu } from '#/features/matrix/MatrixContextMenu'
 import { COMPACT_QUERY, useMediaQuery } from '#/hooks/use-media-query'
+import { useStableCallback } from '#/hooks/use-stable-callback'
 
 export function MatrixView({
   folders,
@@ -114,6 +115,25 @@ export function MatrixView({
   const compact = useMediaQuery(COMPACT_QUERY)
 
   const columns = useMemo(() => buildMatrixColumns(folders), [folders])
+  // Parents (the route) pass inline arrows, new on every render; memoized
+  // rows need identities that only change when there's a reason to.
+  const stable = {
+    onOpenChat: useStableCallback(onOpenChat),
+    onSetArchived: useStableCallback(onSetArchived),
+    onCycleRelation: useStableCallback(onCycleRelation),
+    onSetRelation: useStableCallback(onSetRelation),
+    onTogglePinned: useStableCallback(onTogglePinned),
+    onChatAction: useStableCallback(onChatAction),
+    onToggleSelect: useStableCallback(selection?.onToggle),
+  }
+  const pendingFolderIds = (chatId: number) =>
+    isRelationPending
+      ? folders
+          .filter((folder) => isRelationPending(chatId, folder.id))
+          .map((folder) => folder.id)
+          .join(',')
+      : ''
+
   const chatsById = useMemo(
     () => new Map(chats.map((chat) => [chat.id, chat])),
     [chats],
@@ -294,7 +314,7 @@ export function MatrixView({
         <ChatList
           chats={chats}
           folders={folders}
-          onOpenChat={onOpenChat}
+          onOpenChat={stable.onOpenChat}
           onChatAction={onChatAction}
           selection={selection}
           isChatBlocked={isChatBlocked}
@@ -303,7 +323,7 @@ export function MatrixView({
         <MatrixContextMenu
           chatsById={chatsById}
           foldersById={foldersById}
-          onChatAction={onChatAction}
+          onChatAction={stable.onChatAction}
           onSetRelation={onSetRelation}
           isChatBlocked={isChatBlocked}
         >
@@ -362,22 +382,22 @@ export function MatrixView({
                     chat={chat}
                     rowIndex={flagRowCount + virtualRow.index}
                     columns={visibleColumns}
-                    onOpenChat={onOpenChat}
-                    onSetArchived={onSetArchived}
-                    onCycleRelation={onCycleRelation}
-                    onSetRelation={onSetRelation}
-                    onTogglePinned={onTogglePinned}
-                    onChatAction={onChatAction}
+                    onOpenChat={stable.onOpenChat}
+                    onSetArchived={stable.onSetArchived}
+                    onCycleRelation={stable.onCycleRelation}
+                    onSetRelation={stable.onSetRelation}
+                    onTogglePinned={stable.onTogglePinned}
+                    onChatAction={stable.onChatAction}
                     selected={selection?.isSelected(chat.id)}
-                    onToggleSelect={selection?.onToggle}
+                    onToggleSelect={stable.onToggleSelect}
                     listIndex={virtualRow.index}
                     onSelectDragStart={dragSelect.start}
                     consumeSelectClick={dragSelect.consumeClick}
                     isBlocked={isChatBlocked?.(chat.id)}
                     isBusy={isChatBusy?.(chat.id)}
-                    isArchivePending={isArchivePending}
-                    isPinnedPending={isPinnedPending}
-                    isRelationPending={isRelationPending}
+                    archivePending={isArchivePending?.(chat.id)}
+                    pinnedPending={isPinnedPending?.(chat.id)}
+                    pendingFolderIds={pendingFolderIds(chat.id)}
                     top={virtualRow.start - virtualizer.options.scrollMargin}
                     height={virtualRow.size}
                   />
