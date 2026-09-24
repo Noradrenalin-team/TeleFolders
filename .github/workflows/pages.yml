@@ -1,0 +1,65 @@
+name: Deploy to GitHub Pages
+
+# Deploys the static SPA build (ТЗ §7.2). Runs on pushes to main and by hand.
+# Needs, once, in the repository settings:
+# - Settings → Pages → Source: "GitHub Actions"
+# - Settings → Secrets and variables → Actions: VITE_TELEGRAM_API_ID and
+#   VITE_TELEGRAM_API_HASH (from https://my.telegram.org/apps). They end up in
+#   the client bundle — MTProto runs in the browser — so they're public by
+#   nature; secrets only keep them out of the repository.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate route tree and messages
+        run: pnpm generate-routes && pnpm generate-messages
+
+      - name: Build
+        run: pnpm build:pages
+        env:
+          # Project sites live under /<repository>/.
+          BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_TELEGRAM_API_ID: ${{ secrets.VITE_TELEGRAM_API_ID }}
+          VITE_TELEGRAM_API_HASH: ${{ secrets.VITE_TELEGRAM_API_HASH }}
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/client
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -5,6 +5,23 @@ import { deLocalizeUrl, localizeUrl } from '#/paraglide/runtime'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { getContext } from './integrations/tanstack-query/root-provider'
 
+// Deployed under a base path (GitHub Pages: /TeleFolders/), the router strips
+// it *before* running the rewrite below and adds it back *after* — while
+// Paraglide's URL patterns (vite.config.ts) include it, since they also read
+// the real window location. So the prefix goes back on around each call.
+const basePrefix = import.meta.env.BASE_URL.replace(/\/$/, '')
+
+function withBasePrefix(url: URL, transform: (url: URL) => URL): URL {
+  if (!basePrefix) return transform(url)
+  const full = new URL(url)
+  full.pathname = basePrefix + url.pathname
+  const result = new URL(transform(full))
+  if (result.pathname.startsWith(basePrefix)) {
+    result.pathname = result.pathname.slice(basePrefix.length) || '/'
+  }
+  return result
+}
+
 export function getRouter() {
   const context = getContext()
 
@@ -15,8 +32,8 @@ export function getRouter() {
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
     rewrite: {
-      input: ({ url }) => deLocalizeUrl(url),
-      output: ({ url }) => localizeUrl(url),
+      input: ({ url }) => withBasePrefix(url, deLocalizeUrl),
+      output: ({ url }) => withBasePrefix(url, localizeUrl),
     },
   })
 

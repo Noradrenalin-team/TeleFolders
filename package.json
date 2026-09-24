@@ -12,6 +12,7 @@
     "generate-routes": "tsr generate",
     "generate-messages": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide",
     "build": "vite build",
+    "build:pages": "BASE_PATH=${BASE_PATH:-/TeleFolders/} vite build && node scripts/pages-postbuild.mjs",
     "preview": "vite preview",
     "lint": "eslint",
     "format": "prettier --write . && eslint --fix",

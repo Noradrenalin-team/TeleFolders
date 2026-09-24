@@ -16,12 +16,19 @@ const dirname =
     ? __dirname
     : path.dirname(fileURLToPath(import.meta.url))
 
+// GitHub Pages serves a project site under /<repo>/, not the domain root
+// (ТЗ §7.2). Everything else (dev, Storybook, tests) runs at "/".
+const basePath = (process.env.BASE_PATH ?? '/').replace(/\/?$/, '/')
+const basePrefix = basePath.slice(0, -1)
+const urlOrigin = ':protocol://:domain(.*)::port?'
+
 const { version } = JSON.parse(
   readFileSync(path.join(dirname, 'package.json'), 'utf8'),
 ) as { version: string }
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 const config = defineConfig({
+  base: basePath,
   define: {
     __APP_VERSION__: JSON.stringify(version),
   },
@@ -39,9 +46,22 @@ const config = defineConfig({
       project: './project.inlang',
       outdir: './src/paraglide',
       strategy: ['url', 'baseLocale'],
+      // The default patterns assume the app lives at the domain root; under
+      // a base path the locale segment comes after it (/TeleFolders/en/…).
+      urlPatterns: [
+        {
+          pattern: `${urlOrigin}${basePrefix}/:path(.*)?`,
+          localized: [
+            ['en', `${urlOrigin}${basePrefix}/en/:path(.*)?`],
+            ['ru', `${urlOrigin}${basePrefix}/:path(.*)?`],
+          ],
+        },
+      ],
     }),
     tailwindcss(),
-    tanstackStart(),
+    // SPA mode (ТЗ §7.2): MTProto runs entirely in the browser, so the
+    // build is a static shell that GitHub Pages can serve for every path.
+    tanstackStart({ spa: { enabled: true } }),
     viteReact(),
   ],
   test: {

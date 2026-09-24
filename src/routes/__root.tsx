@@ -25,6 +25,27 @@ interface MyRouterContext {
   queryClient: QueryClient
 }
 
+/**
+ * ТЗ §6.5: WSS to Telegram only, no third-party scripts. A <meta> tag
+ * because GitHub Pages can't set response headers (so no frame-ancestors).
+ * - script-src 'unsafe-inline': the theme bootstrap and TanStack Start's
+ *   hydration payload are inline; still no other origin can run code.
+ * - 'wasm-unsafe-eval': mtcute's MTProto crypto is WebAssembly.
+ * - img-src blob:: avatars are downloaded over MTProto into blob URLs.
+ */
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' blob: data:",
+  "font-src 'self' data:",
+  "connect-src 'self' wss://*.web.telegram.org https://*.web.telegram.org",
+  "worker-src 'self' blob:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ')
+
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   beforeLoad: async () => {
     // Other redirect strategies are possible; see
@@ -46,6 +67,16 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       {
         title: m.app_title(),
       },
+      // Production only: the dev server needs its own HMR socket and inline
+      // module scripts, which this would block.
+      ...(import.meta.env.PROD
+        ? [
+            {
+              httpEquiv: 'Content-Security-Policy',
+              content: CONTENT_SECURITY_POLICY,
+            },
+          ]
+        : []),
     ],
     links: [
       {
