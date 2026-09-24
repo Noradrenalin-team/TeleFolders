@@ -1,0 +1,10 @@
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# generated
+src/paraglide
+src/routeTree.gen.ts
+project.inlang/cache
+project.inlang/.meta.json
+project.inlang/README.md

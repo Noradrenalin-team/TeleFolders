@@ -1,110 +1,150 @@
 # TeleFolders
 
-![GitHub License](https://img.shields.io/github/license/Noradrenalin-team/TeleFolders)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Noradrenalin-team/TeleFolders/total)
-![GitHub Release](https://img.shields.io/github/v/release/Noradrenalin-team/TeleFolders)
-![GitHub Release Date](https://img.shields.io/github/release-date/Noradrenalin-team/TeleFolders)
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/Noradrenalin-team/TeleFolders/latest)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/m/Noradrenalin-team/TeleFolders)
-![GitHub last commit](https://img.shields.io/github/last-commit/Noradrenalin-team/TeleFolders)<!-- ![GitHub contributors from allcontributors.org](https://img.shields.io/github/all-contributors/Noradrenalin-team/TeleFolders) -->
-![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/Noradrenalin-team/TeleFolders)
-![GitHub Repo stars](https://img.shields.io/github/stars/Noradrenalin-team/TeleFolders)
+A web app for managing your Telegram chats: log in with your own account and
+get a matrix of every chat × every folder — one click sorts, pins, excludes
+or archives a chat instead of the several taps the official client needs per
+chat per folder.
 
-TeleFolders - это менеджер папок для управления чатами и каналами в Telegram
+**Unofficial, browser-only.** MTProto runs entirely in your browser via
+[mtcute](https://mtcute.dev); the server only ever serves the static
+app shell. Your phone number, login code, 2FA password and session never
+reach anything but Telegram's own servers — see
+[docs/tz/ТЗ.md](./docs/tz/ТЗ.md) §2/§6 for the details.
 
-## Что можно делать с TeleFolders
+## What it does
 
-- **Добавлять чаты в папки**: Легко добавляйте и удаляйте чаты и каналы из папок.
-- **Закреплять чаты**: Важные чаты всегда будут под рукой.
-- **Управлять флагами папок**: Можно, например, добавить все контакты или исключить все прочитанные из папки.
-- **Синхронизировать папки**: Все изменения, сделанные в официальном клиенте Telegram, отражаются и в TeleFolders.
-- **Простой интерфейс**: Интуитивно понятный интерфейс для управления папками и чатами.
-- [***FUTURE***] **Создавать папки**: Группируйте чаты и каналы в удобные папки.
-- [***FUTURE***] **Быстрый доступ**: Легкий и быстрый доступ к чатам и каналам из папок.
+- **Matrix**: every chat × every folder. A cell cycles _not in → included →
+  pinned → excluded_; Shift+click excludes straight away, right-click picks
+  any state. Folder flags (contacts, groups, bots, muted/read/archived
+  exclusions) are the rows on top. Keyboard-driven too: one Tab stop, arrows,
+  Page/Home/End, Space to select, Enter to open a chat.
+- **Folders**: create, rename, pick an icon, delete, drag to reorder; per-folder
+  include/exclude/pinned counters. A folder can never be left empty.
+- **Chats**: archive, pin, mute, mark read, open in Telegram; delete (with
+  "for both sides" for DMs), leave, block/unblock — every destructive action
+  confirms first and reports the result. A Blocked screen lists who's blocked.
+- **Bulk**: select with checkboxes, Shift-ranges, drag across checkboxes or
+  "select all matching"; then add/exclude/remove from a folder in one write,
+  or archive, mute, mark read, leave, delete, block through a cancellable
+  queue with progress, FLOOD_WAIT pauses and a per-reason report.
+- **Live**: changes made in the official apps (folders, archive, pin, mute,
+  read state, new messages) show up without a refresh; a banner shows while
+  the connection to Telegram is being restored.
+- **Search/filters/sort** kept in the URL; **settings** (language, theme,
+  archived chats on open); **phone layout** with a chat list instead of the
+  grid; ru/en; light/dark.
 
-## Использование
+Full spec and work plan: [docs/tz/ТЗ.md](./docs/tz/ТЗ.md),
+[docs/tz/ПЛАН.md](./docs/tz/ПЛАН.md). Layer rules for contributors are in
+[AGENTS.md](./AGENTS.md).
 
-![Скриншот](https://github.com/Noradrenalin-team/TeleFolders/raw/main/img/tf.jpg)
-![Скриншот](https://github.com/Noradrenalin-team/TeleFolders/raw/main/img/tf2.jpg)
+## Getting started
 
-С помощью кнопок вы можете добавлять чаты в папки, закреплять чаты, а также исключать чаты из папок. У каждой папки есть возможность установить "флаги", например, в папку можно добавить все контакты или каналы, а также исключить прочитанные или чаты без уведомлений.
-
-## Установка и запуск
-
-### Использование исполняемого файла
-
-1. Скачайте и запустите исполняемый файл для вашей операционной системы из раздела [релизов](https://github.com/Noradrenalin-team/TeleFolders/releases)
-
-2. Запустите исполняемый файл
-
-3. Войдите в свой аккаунт Telegram, используя номер телефона и код подтверждения
-
-### Установка через pip
-
-(ВАЖНО!) Необходимо использовать python 3.11
-
-```bash
-pip install telefolders
-```
-
-Запуск
+You'll need your own Telegram API credentials — get `api_id`/`api_hash` at
+<https://my.telegram.org/apps> (see ТЗ §7 for why these are per-deployment,
+not baked into the app).
 
 ```bash
-python -m telefolders --api_id <api_id> --api_hash <api_hash>
+cp .env.example .env
+# edit .env: VITE_TELEGRAM_API_ID=..., VITE_TELEGRAM_API_HASH=...
+
+pnpm install
+pnpm dev
 ```
 
-### Запуск из исходного кода
+Then open the printed local URL and log in with a real Telegram account
+(phone number, code, 2FA password if you have one).
 
-1. Склонируйте репозиторий:
+## Scripts
 
 ```bash
-git clone https://github.com/Noradrenalin-team/TeleFolders
+pnpm dev              # dev server
+pnpm build             # production build (static SPA shell in dist/client)
+pnpm build:pages       # same, for GitHub Pages: base /TeleFolders/, index.html + 404.html
+pnpm preview           # preview a production build
 
-cd TeleFolders
+pnpm typecheck         # tsc --noEmit
+pnpm lint              # eslint
+pnpm check             # prettier --check
+pnpm format            # prettier --write + eslint --fix
+
+pnpm test              # vitest (unit tests + Storybook component tests)
+pnpm storybook         # Storybook dev server
+pnpm build-storybook   # static Storybook build
+
+pnpm generate-routes   # regenerate src/routeTree.gen.ts (do not hand-edit)
+pnpm generate-messages # regenerate src/paraglide/** from messages/*.json (do not hand-edit)
 ```
 
-2. Установите зависимости:
+CI runs `install → lint → prettier → tsc → vitest → build → build-storybook`;
+a red pipeline blocks merging. Storybook tests include axe accessibility
+checks in "error" mode, so an a11y violation fails the build too.
 
-Через poetry (рекомендуется)
+## Deploying (GitHub Pages)
 
-```bash
-pip install poetry
+The production build is a static SPA shell — MTProto runs in the browser, so
+there's no server to host (ТЗ §7.2). `.github/workflows/pages.yml` builds and
+deploys it on every push to `main`. One-time setup in the repository:
 
-poetry install
+1. **Settings → Pages → Source**: _GitHub Actions_.
+2. **Settings → Secrets and variables → Actions**: add `VITE_TELEGRAM_API_ID`
+   and `VITE_TELEGRAM_API_HASH`.
+
+The site is served at `https://<owner>.github.io/<repository>/`; the base path
+comes from the repository name (`BASE_PATH`). Unknown paths get the same shell
+through `404.html`, so direct links like `/TeleFolders/en/matrix` work.
+
+To try the Pages build locally: `pnpm build:pages`, then serve `dist/client`
+under `/TeleFolders/` with a 404 fallback to `404.html`.
+
+## Security
+
+- Phone number, code, 2FA password and session stay in the browser (IndexedDB)
+  and go only to Telegram; sign-out deletes the database.
+- Production builds ship a Content-Security-Policy `<meta>`: scripts only from
+  the app itself, network only to the app and `wss://*.web.telegram.org`,
+  WebAssembly allowed for mtcute's crypto. Inline scripts are allowed because
+  the theme bootstrap and TanStack Start's hydration data are inline.
+
+## Performance
+
+A 2000-chat × 20-folder account (`LargeAccount` story) scrolls at 60 fps and
+a cell reacts within ~33 ms in a production build. Rows are virtualized and
+memoized, and the grid has a single context menu rather than one per cell;
+keep row props stable (see `MatrixView`) when adding to them.
+
+## Project layout
+
+```
+src/
+  routes/       index, login, matrix, blocked, settings — file-based (TanStack Router)
+  telegram/     the ONLY place @mtcute/* is imported
+  queries/      TanStack Query options, mutations, bulk runs, live sync
+  features/     matrix, chat-card, chat-actions, bulk, blocked, settings, auth
+  components/   app shell (header, banners) and ui/ shadcn-style primitives
+  hooks/        small shared React hooks
+  stores/       TanStack Store (theme, persisted settings)
 ```
 
-Через pip
+**Layer rule** (see [AGENTS.md](./AGENTS.md)): a component never imports
+`@mtcute/*` directly. Component → hook in `queries/` → function in
+`telegram/`. This keeps components mockable in Storybook and tests.
 
-```bash
-pip install -r requirements.txt
-```
+## Browsers
 
-3. Запустите приложение и передайте параметры клиента [Telegram](https://my.telegram.org) (api_id и api_hash):
+Last two versions of Chrome, Firefox, Safari, Edge — WebSocket, IndexedDB
+and WebCrypto are required. Clearing site data for this origin deletes the
+local session (a normal, expected re-login, not a bug).
 
-```bash
-poetry run -m telefolders --api_id <api_id> --api_hash <api_hash>
-# Или
-python -m telefolders --api_id <api_id> --api_hash <api_hash>
-```
+## Localization
 
-## Технологии
+Base locale is `ru`, with `en` as the second language. Source strings live
+in `messages/{locale}.json` (edit these, not the generated files) and are
+compiled by `pnpm generate-messages` into `src/paraglide/**`.
 
-Этот проект был реализован с использованием языка программирования Python в сочетании с фреймворком Eel для создания веб-интерфейса приложения, а также библиотекой Telethon для взаимодействия с Telegram API.
+## Legacy
 
-## Сборка проекта
-
-Для сборки проекта в исполняемый файл используется библиотека PyInstaller:
-
-```bash
-pyinstaller --noconfirm --onefile --windowed --add-data "telefolders:telefolders/"  "main.py"
-```
-
-## Участие в проекте
-
-Мы приглашаем всех желающих принять участие в развитии проекта и сделать его еще лучше!
-
-Вы можете посмотреть над чем можно поработать или внести своё предложение в [issues](https://github.com/Noradrenalin-team/TeleFolders/issues)
-
-## Обсуждение проекта
-
-Вы можете принять участие в обсуждении проекта или задать нам вопросы в [чате телеграм](https://t.me/+4iWgAed_aDYyMWEy)
+The Python/Eel desktop client this project replaces was removed from the
+tree by the TanStack Start rewrite; it's still in the repository history
+(`git log -- telefolders/`) if you need to reference it, but it isn't
+maintained going forward.

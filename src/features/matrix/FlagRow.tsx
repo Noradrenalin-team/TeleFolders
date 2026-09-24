@@ -1,0 +1,88 @@
+import { memo } from 'react'
+import type { Column } from '@tanstack/react-table'
+import type { Chat, Folder, FolderFlag } from '#/telegram/types'
+import { gridTemplateColumns } from '#/features/matrix/layout'
+import { FlagCell } from '#/features/matrix/FlagCell'
+import { wouldEmptyFolderByFlag } from '#/features/matrix/relation-cycle'
+import { m } from '#/paraglide/messages'
+
+/** Memoized like ChatRow: the list re-renders on every scroll frame. */
+export const FlagRow = memo(function FlagRow({
+  rowIndex,
+  flag,
+  label,
+  columns,
+  onToggle,
+  isPending,
+}: {
+  /** This row's index in the matrix keyboard grid (see `useGridKeyboard`). */
+  rowIndex: number
+  flag: FolderFlag
+  label: string
+  /** Visible leaf columns, in the table's own order — only `folder` columns
+   * actually render a cell here, but every column needs a grid track to stay
+   * aligned with the header and chat rows (F2.2). */
+  columns: Column<Chat, unknown>[]
+  onToggle?: (folder: Folder, flag: FolderFlag, next: boolean) => void
+  isPending?: (folderId: number, flag: FolderFlag) => boolean
+}) {
+  return (
+    <div
+      role="row"
+      className="grid items-center border-b border-border bg-muted"
+      style={{
+        gridTemplateColumns: gridTemplateColumns(
+          columns.map((c) => c.getSize()),
+        ),
+      }}
+    >
+      {columns.map((column, colIndex) => {
+        const meta = column.columnDef.meta?.matrix
+        if (!meta) return null
+
+        if (meta.kind === 'chat') {
+          return (
+            <div
+              key={column.id}
+              role="rowheader"
+              // text-foreground/80, not muted-foreground: on bg-muted the
+              // latter is 4.39:1, under WCAG AA's 4.5:1 for 12px text.
+              className="sticky left-0 z-10 truncate bg-muted px-3 text-xs text-foreground/80"
+            >
+              {label}
+            </div>
+          )
+        }
+
+        if (meta.kind !== 'folder') {
+          return <div key={column.id} role="gridcell" />
+        }
+
+        const folder = meta.folder
+        const nextValue = !folder.flags[flag]
+        const disabled =
+          folder.readOnly || wouldEmptyFolderByFlag(folder, flag, nextValue)
+
+        return (
+          <div key={column.id} role="gridcell" className="flex justify-center">
+            {folder.readOnly ? (
+              <span className="size-8" />
+            ) : (
+              <FlagCell
+                cell={{ row: rowIndex, col: colIndex }}
+                active={folder.flags[flag]}
+                label={label}
+                disabled={disabled}
+                disabledReason={m.error_folder_empty()}
+                pending={isPending?.(folder.id, flag) ?? false}
+                onClick={
+                  onToggle ? () => onToggle(folder, flag, nextValue) : undefined
+                }
+              />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+})
