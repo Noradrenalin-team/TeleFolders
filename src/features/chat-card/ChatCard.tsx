@@ -89,7 +89,7 @@ export function ChatCard({
           else if (event.key === 'ArrowRight' && canGoNext) onNext?.()
         }}
       >
-        <DialogHeader>
+        <DialogHeader className="text-left">
           <div className="flex items-center gap-3">
             <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-base font-medium text-muted-foreground">
               {photo.data ? (
@@ -104,15 +104,20 @@ export function ChatCard({
             </span>
             <div className="min-w-0 flex-1">
               <DialogTitle className="truncate">{title}</DialogTitle>
-              <DialogDescription className="flex items-center gap-1.5 truncate">
+              <DialogDescription className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
                 {chat.username && <span>@{chat.username}</span>}
                 <span>{TYPE_LABEL[chat.kind]()}</span>
                 {chat.isMuted && (
                   <BellOff className="size-3 shrink-0" aria-hidden="true" />
                 )}
                 {chat.unreadCount > 0 && (
-                  <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none font-medium text-primary-foreground">
-                    {m.matrix_unread_count({ count: chat.unreadCount })}
+                  <span
+                    className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none font-medium text-primary-foreground"
+                    aria-label={m.matrix_unread_count({
+                      count: chat.unreadCount,
+                    })}
+                  >
+                    {chat.unreadCount}
                   </span>
                 )}
               </DialogDescription>
@@ -212,7 +217,8 @@ export function ChatCard({
             onClick={onPrev}
           >
             <ChevronLeft aria-hidden="true" />
-            {m.chat_card_prev()}
+            {/* Arrows only on a phone: both labels don't fit side by side. */}
+            <span className="sr-only sm:not-sr-only">{m.chat_card_prev()}</span>
           </Button>
           <Button
             type="button"
@@ -221,7 +227,7 @@ export function ChatCard({
             disabled={!canGoNext}
             onClick={onNext}
           >
-            {m.chat_card_next()}
+            <span className="sr-only sm:not-sr-only">{m.chat_card_next()}</span>
             <ChevronRight aria-hidden="true" />
           </Button>
         </div>
