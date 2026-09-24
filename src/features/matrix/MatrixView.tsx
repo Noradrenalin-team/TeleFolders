@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useReactTable, getCoreRowModel } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { AlertCircle, RefreshCw } from 'lucide-react'
+import { AlertCircle, FolderPlus, RefreshCw } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import type {
   Chat,
@@ -21,6 +21,8 @@ import type { ChatAction } from '#/features/chat-actions/chat-actions'
 import { MatrixSkeleton } from '#/features/matrix/MatrixSkeleton'
 import { useGridKeyboard } from '#/features/matrix/grid-keyboard'
 import { useDragSelect } from '#/features/bulk/drag-select'
+import { ChatList } from '#/features/matrix/ChatList'
+import { COMPACT_QUERY, useMediaQuery } from '#/hooks/use-media-query'
 
 export function MatrixView({
   folders,
@@ -108,6 +110,7 @@ export function MatrixView({
   footer?: React.ReactNode
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const compact = useMediaQuery(COMPACT_QUERY)
 
   const columns = useMemo(() => buildMatrixColumns(folders), [folders])
 
@@ -214,19 +217,33 @@ export function MatrixView({
               ? m.matrix_shown_count({ shown: chats.length, total: totalCount })
               : m.matrix_loading_progress({ count: chats.length })}
         </span>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={isRefreshing}
-          onClick={onRefresh}
-        >
-          <RefreshCw
-            className={isRefreshing ? 'animate-spin' : undefined}
-            aria-hidden="true"
-          />
-          {m.matrix_refresh()}
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* On a phone there's no column header with its "+" (ТЗ §5). */}
+          {compact && onAddFolder && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onAddFolder}
+            >
+              <FolderPlus aria-hidden="true" />
+              {m.matrix_column_add()}
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={isRefreshing}
+            onClick={onRefresh}
+          >
+            <RefreshCw
+              className={isRefreshing ? 'animate-spin' : undefined}
+              aria-hidden="true"
+            />
+            {m.matrix_refresh()}
+          </Button>
+        </div>
       </div>
 
       {toolbar}
@@ -263,6 +280,15 @@ export function MatrixView({
               </Button>
             ) : undefined
           }
+        />
+      ) : compact ? (
+        <ChatList
+          chats={chats}
+          folders={folders}
+          onOpenChat={onOpenChat}
+          onChatAction={onChatAction}
+          selection={selection}
+          isChatBlocked={isChatBlocked}
         />
       ) : (
         <div

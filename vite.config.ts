@@ -61,6 +61,9 @@ const config = defineConfig({
             enabled: true,
             headless: true,
             provider: playwright({}),
+            // Desktop width: below 640px the matrix deliberately turns into
+            // the phone list, and most stories exercise the grid.
+            viewport: { width: 1280, height: 800 },
             instances: [
               {
                 browser: 'chromium',

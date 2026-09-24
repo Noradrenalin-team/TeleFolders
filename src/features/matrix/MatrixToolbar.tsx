@@ -42,7 +42,7 @@ export function MatrixToolbar({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
-      <div className="relative w-56 shrink-0">
+      <div className="relative w-full shrink-0 sm:w-56">
         <Search
           className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
           aria-hidden="true"

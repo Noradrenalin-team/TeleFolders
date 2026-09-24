@@ -2,7 +2,14 @@ import { useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { Ban, ChevronDown, LogOut, RefreshCw, Settings } from 'lucide-react'
+import {
+  Ban,
+  ChevronDown,
+  LayoutGrid,
+  LogOut,
+  RefreshCw,
+  Settings,
+} from 'lucide-react'
 import { matrixEntrySearch } from '#/features/matrix/filters'
 import { hydrateSettings, settingsStore } from '#/stores/settings'
 import { m } from '#/paraglide/messages'
@@ -24,7 +31,26 @@ import type { Profile } from '#/telegram/types'
 
 // Colours live only in active/inactive props: combined with a base colour
 // class, Tailwind's CSS order decided which one won.
-const TAB_CLASS = 'rounded-md px-3 py-1 transition-colors'
+const TAB_CLASS =
+  'flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors sm:px-3'
+
+/** Icon-only on a phone (three labels don't fit next to the profile menu),
+ * icon-less with the label from `sm` up; the label stays readable to screen
+ * readers at every width. */
+function TabLabel({
+  icon: Icon,
+  children,
+}: {
+  icon: typeof Ban
+  children: React.ReactNode
+}) {
+  return (
+    <>
+      <Icon className="size-4 sm:hidden" aria-hidden="true" />
+      <span className="sr-only sm:not-sr-only">{children}</span>
+    </>
+  )
+}
 const TAB_ACTIVE = {
   className: 'bg-background font-medium text-foreground shadow-sm',
 }
@@ -47,9 +73,9 @@ export function AppHeader() {
 
   return (
     <header className="border-b border-border bg-background">
-      <div className="flex h-14 items-center justify-between gap-4 px-4">
-        <div className="flex items-center gap-4">
-          <span className="text-sm font-semibold tracking-tight">
+      <div className="flex h-14 items-center justify-between gap-2 px-2 sm:gap-4 sm:px-4">
+        <div className="flex min-w-0 items-center gap-4">
+          <span className="hidden text-sm font-semibold tracking-tight sm:inline">
             {m.app_title()}
           </span>
           {profile && (
@@ -68,7 +94,7 @@ export function AppHeader() {
                 activeProps={TAB_ACTIVE}
                 inactiveProps={TAB_INACTIVE}
               >
-                {m.nav_matrix()}
+                <TabLabel icon={LayoutGrid}>{m.nav_matrix()}</TabLabel>
               </Link>
               <Link
                 to="/blocked"
@@ -76,7 +102,7 @@ export function AppHeader() {
                 activeProps={TAB_ACTIVE}
                 inactiveProps={TAB_INACTIVE}
               >
-                {m.nav_blocked()}
+                <TabLabel icon={Ban}>{m.nav_blocked()}</TabLabel>
               </Link>
               <Link
                 to="/settings"
@@ -84,14 +110,24 @@ export function AppHeader() {
                 activeProps={TAB_ACTIVE}
                 inactiveProps={TAB_INACTIVE}
               >
-                {m.nav_settings()}
+                <TabLabel icon={Settings}>{m.nav_settings()}</TabLabel>
               </Link>
             </nav>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <ParaglideLocaleSwitcher />
-          <ThemeToggle />
+          {/* Signed in, on a phone, these live on the Settings screen;
+              before sign-in there's no Settings screen to reach. */}
+          <div
+            className={
+              profile
+                ? 'hidden items-center gap-2 sm:flex'
+                : 'flex items-center gap-2'
+            }
+          >
+            <ParaglideLocaleSwitcher />
+            <ThemeToggle />
+          </div>
           {profile && <ProfileMenu profile={profile} />}
         </div>
       </div>

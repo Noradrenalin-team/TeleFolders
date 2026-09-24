@@ -291,5 +291,7 @@
   "about_unofficial": "The app is not affiliated with or endorsed by Telegram.",
   "nav_settings": "Settings",
   "nav_refresh": "Refresh data",
-  "profile_menu": "Profile menu"
+  "profile_menu": "Profile menu",
+  "chat_list_label": "Chats",
+  "chat_list_no_folders": "Not in any folder"
 }

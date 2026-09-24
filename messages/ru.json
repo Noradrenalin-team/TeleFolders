@@ -305,5 +305,7 @@
   "about_unofficial": "Приложение не связано с Telegram и не одобрено им.",
   "nav_settings": "Настройки",
   "nav_refresh": "Обновить данные",
-  "profile_menu": "Меню профиля"
+  "profile_menu": "Меню профиля",
+  "chat_list_label": "Чаты",
+  "chat_list_no_folders": "Не в папках"
 }
