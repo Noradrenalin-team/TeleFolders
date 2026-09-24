@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
-import { z } from 'zod'
+import { z } from '#/lib/zod'
 import {
   Dialog,
   DialogContent,

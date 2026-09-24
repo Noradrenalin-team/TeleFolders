@@ -15,7 +15,19 @@ export default [
       '@typescript-eslint/array-type': 'off',
       '@typescript-eslint/require-await': 'off',
       'pnpm/json-enforce-catalog': 'off',
+      'no-restricted-imports': [
+        'error',
+        {
+          name: 'zod',
+          message:
+            "Import { z } from '#/lib/zod': it turns on jitless mode, which the CSP needs.",
+        },
+      ],
     },
+  },
+  {
+    files: ['src/lib/zod.ts'],
+    rules: { 'no-restricted-imports': 'off' },
   },
   {
     ignores: [

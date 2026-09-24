@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from '#/lib/zod'
 import type { Chat, PeerKind } from '#/telegram/types'
 import { m } from '#/paraglide/messages'
 

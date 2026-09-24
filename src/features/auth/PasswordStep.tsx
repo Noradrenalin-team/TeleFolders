@@ -1,6 +1,6 @@
 import { useForm } from '@tanstack/react-form'
 import { toast } from 'sonner'
-import { z } from 'zod'
+import { z } from '#/lib/zod'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
