@@ -5,6 +5,8 @@ get a matrix of every chat × every folder — one click sorts, pins, excludes
 or archives a chat instead of the several taps the official client needs per
 chat per folder.
 
+**Open it:** https://noradrenalin-team.github.io/TeleFolders/
+
 **Unofficial, browser-only.** MTProto runs entirely in your browser via
 [mtcute](https://mtcute.dev); the server only ever serves the static
 app shell. Your phone number, login code, 2FA password and session never
