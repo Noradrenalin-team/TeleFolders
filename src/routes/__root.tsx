@@ -1,7 +1,9 @@
+import { Fragment, useEffect } from 'react'
 import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
+  useHydrated,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -90,6 +92,22 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   shellComponent: RootDocument,
 })
 
+/**
+ * GitHub Pages serves one prerendered shell, in the base locale, for every
+ * URL (ТЗ §7.2), and hydration keeps the shell's attributes as they are: on
+ * /en/… the header kept its Russian aria-labels and "RU" pressed, and <html>
+ * its lang. So the header is remounted once hydrated, in the URL's locale.
+ * The switch lives down here, not in RootDocument: re-rendering the root
+ * mid-hydration made React hydrate the outlet early and mismatch the shell.
+ */
+function RemountAfterHydration({ children }: { children: React.ReactNode }) {
+  const hydrated = useHydrated()
+  useEffect(() => {
+    document.documentElement.lang = getLocale()
+  }, [])
+  return <Fragment key={hydrated ? 'client' : 'shell'}>{children}</Fragment>
+}
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang={getLocale()} suppressHydrationWarning>
@@ -103,7 +121,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         className="flex h-screen flex-col overflow-hidden"
         suppressHydrationWarning
       >
-        <AppHeader />
+        <RemountAfterHydration>
+          <AppHeader />
+        </RemountAfterHydration>
         <TelegramSync />
         <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
         <AppToaster />
