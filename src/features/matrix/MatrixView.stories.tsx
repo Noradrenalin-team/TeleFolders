@@ -1,6 +1,13 @@
 import { useRef, useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/tanstack-react'
-import { expect, fireEvent, fn, screen, userEvent } from 'storybook/test'
+import {
+  expect,
+  fireEvent,
+  fn,
+  screen,
+  userEvent,
+  within,
+} from 'storybook/test'
 import { BulkBar } from '#/features/bulk/BulkBar'
 import { toggleSelection } from '#/features/bulk/selection'
 import { FOLDER_FLAGS } from '#/features/matrix/flags'
@@ -52,12 +59,85 @@ export const LongFolderNames: Story = {
   },
 }
 
+const NO_SELECTION = {
+  isSelected: () => false,
+  onToggle: fn(),
+  onClear: fn(),
+  selected: new Set<number>(),
+  onReplace: fn(),
+  selectAll: { checked: false, onToggle: fn() },
+}
+
+/** Folders not loaded yet: stand-in folder columns, no flag rows. */
 export const Loading: Story = {
   args: {
     folders: [],
     chats: [],
     isLoading: true,
     loadedCount: 128,
+    selection: NO_SELECTION,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // Progress sits in the top bar, where the loaded count stays afterwards.
+    await expect(canvas.getByRole('status')).toHaveTextContent(
+      'Загружено 128 чатов',
+    )
+    await expect(canvas.queryByRole('grid')).toBeNull()
+  },
+}
+
+/** Folders usually arrive before dialogs: their real titles and widths are
+ * already in the header, with the flag rows under it. */
+export const LoadingFoldersReady: Story = {
+  args: { ...Loading.args, folders: FIXTURE_FOLDERS },
+}
+
+/**
+ * Skeleton and loaded matrix side by side: every row of the header and flag
+ * rows, the first chat row and the folder titles sit at the same offsets and
+ * on the same column tracks in both, so nothing jumps when loading ends.
+ */
+export const SkeletonMatchesLoaded: Story = {
+  args: { ...LoadingFoldersReady.args, loadedCount: FIXTURE_CHATS.length },
+  render: (args) => (
+    <div className="grid h-full grid-cols-2 divide-x divide-border">
+      <div data-testid="loading" className="min-w-0 overflow-hidden">
+        <MatrixView {...args} />
+      </div>
+      <div data-testid="loaded" className="min-w-0 overflow-hidden">
+        <MatrixView {...args} chats={FIXTURE_CHATS} isLoading={false} />
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const loading = canvas.getByTestId('loading')
+    const loaded = canvas.getByTestId('loaded')
+    await within(loaded).findByRole('button', { name: 'Избранное' })
+
+    const layout = (pane: HTMLElement) => {
+      const origin = pane.getBoundingClientRect()
+      const offset = (element: Element | null) => {
+        const rect = element?.getBoundingClientRect()
+        return rect && [rect.left - origin.left, rect.top - origin.top]
+      }
+      return {
+        rows: [...pane.querySelectorAll<HTMLElement>('.grid')]
+          .slice(0, 1 + FOLDER_ROWS + 1)
+          .map((row) => ({
+            top: row.getBoundingClientRect().top - origin.top,
+            height: row.getBoundingClientRect().height,
+            columns: row.style.gridTemplateColumns,
+          })),
+        titles: FIXTURE_FOLDERS.map((folder) =>
+          offset(within(pane).getByText(folder.title)),
+        ),
+        avatar: offset(pane.querySelector('.size-7')),
+      }
+    }
+
+    await expect(layout(loading)).toEqual(layout(loaded))
   },
 }
 

@@ -205,7 +205,9 @@ export function MatrixView({
       }}
     >
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
-        <span className="text-sm text-muted-foreground">
+        {/* Always a live region: load progress while loading (F2.10), then
+            the count as filters change — WCAG 4.1.3 status messages. */}
+        <span className="text-sm text-muted-foreground" role="status">
           {isLoading
             ? m.matrix_loading_progress({ count: loadedCount })
             : totalCount !== undefined && totalCount !== chats.length
@@ -236,7 +238,10 @@ export function MatrixView({
       )}
 
       {isLoading ? (
-        <MatrixSkeleton loadedCount={loadedCount} />
+        <MatrixSkeleton
+          folders={folders}
+          selectable={selection !== undefined}
+        />
       ) : isError ? (
         <ErrorState onRetry={onRetry} />
       ) : showNoResults ? (
